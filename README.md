@@ -4,6 +4,7 @@ A Node.js + Express + MongoDB backend for a freelance platform connecting client
 
 ## Features
 - User authentication & role-based access control (JWT)
+- Roles: admin, moderator, client, craftsman
 - CRUD for users, jobs, proposals, contracts, reviews, messages, reports, services, admins, craftsman and client profiles
 - Pagination & filtering for jobs, proposals, and messages
 - Secure password hashing, input validation, and HTTP headers
@@ -34,7 +35,7 @@ A Node.js + Express + MongoDB backend for a freelance platform connecting client
 
 ## Security
 - All sensitive routes require authentication
-- Role-based access control for all entities
+- Role-based access control for all entities (admin, moderator, client, craftsman)
 - Passwords are hashed and never returned
 - Helmet and CORS enabled by default
 

@@ -36,7 +36,7 @@ const getJob = asyncHandler(async (req, res) => {
 const updateJob = asyncHandler(async (req, res) => {
   const job = await Job.findById(req.params.id);
   if (!job) return res.status(404).json({ message: 'Job not found' });
-  if (job.client_id.toString() !== req.user.id && req.user.role !== 'admin') {
+  if (!['admin', 'moderator'].includes(req.user.role) && job.client_id.toString() !== req.user.id) {
     return res.status(403).json({ message: 'Forbidden' });
   }
   Object.assign(job, req.body);
@@ -48,7 +48,7 @@ const updateJob = asyncHandler(async (req, res) => {
 const deleteJob = asyncHandler(async (req, res) => {
   const job = await Job.findById(req.params.id);
   if (!job) return res.status(404).json({ message: 'Job not found' });
-  if (job.client_id.toString() !== req.user.id && req.user.role !== 'admin') {
+  if (!['admin', 'moderator'].includes(req.user.role) && job.client_id.toString() !== req.user.id) {
     return res.status(403).json({ message: 'Forbidden' });
   }
   await job.deleteOne();

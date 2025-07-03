@@ -24,10 +24,7 @@ const createContract = asyncHandler(async (req, res) => {
 
 // List contracts (involved users or admin)
 const listContracts = asyncHandler(async (req, res) => {
-  const filter =
-    req.user.role === 'admin'
-      ? {}
-      : { $or: [{ client_id: req.user.id }, { craftsman_id: req.user.id }] };
+  const filter = ['admin', 'moderator'].includes(req.user.role) ? {} : { $or: [{ client_id: req.user.id }, { craftsman_id: req.user.id }] };
   const contracts = await Contract.find(filter);
   res.json(contracts);
 });
@@ -36,11 +33,7 @@ const listContracts = asyncHandler(async (req, res) => {
 const getContract = asyncHandler(async (req, res) => {
   const contract = await Contract.findById(req.params.id);
   if (!contract) return res.status(404).json({ message: 'Contract not found' });
-  if (
-    req.user.role !== 'admin' &&
-    contract.client_id.toString() !== req.user.id &&
-    contract.craftsman_id.toString() !== req.user.id
-  ) {
+  if (!['admin', 'moderator'].includes(req.user.role) && contract.client_id.toString() !== req.user.id && contract.craftsman_id.toString() !== req.user.id) {
     return res.status(403).json({ message: 'Forbidden' });
   }
   res.json(contract);
@@ -48,7 +41,7 @@ const getContract = asyncHandler(async (req, res) => {
 
 // Update contract (admin only)
 const updateContract = asyncHandler(async (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Only admin can update contracts' });
+  if (!['admin', 'moderator'].includes(req.user.role)) return res.status(403).json({ message: 'Only admin or moderator can update contracts' });
   const contract = await Contract.findByIdAndUpdate(req.params.id, req.body, { new: true });
   if (!contract) return res.status(404).json({ message: 'Contract not found' });
   res.json(contract);
@@ -56,7 +49,7 @@ const updateContract = asyncHandler(async (req, res) => {
 
 // Delete contract (admin only)
 const deleteContract = asyncHandler(async (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Only admin can delete contracts' });
+  if (!['admin', 'moderator'].includes(req.user.role)) return res.status(403).json({ message: 'Only admin or moderator can delete contracts' });
   const contract = await Contract.findByIdAndDelete(req.params.id);
   if (!contract) return res.status(404).json({ message: 'Contract not found' });
   res.json({ message: 'Contract deleted' });

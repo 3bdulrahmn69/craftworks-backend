@@ -33,9 +33,9 @@ const updateProfile = asyncHandler(async (req, res) => {
   res.json(profile);
 });
 
-// Delete profile (admin only)
+// Delete profile (admin or moderator only)
 const deleteProfile = asyncHandler(async (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Only admin can delete profile' });
+  if (!['admin', 'moderator'].includes(req.user.role)) return res.status(403).json({ message: 'Only admin or moderator can delete profile' });
   const profile = await ClientProfile.findByIdAndDelete(req.params.id);
   if (!profile) return res.status(404).json({ message: 'Profile not found' });
   res.json({ message: 'Profile deleted' });

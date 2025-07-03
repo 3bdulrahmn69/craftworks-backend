@@ -13,9 +13,9 @@ const createReport = asyncHandler(async (req, res) => {
   res.status(201).json(report);
 });
 
-// List reports (admin only)
+// List reports (admin or moderator)
 const listReports = asyncHandler(async (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Only admin can view all reports' });
+  if (!['admin', 'moderator'].includes(req.user.role)) return res.status(403).json({ message: 'Only admin or moderator can view all reports' });
   const reports = await Report.find();
   res.json(reports);
 });
@@ -24,19 +24,15 @@ const listReports = asyncHandler(async (req, res) => {
 const getReport = asyncHandler(async (req, res) => {
   const report = await Report.findById(req.params.id);
   if (!report) return res.status(404).json({ message: 'Report not found' });
-  if (
-    req.user.role !== 'admin' &&
-    report.reporter_id.toString() !== req.user.id &&
-    report.reported_user_id.toString() !== req.user.id
-  ) {
+  if (!['admin', 'moderator'].includes(req.user.role) && report.reporter_id.toString() !== req.user.id && report.reported_user_id.toString() !== req.user.id) {
     return res.status(403).json({ message: 'Forbidden' });
   }
   res.json(report);
 });
 
-// Delete report (admin only)
+// Delete report (admin or moderator)
 const deleteReport = asyncHandler(async (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Only admin can delete reports' });
+  if (!['admin', 'moderator'].includes(req.user.role)) return res.status(403).json({ message: 'Only admin or moderator can delete reports' });
   const report = await Report.findByIdAndDelete(req.params.id);
   if (!report) return res.status(404).json({ message: 'Report not found' });
   res.json({ message: 'Report deleted' });

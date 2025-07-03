@@ -49,9 +49,9 @@ const updateReview = asyncHandler(async (req, res) => {
   res.json(review);
 });
 
-// Delete review (admin only)
+// Delete review (admin or moderator only)
 const deleteReview = asyncHandler(async (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Only admin can delete reviews' });
+  if (!['admin', 'moderator'].includes(req.user.role)) return res.status(403).json({ message: 'Only admin or moderator can delete reviews' });
   const review = await Review.findByIdAndDelete(req.params.id);
   if (!review) return res.status(404).json({ message: 'Review not found' });
   res.json({ message: 'Review deleted' });

@@ -36,11 +36,7 @@ const listProposals = asyncHandler(async (req, res) => {
 const getProposal = asyncHandler(async (req, res) => {
   const proposal = await Proposal.findById(req.params.id);
   if (!proposal) return res.status(404).json({ message: 'Proposal not found' });
-  if (
-    req.user.role !== 'admin' &&
-    proposal.craftsman_id.toString() !== req.user.id &&
-    !(await Job.findOne({ _id: proposal.job_id, client_id: req.user.id }))
-  ) {
+  if (!['admin', 'moderator'].includes(req.user.role) && proposal.craftsman_id.toString() !== req.user.id && !(await Job.findOne({ _id: proposal.job_id, client_id: req.user.id }))) {
     return res.status(403).json({ message: 'Forbidden' });
   }
   res.json(proposal);
@@ -51,7 +47,7 @@ const updateProposal = asyncHandler(async (req, res) => {
   const proposal = await Proposal.findById(req.params.id);
   if (!proposal) return res.status(404).json({ message: 'Proposal not found' });
   const job = await Job.findById(proposal.job_id);
-  if (job.client_id.toString() !== req.user.id && req.user.role !== 'admin') {
+  if (!['admin', 'moderator'].includes(req.user.role) && job.client_id.toString() !== req.user.id) {
     return res.status(403).json({ message: 'Forbidden' });
   }
   if (req.body.status) proposal.status = req.body.status;
@@ -63,7 +59,7 @@ const updateProposal = asyncHandler(async (req, res) => {
 const deleteProposal = asyncHandler(async (req, res) => {
   const proposal = await Proposal.findById(req.params.id);
   if (!proposal) return res.status(404).json({ message: 'Proposal not found' });
-  if (proposal.craftsman_id.toString() !== req.user.id && req.user.role !== 'admin') {
+  if (!['admin', 'moderator'].includes(req.user.role) && proposal.craftsman_id.toString() !== req.user.id) {
     return res.status(403).json({ message: 'Forbidden' });
   }
   await proposal.deleteOne();

@@ -5,7 +5,7 @@ const User = require('../models/User');
 const asyncHandler = require('express-async-handler');
 
 // Get all users (admin only)
-router.get('/', auth, permit('admin'), asyncHandler(async (req, res) => {
+router.get('/', auth, permit('admin', 'moderator'), asyncHandler(async (req, res) => {
   const users = await User.find().select('-password');
   res.json(users);
 }));
@@ -25,7 +25,7 @@ router.put('/me', auth, asyncHandler(async (req, res) => {
 }));
 
 // Delete user (admin only)
-router.delete('/:id', auth, permit('admin'), asyncHandler(async (req, res) => {
+router.delete('/:id', auth, permit('admin', 'moderator'), asyncHandler(async (req, res) => {
   await User.findByIdAndDelete(req.params.id);
   res.json({ message: 'User deleted' });
 }));

@@ -16,10 +16,7 @@ const createMessage = asyncHandler(async (req, res) => {
 // List messages (paginated, only sender/receiver or admin)
 const listMessages = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, job_id } = req.query;
-  const filter =
-    req.user.role === 'admin'
-      ? {}
-      : { $or: [{ sender_id: req.user.id }, { receiver_id: req.user.id }] };
+  const filter = ['admin', 'moderator'].includes(req.user.role) ? {} : { $or: [{ sender_id: req.user.id }, { receiver_id: req.user.id }] };
   if (job_id) filter.job_id = job_id;
   const messages = await Message.find(filter)
     .skip((page - 1) * limit)
@@ -32,11 +29,7 @@ const listMessages = asyncHandler(async (req, res) => {
 const getMessage = asyncHandler(async (req, res) => {
   const msg = await Message.findById(req.params.id);
   if (!msg) return res.status(404).json({ message: 'Message not found' });
-  if (
-    req.user.role !== 'admin' &&
-    msg.sender_id.toString() !== req.user.id &&
-    msg.receiver_id.toString() !== req.user.id
-  ) {
+  if (!['admin', 'moderator'].includes(req.user.role) && msg.sender_id.toString() !== req.user.id && msg.receiver_id.toString() !== req.user.id) {
     return res.status(403).json({ message: 'Forbidden' });
   }
   res.json(msg);
@@ -46,7 +39,7 @@ const getMessage = asyncHandler(async (req, res) => {
 const deleteMessage = asyncHandler(async (req, res) => {
   const msg = await Message.findById(req.params.id);
   if (!msg) return res.status(404).json({ message: 'Message not found' });
-  if (msg.sender_id.toString() !== req.user.id && req.user.role !== 'admin') {
+  if (!['admin', 'moderator'].includes(req.user.role) && msg.sender_id.toString() !== req.user.id) {
     return res.status(403).json({ message: 'Forbidden' });
   }
   await msg.deleteOne();
