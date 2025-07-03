@@ -7,5 +7,6 @@ router.post('/', auth, messageController.createMessage);
 router.get('/', auth, messageController.listMessages);
 router.get('/:id', auth, messageController.getMessage);
 router.delete('/:id', auth, messageController.deleteMessage);
+router.put('/:id/read', auth, messageController.markAsRead);
 
 module.exports = router; 

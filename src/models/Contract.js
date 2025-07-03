@@ -7,6 +7,8 @@ const contractSchema = new mongoose.Schema({
   start_date: { type: Date, required: true },
   end_date: { type: Date },
   status: { type: String, enum: ['active', 'completed', 'cancelled'], default: 'active' },
+  completed_at: { type: Date },
+  reviewed: { type: Boolean, default: false },
   final_price: { type: Number, required: true }
 });
 

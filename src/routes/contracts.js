@@ -8,5 +8,6 @@ router.get('/', auth, contractController.listContracts);
 router.get('/:id', auth, contractController.getContract);
 router.put('/:id', auth, contractController.updateContract);
 router.delete('/:id', auth, contractController.deleteContract);
+router.post('/:id/complete', auth, contractController.completeContract);
 
 module.exports = router; 

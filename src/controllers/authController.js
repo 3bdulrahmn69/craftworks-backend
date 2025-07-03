@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
+const crypto = require('crypto');
 
 const register = asyncHandler(async (req, res) => {
   const { full_name, email, phone, password, role, profile_image } = req.body;
@@ -24,4 +25,29 @@ const login = asyncHandler(async (req, res) => {
   res.json({ token });
 });
 
-module.exports = { register, login }; 
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  const token = crypto.randomBytes(32).toString('hex');
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  user.resetPasswordTokenHash = tokenHash;
+  user.resetPasswordExpires = Date.now() + 1000 * 60 * 15; // 15 min
+  await user.save();
+  // In production, send email with token. For now, return it.
+  res.json({ message: 'Password reset token generated', token });
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+  const { token, password } = req.body;
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const user = await User.findOne({ resetPasswordTokenHash: tokenHash, resetPasswordExpires: { $gt: Date.now() } });
+  if (!user) return res.status(400).json({ message: 'Invalid or expired token' });
+  user.password = password;
+  user.resetPasswordTokenHash = undefined;
+  user.resetPasswordExpires = undefined;
+  await user.save();
+  res.json({ message: 'Password has been reset' });
+});
+
+module.exports = { register, login, forgotPassword, resetPassword }; 

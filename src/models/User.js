@@ -9,7 +9,11 @@ const userSchema = new mongoose.Schema({
   country: { type: String, default: 'Egypt', immutable: true },
   profile_image: { type: String },
   password: { type: String, required: true, select: false },
-  created_at: { type: Date, default: Date.now, index: true }
+  created_at: { type: Date, default: Date.now, index: true },
+  rating: { type: Number, default: 0 },
+  rating_count: { type: Number, default: 0 },
+  resetPasswordTokenHash: { type: String },
+  resetPasswordExpires: { type: Date }
 });
 
 userSchema.pre('save', async function(next) {

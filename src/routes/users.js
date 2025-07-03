@@ -30,4 +30,26 @@ router.delete('/:id', auth, permit('admin', 'moderator'), asyncHandler(async (re
   res.json({ message: 'User deleted' });
 }));
 
+// Get public user profile
+router.get('/:id', auth, asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id).select('-password -resetPasswordTokenHash -resetPasswordExpires');
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  const isSelfOrAdmin = req.user.id === user.id || ['admin', 'moderator'].includes(req.user.role);
+  const publicFields = {
+    _id: user._id,
+    role: user.role,
+    full_name: user.full_name,
+    country: user.country,
+    profile_image: user.profile_image,
+    rating: user.rating,
+    rating_count: user.rating_count,
+    created_at: user.created_at
+  };
+  if (isSelfOrAdmin) {
+    publicFields.email = user.email;
+    publicFields.phone = user.phone;
+  }
+  res.json(publicFields);
+}));
+
 module.exports = router; 

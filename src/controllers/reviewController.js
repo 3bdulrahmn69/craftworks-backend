@@ -1,5 +1,7 @@
 const Review = require('../models/Review');
 const Job = require('../models/Job');
+const User = require('../models/User');
+const Contract = require('../models/Contract');
 const asyncHandler = require('express-async-handler');
 
 // Create review (only users involved in a job)
@@ -7,9 +9,13 @@ const createReview = asyncHandler(async (req, res) => {
   const { to_user_id, job_id, rating, comment } = req.body;
   const job = await Job.findById(job_id);
   if (!job) return res.status(404).json({ message: 'Job not found' });
-  if (job.client_id.toString() !== req.user.id && req.user.role !== 'craftsman') {
-    return res.status(403).json({ message: 'Not allowed to review for this job' });
-  }
+  // Find completed contract for this job and users
+  const contract = await Contract.findOne({ job_id, status: 'completed', $or: [
+    { client_id: req.user.id, craftsman_id: to_user_id },
+    { client_id: to_user_id, craftsman_id: req.user.id }
+  ] });
+  if (!contract) return res.status(403).json({ message: 'No completed contract between users for this job' });
+  if (contract.reviewed) return res.status(400).json({ message: 'Review already submitted for this contract' });
   const review = await Review.create({
     from_user_id: req.user.id,
     to_user_id,
@@ -17,6 +23,13 @@ const createReview = asyncHandler(async (req, res) => {
     rating,
     comment
   });
+  // Mark contract as reviewed
+  contract.reviewed = true;
+  await contract.save();
+  // Update reviewed user's rating
+  const reviews = await Review.find({ to_user_id });
+  const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+  await User.findByIdAndUpdate(to_user_id, { rating: avgRating, rating_count: reviews.length });
   res.status(201).json(review);
 });
 

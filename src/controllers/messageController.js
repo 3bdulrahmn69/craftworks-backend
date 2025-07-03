@@ -46,4 +46,16 @@ const deleteMessage = asyncHandler(async (req, res) => {
   res.json({ message: 'Message deleted' });
 });
 
-module.exports = { createMessage, listMessages, getMessage, deleteMessage }; 
+// Mark message as read (only receiver or admin/moderator)
+const markAsRead = asyncHandler(async (req, res) => {
+  const msg = await Message.findById(req.params.id);
+  if (!msg) return res.status(404).json({ message: 'Message not found' });
+  if (![msg.receiver_id.toString()].includes(req.user.id) && !['admin', 'moderator'].includes(req.user.role)) {
+    return res.status(403).json({ message: 'Only receiver or admin/moderator can mark as read' });
+  }
+  msg.is_read = true;
+  await msg.save();
+  res.json({ message: 'Message marked as read' });
+});
+
+module.exports = { createMessage, listMessages, getMessage, deleteMessage, markAsRead }; 

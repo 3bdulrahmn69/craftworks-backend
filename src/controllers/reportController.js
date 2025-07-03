@@ -38,4 +38,14 @@ const deleteReport = asyncHandler(async (req, res) => {
   res.json({ message: 'Report deleted' });
 });
 
-module.exports = { createReport, listReports, getReport, deleteReport }; 
+// Update report status (admin or moderator)
+const updateReportStatus = asyncHandler(async (req, res) => {
+  if (!['admin', 'moderator'].includes(req.user.role)) return res.status(403).json({ message: 'Only admin or moderator can update report status' });
+  const report = await Report.findById(req.params.id);
+  if (!report) return res.status(404).json({ message: 'Report not found' });
+  if (req.body.status) report.status = req.body.status;
+  await report.save();
+  res.json({ message: 'Report status updated', report });
+});
+
+module.exports = { createReport, listReports, getReport, deleteReport, updateReportStatus }; 

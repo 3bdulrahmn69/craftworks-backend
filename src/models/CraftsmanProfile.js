@@ -10,8 +10,7 @@ const craftsmanProfileSchema = new mongoose.Schema({
   user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true, index: true },
   bio: { type: String },
   services: [{ type: String }],
-  portfolio: [portfolioSchema],
-  rating: { type: Number, default: 0 }
+  portfolio: [portfolioSchema]
 });
 
 module.exports = mongoose.model('CraftsmanProfile', craftsmanProfileSchema); 

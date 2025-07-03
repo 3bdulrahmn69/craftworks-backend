@@ -55,4 +55,18 @@ const deleteContract = asyncHandler(async (req, res) => {
   res.json({ message: 'Contract deleted' });
 });
 
-module.exports = { createContract, listContracts, getContract, updateContract, deleteContract }; 
+// Complete contract (client or craftsman only)
+const completeContract = asyncHandler(async (req, res) => {
+  const contract = await Contract.findById(req.params.id);
+  if (!contract) return res.status(404).json({ message: 'Contract not found' });
+  if (![contract.client_id.toString(), contract.craftsman_id.toString()].includes(req.user.id)) {
+    return res.status(403).json({ message: 'Only involved client or craftsman can complete contract' });
+  }
+  if (contract.status === 'completed') return res.status(400).json({ message: 'Contract already completed' });
+  contract.status = 'completed';
+  contract.completed_at = new Date();
+  await contract.save();
+  res.json({ message: 'Contract marked as completed', contract });
+});
+
+module.exports = { createContract, listContracts, getContract, updateContract, deleteContract, completeContract }; 
