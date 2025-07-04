@@ -3,7 +3,49 @@
 ## Authentication
 
 - Register: `POST /api/auth/register`
+  - **Example Request:**
+    ```json
+    {
+      "full_name": "Jane Smith",
+      "email": "jane@example.com",
+      "phone": "1234567890",
+      "password": "password123",
+      "role": "client",
+      "profile_image": ""
+    }
+    ```
+  - **Example Response:**
+    ```json
+    {
+      "token": "<JWT_TOKEN>",
+      "user": {
+        "id": "...",
+        "full_name": "Jane Smith",
+        "role": "client",
+        "profile_image": ""
+      }
+    }
+    ```
 - Login: `POST /api/auth/login`
+  - **Example Request:**
+    ```json
+    {
+      "email": "jane@example.com",
+      "password": "password123"
+    }
+    ```
+  - **Example Response:**
+    ```json
+    {
+      "token": "<JWT_TOKEN>",
+      "user": {
+        "id": "...",
+        "full_name": "Jane Smith",
+        "role": "client",
+        "profile_image": ""
+      }
+    }
+    ```
 - Forgot Password: `POST /api/auth/forgot-password`
   - **Example Request:**
     ```json

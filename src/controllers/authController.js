@@ -11,7 +11,17 @@ const register = asyncHandler(async (req, res) => {
   const exists = await User.findOne({ email });
   if (exists) return res.status(409).json({ message: 'Email already in use' });
   const user = await User.create({ full_name, email, phone, password, role, profile_image });
-  res.status(201).json({ id: user._id, email: user.email, role: user.role });
+
+  const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+  const resUser = {
+    id: user._id,
+    full_name: user.full_name,
+    role: user.role,
+    profile_image: user.profile_image,
+  };
+
+  res.status(201).json({ token, user: resUser });
 });
 
 const login = asyncHandler(async (req, res) => {
@@ -22,7 +32,15 @@ const login = asyncHandler(async (req, res) => {
   const isMatch = await user.comparePassword(password);
   if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
   const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-  res.json({ token });
+
+  const resUser = {
+    id: user._id,
+    full_name: user.full_name,
+    role: user.role,
+    profile_image: user.profile_image,
+  };
+
+  res.json({ token, user: resUser });
 });
 
 const forgotPassword = asyncHandler(async (req, res) => {
