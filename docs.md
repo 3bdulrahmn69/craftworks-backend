@@ -46,6 +46,14 @@
       }
     }
     ```
+  - **Blocked User Response:**
+    ```json
+    {
+      "message": "Account has been blocked",
+      "blocked_at": "2024-01-15T10:30:00.000Z",
+      "blocked_reason": "Violation of terms of service"
+    }
+    ```
 - Forgot Password: `POST /api/auth/forgot-password`
   - **Example Request:**
     ```json
@@ -121,6 +129,52 @@
 - `PUT /api/users/me` — Update your profile
 - `GET /api/users` — List all users (admin or moderator only)
 - `DELETE /api/users/:id` — Delete user (admin or moderator only)
+
+### Admin User Management
+- `POST /api/admins/block-user` — Block a user (admin only)
+  - **Example Request:**
+    ```json
+    {
+      "user_id": "user_id_here",
+      "reason": "Violation of terms of service"
+    }
+    ```
+  - **Example Response:**
+    ```json
+    {
+      "message": "User blocked successfully",
+      "user": {
+        "id": "...",
+        "full_name": "Jane Smith",
+        "email": "jane@example.com",
+        "role": "client",
+        "blocked": true,
+        "blocked_at": "2024-01-15T10:30:00.000Z",
+        "blocked_reason": "Violation of terms of service"
+      }
+    }
+    ```
+- `POST /api/admins/unblock-user` — Unblock a user (admin only)
+  - **Example Request:**
+    ```json
+    {
+      "user_id": "user_id_here"
+    }
+    ```
+  - **Example Response:**
+    ```json
+    {
+      "message": "User unblocked successfully",
+      "user": {
+        "id": "...",
+        "full_name": "Jane Smith",
+        "email": "jane@example.com",
+        "role": "client",
+        "blocked": false
+      }
+    }
+    ```
+- `GET /api/admins/blocked-users` — Get all blocked users (admin only)
 
 ### Jobs
 - `POST /api/jobs` — Create job (client only)

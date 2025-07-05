@@ -50,4 +50,82 @@ const deleteAdmin = asyncHandler(async (req, res) => {
   res.json({ message: 'Admin deleted' });
 });
 
-module.exports = { createAdmin, listAdmins, getAdmin, updateAdmin, deleteAdmin }; 
+// Block user (admin only)
+const blockUser = asyncHandler(async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Only admin can block users' });
+  
+  const { user_id, reason } = req.body;
+  if (!user_id) return res.status(400).json({ message: 'User ID is required' });
+  
+  const user = await User.findById(user_id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  
+  // Prevent blocking admins
+  if (user.role === 'admin') {
+    return res.status(403).json({ message: 'Cannot block admin users' });
+  }
+  
+  user.blocked = true;
+  user.blocked_at = new Date();
+  user.blocked_reason = reason || 'No reason provided';
+  await user.save();
+  
+  res.json({ 
+    message: 'User blocked successfully',
+    user: {
+      id: user._id,
+      full_name: user.full_name,
+      email: user.email,
+      role: user.role,
+      blocked: user.blocked,
+      blocked_at: user.blocked_at,
+      blocked_reason: user.blocked_reason
+    }
+  });
+});
+
+// Unblock user (admin only)
+const unblockUser = asyncHandler(async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Only admin can unblock users' });
+  
+  const { user_id } = req.body;
+  if (!user_id) return res.status(400).json({ message: 'User ID is required' });
+  
+  const user = await User.findById(user_id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  
+  user.blocked = false;
+  user.blocked_at = undefined;
+  user.blocked_reason = undefined;
+  await user.save();
+  
+  res.json({ 
+    message: 'User unblocked successfully',
+    user: {
+      id: user._id,
+      full_name: user.full_name,
+      email: user.email,
+      role: user.role,
+      blocked: user.blocked
+    }
+  });
+});
+
+// Get blocked users (admin only)
+const getBlockedUsers = asyncHandler(async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Only admin can view blocked users' });
+  
+  const blockedUsers = await User.find({ blocked: true }).select('-password');
+  res.json(blockedUsers);
+});
+
+module.exports = { 
+  createAdmin, 
+  listAdmins, 
+  getAdmin, 
+  updateAdmin, 
+  deleteAdmin,
+  blockUser,
+  unblockUser,
+  getBlockedUsers
+}; 

@@ -26,11 +26,12 @@ async function seed() {
   ]);
 
   // Create users
-  const [admin, moderator, client, craftsman] = await User.create([
+  const [admin, moderator, client, craftsman, blockedUser] = await User.create([
     { role: 'admin', full_name: 'Admin User', email: 'admin@test.com', phone: '1111111111', country: 'Egypt', profile_image: '', password: 'adminpass' },
     { role: 'moderator', full_name: 'Moderator User', email: 'mod@test.com', phone: '2222222222', country: 'Egypt', profile_image: '', password: 'modpass' },
     { role: 'client', full_name: 'Client User', email: 'client@test.com', phone: '3333333333', country: 'Egypt', profile_image: '', password: 'clientpass' },
-    { role: 'craftsman', full_name: 'Craftsman User', email: 'craftsman@test.com', phone: '4444444444', country: 'Egypt', profile_image: '', password: 'craftsmanpass' }
+    { role: 'craftsman', full_name: 'Craftsman User', email: 'craftsman@test.com', phone: '4444444444', country: 'Egypt', profile_image: '', password: 'craftsmanpass' },
+    { role: 'client', full_name: 'Blocked User', email: 'blocked@test.com', phone: '5555555555', country: 'Egypt', profile_image: '', password: 'blockedpass', blocked: true, blocked_at: new Date(), blocked_reason: 'Test blocked user' }
   ]);
 
   // Create services

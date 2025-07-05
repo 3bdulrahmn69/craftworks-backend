@@ -9,4 +9,9 @@ router.get('/:id', auth, adminController.getAdmin);
 router.put('/:id', auth, adminController.updateAdmin);
 router.delete('/:id', auth, adminController.deleteAdmin);
 
+// User blocking routes
+router.post('/block-user', auth, adminController.blockUser);
+router.post('/unblock-user', auth, adminController.unblockUser);
+router.get('/blocked-users', auth, adminController.getBlockedUsers);
+
 module.exports = router; 
