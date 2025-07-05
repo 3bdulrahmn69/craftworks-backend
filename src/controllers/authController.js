@@ -17,6 +17,7 @@ const register = asyncHandler(async (req, res) => {
   const resUser = {
     id: user._id,
     full_name: user.full_name,
+    email: user.email,
     role: user.role,
     profile_image: user.profile_image,
   };
@@ -36,6 +37,7 @@ const login = asyncHandler(async (req, res) => {
   const resUser = {
     id: user._id,
     full_name: user.full_name,
+    email: user.email,
     role: user.role,
     profile_image: user.profile_image,
   };
