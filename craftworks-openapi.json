@@ -27,6 +27,9 @@
           "phone": { "type": "string" },
           "country": { "type": "string" },
           "profile_image": { "type": "string" },
+          "blocked": { "type": "boolean" },
+          "blocked_at": { "type": "string", "format": "date-time" },
+          "blocked_reason": { "type": "string" },
           "rating": { "type": "number" },
           "rating_count": { "type": "integer" },
           "created_at": { "type": "string", "format": "date-time" }
@@ -121,6 +124,43 @@
           "subcategories": { "type": "array", "items": { "type": "string" } },
           "is_active": { "type": "boolean" }
         }
+      },
+      "CraftsmanProfile": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "user_id": { "type": "string" },
+          "bio": { "type": "string" },
+          "services": { "type": "array", "items": { "type": "string" } },
+          "portfolio": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "image": { "type": "string" },
+                "description": { "type": "string" },
+                "date": { "type": "string", "format": "date-time" }
+              }
+            }
+          }
+        }
+      },
+      "ClientProfile": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "user_id": { "type": "string" },
+          "preferences": { "type": "object" },
+          "address": { "type": "string" }
+        }
+      },
+      "Admin": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "user_id": { "type": "string" },
+          "role_type": { "type": "string", "enum": ["admin", "moderator"] }
+        }
       }
     }
   },
@@ -141,14 +181,38 @@
                   "email": { "type": "string" },
                   "phone": { "type": "string" },
                   "password": { "type": "string" },
-                  "role": { "type": "string", "enum": ["admin", "moderator", "client", "craftsman"] }
+                  "role": { "type": "string", "enum": ["admin", "moderator", "client", "craftsman"] },
+                  "profile_image": { "type": "string" }
                 },
                 "required": ["full_name", "email", "phone", "password", "role"]
               }
             }
           }
         },
-        "responses": { "201": { "description": "User registered" } }
+        "responses": { 
+          "201": { 
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": { "type": "string" },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string" },
+                        "full_name": { "type": "string" },
+                        "role": { "type": "string" },
+                        "profile_image": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          } 
+        }
       }
     },
     "/auth/login": {
@@ -170,7 +234,45 @@
             }
           }
         },
-        "responses": { "200": { "description": "JWT token returned" } }
+        "responses": { 
+          "200": { 
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": { "type": "string" },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string" },
+                        "full_name": { "type": "string" },
+                        "role": { "type": "string" },
+                        "profile_image": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Account blocked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "blocked_at": { "type": "string", "format": "date-time" },
+                    "blocked_reason": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/auth/forgot-password": {
@@ -291,6 +393,598 @@
         "security": [{ "bearerAuth": [] }],
         "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
         "responses": { "200": { "description": "Job deleted" } }
+      }
+    },
+    "/proposals": {
+      "get": {
+        "tags": ["Proposals"],
+        "summary": "List proposals",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "page", "in": "query", "schema": { "type": "integer" } }, { "name": "limit", "in": "query", "schema": { "type": "integer" } } ],
+        "responses": { "200": { "description": "List of proposals", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Proposal" } } } } } }
+      },
+      "post": {
+        "tags": ["Proposals"],
+        "summary": "Create proposal",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Proposal" } } } },
+        "responses": { "201": { "description": "Proposal created" } }
+      }
+    },
+    "/proposals/{id}": {
+      "get": {
+        "tags": ["Proposals"],
+        "summary": "Get proposal",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Proposal", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Proposal" } } } } }
+      },
+      "put": {
+        "tags": ["Proposals"],
+        "summary": "Update proposal",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Proposal" } } } },
+        "responses": { "200": { "description": "Proposal updated" } }
+      },
+      "delete": {
+        "tags": ["Proposals"],
+        "summary": "Delete proposal",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Proposal deleted" } }
+      }
+    },
+    "/contracts": {
+      "get": {
+        "tags": ["Contracts"],
+        "summary": "List contracts",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "page", "in": "query", "schema": { "type": "integer" } }, { "name": "limit", "in": "query", "schema": { "type": "integer" } } ],
+        "responses": { "200": { "description": "List of contracts", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Contract" } } } } } }
+      },
+      "post": {
+        "tags": ["Contracts"],
+        "summary": "Create contract",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Contract" } } } },
+        "responses": { "201": { "description": "Contract created" } }
+      }
+    },
+    "/contracts/{id}": {
+      "get": {
+        "tags": ["Contracts"],
+        "summary": "Get contract",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Contract", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Contract" } } } } }
+      },
+      "put": {
+        "tags": ["Contracts"],
+        "summary": "Update contract",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Contract" } } } },
+        "responses": { "200": { "description": "Contract updated" } }
+      },
+      "delete": {
+        "tags": ["Contracts"],
+        "summary": "Delete contract",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Contract deleted" } }
+      }
+    },
+    "/contracts/{id}/complete": {
+      "post": {
+        "tags": ["Contracts"],
+        "summary": "Mark contract as completed",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Contract marked as completed" } }
+      }
+    },
+    "/reviews": {
+      "get": {
+        "tags": ["Reviews"],
+        "summary": "List reviews",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "page", "in": "query", "schema": { "type": "integer" } }, { "name": "limit", "in": "query", "schema": { "type": "integer" } } ],
+        "responses": { "200": { "description": "List of reviews", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Review" } } } } } }
+      },
+      "post": {
+        "tags": ["Reviews"],
+        "summary": "Create review",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Review" } } } },
+        "responses": { "201": { "description": "Review created" } }
+      }
+    },
+    "/reviews/{id}": {
+      "get": {
+        "tags": ["Reviews"],
+        "summary": "Get review",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Review", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Review" } } } } }
+      },
+      "put": {
+        "tags": ["Reviews"],
+        "summary": "Update review",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Review" } } } },
+        "responses": { "200": { "description": "Review updated" } }
+      },
+      "delete": {
+        "tags": ["Reviews"],
+        "summary": "Delete review",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Review deleted" } }
+      }
+    },
+    "/messages": {
+      "get": {
+        "tags": ["Messages"],
+        "summary": "List messages",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "page", "in": "query", "schema": { "type": "integer" } }, { "name": "limit", "in": "query", "schema": { "type": "integer" } } ],
+        "responses": { "200": { "description": "List of messages", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Message" } } } } } }
+      },
+      "post": {
+        "tags": ["Messages"],
+        "summary": "Send message",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Message" } } } },
+        "responses": { "201": { "description": "Message sent" } }
+      }
+    },
+    "/messages/{id}": {
+      "get": {
+        "tags": ["Messages"],
+        "summary": "Get message",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Message", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Message" } } } } }
+      },
+      "delete": {
+        "tags": ["Messages"],
+        "summary": "Delete message",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Message deleted" } }
+      }
+    },
+    "/messages/{id}/read": {
+      "put": {
+        "tags": ["Messages"],
+        "summary": "Mark message as read",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Message marked as read" } }
+      }
+    },
+    "/reports": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "List reports",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "page", "in": "query", "schema": { "type": "integer" } }, { "name": "limit", "in": "query", "schema": { "type": "integer" } } ],
+        "responses": { "200": { "description": "List of reports", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Report" } } } } } }
+      },
+      "post": {
+        "tags": ["Reports"],
+        "summary": "Create report",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Report" } } } },
+        "responses": { "201": { "description": "Report created" } }
+      }
+    },
+    "/reports/{id}": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Get report",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Report", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Report" } } } } }
+      },
+      "delete": {
+        "tags": ["Reports"],
+        "summary": "Delete report",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Report deleted" } }
+      }
+    },
+    "/reports/{id}/status": {
+      "put": {
+        "tags": ["Reports"],
+        "summary": "Update report status",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string", "enum": ["pending", "reviewed", "resolved"] } } } } } },
+        "responses": { "200": { "description": "Report status updated" } }
+      }
+    },
+    "/services": {
+      "get": {
+        "tags": ["Services"],
+        "summary": "List services",
+        "parameters": [ { "name": "active_only", "in": "query", "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "List of services", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Service" } } } } } }
+      },
+      "post": {
+        "tags": ["Services"],
+        "summary": "Create service",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Service" } } } },
+        "responses": { "201": { "description": "Service created" } }
+      }
+    },
+    "/services/{id}": {
+      "get": {
+        "tags": ["Services"],
+        "summary": "Get service",
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Service", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Service" } } } } }
+      },
+      "put": {
+        "tags": ["Services"],
+        "summary": "Update service",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Service" } } } },
+        "responses": { "200": { "description": "Service updated" } }
+      },
+      "delete": {
+        "tags": ["Services"],
+        "summary": "Delete service",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Service deleted" } }
+      }
+    },
+    "/services/categories": {
+      "get": {
+        "tags": ["Services"],
+        "summary": "Get all available categories",
+        "description": "Public endpoint - no authentication required. Use for home page display.",
+        "responses": { 
+          "200": { 
+            "description": "List of available categories",
+            "content": { 
+              "application/json": { 
+                "schema": { 
+                  "type": "array", 
+                  "items": { 
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "name": { "type": "string" },
+                      "icon": { "type": "string" },
+                      "description": { "type": "string" },
+                      "subcategories": { "type": "array", "items": { "type": "string" } }
+                    }
+                  } 
+                } 
+              } 
+            } 
+          } 
+        }
+      }
+    },
+    "/services/categories/{category}/craftsmen": {
+      "get": {
+        "tags": ["Services"],
+        "summary": "Get craftsmen by category",
+        "description": "Public endpoint - no authentication required. Use for client filtering.",
+        "parameters": [ 
+          { "name": "category", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": { 
+          "200": { 
+            "description": "List of craftsmen in category",
+            "content": { 
+              "application/json": { 
+                "schema": { 
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/CraftsmanProfile" } },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "page": { "type": "integer" },
+                        "limit": { "type": "integer" },
+                        "totalPages": { "type": "integer" },
+                        "totalItems": { "type": "integer" }
+                      }
+                    }
+                  }
+                } 
+              } 
+            } 
+          } 
+        }
+      }
+    },
+    "/services/craftsman/services": {
+      "get": {
+        "tags": ["Services"],
+        "summary": "Get craftsman's selected services",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { 
+          "200": { 
+            "description": "Craftsman's services",
+            "content": { 
+              "application/json": { 
+                "schema": { 
+                  "type": "object",
+                  "properties": {
+                    "services": { "type": "array", "items": { "$ref": "#/components/schemas/Service" } }
+                  }
+                } 
+              } 
+            } 
+          } 
+        }
+      },
+      "put": {
+        "tags": ["Services"],
+        "summary": "Update craftsman's services",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { 
+          "required": true, 
+          "content": { 
+            "application/json": { 
+              "schema": { 
+                "type": "object",
+                "properties": {
+                  "services": { "type": "array", "items": { "type": "string" } }
+                },
+                "required": ["services"]
+              } 
+            } 
+          } 
+        },
+        "responses": { 
+          "200": { 
+            "description": "Services updated successfully",
+            "content": { 
+              "application/json": { 
+                "schema": { 
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "profile": { "$ref": "#/components/schemas/CraftsmanProfile" }
+                  }
+                } 
+              } 
+            } 
+          } 
+        }
+      }
+    },
+    "/services/uploads": {
+      "post": {
+        "tags": ["Services"],
+        "summary": "Upload service image",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Image uploaded", "content": { "application/json": { "schema": { "type": "object", "properties": { "url": { "type": "string" } } } } } } }
+      }
+    },
+    "/admins": {
+      "get": {
+        "tags": ["Admins"],
+        "summary": "List admins",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "List of admins", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Admin" } } } } } }
+      },
+      "post": {
+        "tags": ["Admins"],
+        "summary": "Create admin",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Admin" } } } },
+        "responses": { "201": { "description": "Admin created" } }
+      }
+    },
+    "/admins/{id}": {
+      "get": {
+        "tags": ["Admins"],
+        "summary": "Get admin",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Admin", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Admin" } } } } }
+      },
+      "put": {
+        "tags": ["Admins"],
+        "summary": "Update admin",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Admin" } } } },
+        "responses": { "200": { "description": "Admin updated" } }
+      },
+      "delete": {
+        "tags": ["Admins"],
+        "summary": "Delete admin",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Admin deleted" } }
+      }
+    },
+    "/admins/block-user": {
+      "post": {
+        "tags": ["Admins"],
+        "summary": "Block a user",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { 
+          "required": true, 
+          "content": { 
+            "application/json": { 
+              "schema": { 
+                "type": "object",
+                "properties": {
+                  "user_id": { "type": "string" },
+                  "reason": { "type": "string" }
+                },
+                "required": ["user_id"]
+              } 
+            } 
+          } 
+        },
+        "responses": { 
+          "200": { 
+            "description": "User blocked successfully",
+            "content": { 
+              "application/json": { 
+                "schema": { 
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "user": { "$ref": "#/components/schemas/User" }
+                  }
+                } 
+              } 
+            } 
+          } 
+        }
+      }
+    },
+    "/admins/unblock-user": {
+      "post": {
+        "tags": ["Admins"],
+        "summary": "Unblock a user",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { 
+          "required": true, 
+          "content": { 
+            "application/json": { 
+              "schema": { 
+                "type": "object",
+                "properties": {
+                  "user_id": { "type": "string" }
+                },
+                "required": ["user_id"]
+              } 
+            } 
+          } 
+        },
+        "responses": { 
+          "200": { 
+            "description": "User unblocked successfully",
+            "content": { 
+              "application/json": { 
+                "schema": { 
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "user": { "$ref": "#/components/schemas/User" }
+                  }
+                } 
+              } 
+            } 
+          } 
+        }
+      }
+    },
+    "/admins/blocked-users": {
+      "get": {
+        "tags": ["Admins"],
+        "summary": "Get all blocked users",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { 
+          "200": { 
+            "description": "List of blocked users",
+            "content": { 
+              "application/json": { 
+                "schema": { 
+                  "type": "array", 
+                  "items": { "$ref": "#/components/schemas/User" } 
+                } 
+              } 
+            } 
+          } 
+        }
+      }
+    },
+    "/craftsman-profiles": {
+      "get": {
+        "tags": ["Profiles"],
+        "summary": "List craftsman profiles",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "List of craftsman profiles", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/CraftsmanProfile" } } } } } }
+      },
+      "post": {
+        "tags": ["Profiles"],
+        "summary": "Create craftsman profile",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CraftsmanProfile" } } } },
+        "responses": { "201": { "description": "Craftsman profile created" } }
+      }
+    },
+    "/craftsman-profiles/me": {
+      "get": {
+        "tags": ["Profiles"],
+        "summary": "Get own craftsman profile",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Craftsman profile", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CraftsmanProfile" } } } } }
+      },
+      "put": {
+        "tags": ["Profiles"],
+        "summary": "Update own craftsman profile",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CraftsmanProfile" } } } },
+        "responses": { "200": { "description": "Craftsman profile updated" } }
+      }
+    },
+    "/craftsman-profiles/{id}": {
+      "delete": {
+        "tags": ["Profiles"],
+        "summary": "Delete craftsman profile",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Craftsman profile deleted" } }
+      }
+    },
+    "/client-profiles": {
+      "get": {
+        "tags": ["Profiles"],
+        "summary": "List client profiles",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "List of client profiles", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/ClientProfile" } } } } } }
+      },
+      "post": {
+        "tags": ["Profiles"],
+        "summary": "Create client profile",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ClientProfile" } } } },
+        "responses": { "201": { "description": "Client profile created" } }
+      }
+    },
+    "/client-profiles/me": {
+      "get": {
+        "tags": ["Profiles"],
+        "summary": "Get own client profile",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Client profile", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ClientProfile" } } } } }
+      },
+      "put": {
+        "tags": ["Profiles"],
+        "summary": "Update own client profile",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ClientProfile" } } } },
+        "responses": { "200": { "description": "Client profile updated" } }
+      }
+    },
+    "/client-profiles/{id}": {
+      "delete": {
+        "tags": ["Profiles"],
+        "summary": "Delete client profile",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Client profile deleted" } }
       }
     }
   }

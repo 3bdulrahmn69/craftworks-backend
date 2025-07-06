@@ -223,13 +223,101 @@
 
 ### Services (Categories)
 - `POST /api/services` — Create (admin or moderator only)
+  - **Example Request:**
+    ```json
+    {
+      "name": "Plumbing",
+      "icon": "faucet-icon",
+      "description": "Water systems and pipe work",
+      "subcategories": ["Repair", "Installation", "Maintenance"],
+      "is_active": true
+    }
+    ```
 - `GET /api/services` — List all
+  - **Query Parameters:**
+    - `active_only=true` — Only return active services
 - `GET /api/services/:id` — Get service
 - `PUT /api/services/:id` — Update (admin or moderator only)
 - `DELETE /api/services/:id` — Delete (admin or moderator only)
-- `GET /api/services/categories` — Get all available craftsman categories
-- `POST /api/services/uploads` — Upload image (placeholder, returns fake URL)
-- **Service fields:** `name`, `icon`, `description`, `subcategories`, `is_active`
+- `GET /api/services/categories` — Get all available categories (public - no auth required)
+  - **Use case:** Display categories on home page
+  - **Example Response:**
+    ```json
+    [
+      {
+        "id": "...",
+        "name": "Plumbing",
+        "icon": "faucet-icon",
+        "description": "Water systems and pipe work",
+        "subcategories": ["Repair", "Installation", "Maintenance"]
+      }
+    ]
+    ```
+- `GET /api/services/categories/:category/craftsmen` — Get craftsmen by category (public - no auth required)
+  - **Query Parameters:**
+    - `page=1` — Page number
+    - `limit=10` — Items per page
+  - **Example Response:**
+    ```json
+    {
+      "data": [
+        {
+          "_id": "...",
+          "user_id": {
+            "full_name": "John Doe",
+            "email": "john@example.com",
+            "profile_image": "...",
+            "rating": 4.5,
+            "rating_count": 12
+          },
+          "services": ["plumbing_id"],
+          "bio": "Experienced plumber"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 10,
+        "totalPages": 5,
+        "totalItems": 42
+      }
+    }
+    ```
+
+### Craftsman Service Management
+- `GET /api/services/craftsman/services` — Get your selected services (craftsman only)
+  - **Example Response:**
+    ```json
+    {
+      "services": [
+        {
+          "_id": "...",
+          "name": "Plumbing",
+          "icon": "faucet-icon",
+          "description": "Water systems and pipe work",
+          "subcategories": ["Repair", "Installation", "Maintenance"]
+        }
+      ]
+    }
+    ```
+- `PUT /api/services/craftsman/services` — Update your services (craftsman only)
+  - **Example Request:**
+    ```json
+    {
+      "services": ["service_id_1", "service_id_2"]
+    }
+    ```
+  - **Example Response:**
+    ```json
+    {
+      "message": "Services updated successfully",
+      "profile": {
+        "id": "...",
+        "user_id": "...",
+        "services": ["service_id_1", "service_id_2"],
+        "bio": "..."
+      }
+    }
+    ```
 
 ### Profiles
 - `POST /api/craftsman-profiles` — Create (craftsman only)

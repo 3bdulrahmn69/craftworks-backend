@@ -9,6 +9,7 @@ const Review = require('./src/models/Review');
 const Message = require('./src/models/Message');
 const Report = require('./src/models/Report');
 const Service = require('./src/models/Service');
+const CraftsmanProfile = require('./src/models/CraftsmanProfile');
 
 async function seed() {
   await mongoose.connect(process.env.MONGO_URI);
@@ -22,7 +23,8 @@ async function seed() {
     Review.deleteMany({}),
     Message.deleteMany({}),
     Report.deleteMany({}),
-    Service.deleteMany({})
+    Service.deleteMany({}),
+    CraftsmanProfile.deleteMany({})
   ]);
 
   // Create users
@@ -35,10 +37,28 @@ async function seed() {
   ]);
 
   // Create services
-  const [carpentry, plumbing] = await Service.create([
-    { name: 'Carpentry', icon: '', description: 'Woodwork and furniture', subcategories: ['Tables', 'Chairs'], is_active: true },
-    { name: 'Plumbing', icon: '', description: 'Pipes and water systems', subcategories: ['Repair', 'Installation'], is_active: true }
+  const [carpentry, plumbing, electrical, painting, cleaning, gardening] = await Service.create([
+    { name: 'Carpentry', icon: 'hammer-icon', description: 'Woodwork and furniture', subcategories: ['Tables', 'Chairs', 'Cabinets', 'Repairs'], is_active: true },
+    { name: 'Plumbing', icon: 'faucet-icon', description: 'Pipes and water systems', subcategories: ['Repair', 'Installation', 'Maintenance'], is_active: true },
+    { name: 'Electrical', icon: 'lightbulb-icon', description: 'Electrical work and wiring', subcategories: ['Installation', 'Repair', 'Maintenance'], is_active: true },
+    { name: 'Painting', icon: 'paintbrush-icon', description: 'Interior and exterior painting', subcategories: ['Walls', 'Furniture', 'Exterior'], is_active: true },
+    { name: 'Cleaning', icon: 'broom-icon', description: 'House and office cleaning', subcategories: ['Regular', 'Deep', 'Post-construction'], is_active: true },
+    { name: 'Gardening', icon: 'leaf-icon', description: 'Landscaping and garden maintenance', subcategories: ['Design', 'Maintenance', 'Planting'], is_active: true }
   ]);
+
+  // Create craftsman profile with services
+  await CraftsmanProfile.create({
+    user_id: craftsman._id,
+    bio: 'Experienced craftsman with 10+ years in carpentry and plumbing',
+    services: [carpentry._id, plumbing._id],
+    portfolio: [
+      {
+        image: 'https://example.com/portfolio1.jpg',
+        description: 'Custom dining table',
+        date: new Date()
+      }
+    ]
+  });
 
   // Create a job
   const job = await Job.create({
