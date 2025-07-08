@@ -15,6 +15,29 @@
 - **Global Error Handler**: All unhandled errors return `{ "message": "Internal server error" }` with status 500 (unless a more specific status is set)
 - All errors are logged with details about the request and error
 
+## Contact Email
+- `POST /api/send-emails` — Send a contact email from the website
+  - **Request Body:**
+    ```json
+    {
+      "name": "John Doe",
+      "email": "john@example.com",
+      "message": "Hello, I have a question."
+    }
+    ```
+  - **Response:**
+    ```json
+    { "message": "Email sent successfully." }
+    ```
+  - **Error Response:**
+    ```json
+    { "message": "Name, email, and message are required." }
+    ```
+    or
+    ```json
+    { "message": "Failed to send email." }
+    ```
+
 ## Authentication
 
 - Register: `POST /api/auth/register`
@@ -74,11 +97,11 @@
     ```json
     { "email": "john@example.com" }
     ```
-  - **Example Response (for testing):**
+  - **Example Response:**
     ```json
-    { "message": "Password reset token generated", "token": "..." }
+    { "message": "Password reset email sent." }
     ```
-  - *Note: Token is hashed in DB, expires in 15 minutes, and is single-use. In production, it is emailed to the user.*
+  - *Note: The user will receive an email with a reset link valid for 15 minutes.*
 - Reset Password: `POST /api/auth/reset-password`
   - **Example Request:**
     ```json

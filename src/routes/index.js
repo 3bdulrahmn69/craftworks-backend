@@ -14,7 +14,7 @@ router.use('/admins', require('./admins'));
 router.use('/craftsman-profiles', require('./craftsmanProfiles'));
 router.use('/client-profiles', require('./clientProfiles'));
 router.use('/activity-logs', require('./logs'));
-// TODO: Add other entity routes here
+router.use('/send-emails', require('./sendEmails'));
 
 // Catch-all 404 for non-existent API routes
 router.use((req, res, next) => {

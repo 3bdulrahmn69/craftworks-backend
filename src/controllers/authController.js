@@ -3,6 +3,9 @@ const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
 const crypto = require('crypto');
 const ActivityLog = require('../models/ActivityLog');
+const { Resend } = require('resend');
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const register = asyncHandler(async (req, res) => {
   const { full_name, email, phone, password, role, profile_image } = req.body;
@@ -77,8 +80,25 @@ const forgotPassword = asyncHandler(async (req, res) => {
   user.resetPasswordTokenHash = tokenHash;
   user.resetPasswordExpires = Date.now() + 1000 * 60 * 15; // 15 min
   await user.save();
-  // In production, send email with token. For now, return it.
-  res.json({ message: 'Password reset token generated', token });
+
+  // Send reset email using Resend
+  const resetUrl = `https://yourfrontend.com/reset-password?token=${token}`;
+  try {
+    await resend.emails.send({
+      from: 'no-reply@yourdomain.com',
+      to: user.email,
+      subject: 'Reset your password',
+      html: `<p>Hello ${user.full_name || ''},</p>
+        <p>You requested a password reset. Click the link below to reset your password:</p>
+        <p><a href="${resetUrl}">${resetUrl}</a></p>
+        <p>This link will expire in 15 minutes.</p>`
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to send reset email.' });
+  }
+
+  res.json({ message: 'Password reset email sent.' });
 });
 
 const resetPassword = asyncHandler(async (req, res) => {

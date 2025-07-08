@@ -310,7 +310,7 @@
             }
           }
         },
-        "responses": { "200": { "description": "Reset token sent (for testing, returned in response)" } }
+        "responses": { "200": { "description": "Password reset email sent." } }
       }
     },
     "/auth/reset-password": {
@@ -1029,6 +1029,69 @@
           },
           "403": {
             "description": "Forbidden (not admin)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/send-emails": {
+      "post": {
+        "tags": ["Contact"],
+        "summary": "Send a contact email from the website",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string" },
+                  "message": { "type": "string" }
+                },
+                "required": ["name", "email", "message"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email sent successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to send email.",
             "content": {
               "application/json": {
                 "schema": {
