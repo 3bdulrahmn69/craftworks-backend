@@ -2,6 +2,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
 const crypto = require('crypto');
+const ActivityLog = require('../models/ActivityLog');
 
 const register = asyncHandler(async (req, res) => {
   const { full_name, email, phone, password, role, profile_image } = req.body;
@@ -12,12 +13,20 @@ const register = asyncHandler(async (req, res) => {
   if (exists) return res.status(409).json({ message: 'Email already in use' });
   const user = await User.create({ full_name, email, phone, password, role, profile_image });
 
+  // Log activity
+  await ActivityLog.create({
+    user: { _id: user._id, full_name: user.full_name, role: user.role },
+    action: 'register_user',
+    target: 'User',
+    targetId: user._id,
+    details: { email, phone, role }
+  });
+
   const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
   const resUser = {
     id: user._id,
     full_name: user.full_name,
-    email: user.email,
     role: user.role,
     profile_image: user.profile_image,
   };

@@ -346,6 +346,28 @@
 - `PUT /api/client-profiles/me` — Update own
 - `DELETE /api/client-profiles/:id` — Delete (admin or moderator only)
 
+## Activity Logging
+- All important actions (user registration, admin actions, deletions, service changes, etc.) are logged in the ActivityLog collection.
+- Each log entry includes: who did the action, what action, what target, details, and timestamp.
+- **Admin-only endpoint:**
+  - `GET /api/activity-logs` — List recent activity logs (admin only)
+    - Query params: `limit` (default 100), `skip` (default 0)
+    - Example response:
+      ```json
+      [
+        {
+          "_id": "...",
+          "user": { "_id": "...", "full_name": "Admin User", "role": "admin" },
+          "action": "create_admin",
+          "target": "Admin",
+          "targetId": "...",
+          "details": { "user_id": "...", "role_type": "moderator" },
+          "createdAt": "2024-06-01T12:00:00.000Z"
+        }
+      ]
+      ```
+- Moderators and other roles cannot access this endpoint.
+
 ## Resource Relationships
 - **Jobs → Proposals → Contracts → Reviews**
 - A job is posted by a client, craftsmen submit proposals, client accepts a proposal to create a contract, contract is completed, then both parties can review each other.

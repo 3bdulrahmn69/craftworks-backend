@@ -1,12 +1,21 @@
 const Service = require('../models/Service');
 const CraftsmanProfile = require('../models/CraftsmanProfile');
 const asyncHandler = require('express-async-handler');
+const ActivityLog = require('../models/ActivityLog');
 
 // Create service (admin only)
 const createService = asyncHandler(async (req, res) => {
   if (!['admin', 'moderator'].includes(req.user.role)) return res.status(403).json({ message: 'Only admin or moderator can create services' });
   const { name, icon, description, subcategories, is_active } = req.body;
   const service = await Service.create({ name, icon, description, subcategories, is_active });
+  // Log activity
+  await ActivityLog.create({
+    user: { _id: req.user.id, full_name: req.user.full_name, role: req.user.role },
+    action: 'create_service',
+    target: 'Service',
+    targetId: service._id,
+    details: { name, icon, description, subcategories, is_active }
+  });
   res.status(201).json(service);
 });
 
@@ -35,6 +44,14 @@ const updateService = asyncHandler(async (req, res) => {
   if (!['admin', 'moderator'].includes(req.user.role)) return res.status(403).json({ message: 'Only admin or moderator can update services' });
   const service = await Service.findByIdAndUpdate(req.params.id, req.body, { new: true });
   if (!service) return res.status(404).json({ message: 'Service not found' });
+  // Log activity
+  await ActivityLog.create({
+    user: { _id: req.user.id, full_name: req.user.full_name, role: req.user.role },
+    action: 'update_service',
+    target: 'Service',
+    targetId: req.params.id,
+    details: req.body
+  });
   res.json(service);
 });
 
@@ -43,6 +60,13 @@ const deleteService = asyncHandler(async (req, res) => {
   if (!['admin', 'moderator'].includes(req.user.role)) return res.status(403).json({ message: 'Only admin or moderator can delete services' });
   const service = await Service.findByIdAndDelete(req.params.id);
   if (!service) return res.status(404).json({ message: 'Service not found' });
+  // Log activity
+  await ActivityLog.create({
+    user: { _id: req.user.id, full_name: req.user.full_name, role: req.user.role },
+    action: 'delete_service',
+    target: 'Service',
+    targetId: req.params.id
+  });
   res.json({ message: 'Service deleted' });
 });
 

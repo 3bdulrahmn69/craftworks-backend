@@ -161,6 +161,25 @@
           "user_id": { "type": "string" },
           "role_type": { "type": "string", "enum": ["admin", "moderator"] }
         }
+      },
+      "ActivityLog": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "user": {
+            "type": "object",
+            "properties": {
+              "_id": { "type": "string" },
+              "full_name": { "type": "string" },
+              "role": { "type": "string" }
+            }
+          },
+          "action": { "type": "string" },
+          "target": { "type": "string" },
+          "targetId": { "type": "string" },
+          "details": { "type": "object" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
       }
     }
   },
@@ -603,7 +622,7 @@
         "summary": "Update report status",
         "security": [{ "bearerAuth": [] }],
         "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string", "enum": ["pending", "reviewed", "resolved"] } } } } } },
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string", "enum": ["pending", "reviewed", "resolved"] } } } } },
         "responses": { "200": { "description": "Report status updated" } }
       }
     },
@@ -985,6 +1004,43 @@
         "security": [{ "bearerAuth": [] }],
         "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
         "responses": { "200": { "description": "Client profile deleted" } }
+      }
+    },
+    "/activity-logs": {
+      "get": {
+        "tags": ["ActivityLog"],
+        "summary": "List recent activity logs (admin only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 100 } },
+          { "name": "skip", "in": "query", "schema": { "type": "integer", "default": 0 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of activity logs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ActivityLog" }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (not admin)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }

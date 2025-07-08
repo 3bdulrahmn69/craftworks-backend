@@ -1,6 +1,7 @@
 const Admin = require('../models/Admin');
 const User = require('../models/User');
 const asyncHandler = require('express-async-handler');
+const ActivityLog = require('../models/ActivityLog');
 
 // Create admin (admin only)
 const createAdmin = asyncHandler(async (req, res) => {
@@ -9,6 +10,14 @@ const createAdmin = asyncHandler(async (req, res) => {
   const user = await User.findById(user_id);
   if (!user) return res.status(404).json({ message: 'User not found' });
   const admin = await Admin.create({ user_id, role_type });
+  // Log activity
+  await ActivityLog.create({
+    user: { _id: req.user.id, full_name: req.user.full_name, role: req.user.role_type },
+    action: 'create_admin',
+    target: 'Admin',
+    targetId: admin._id,
+    details: { user_id, role_type }
+  });
   res.status(201).json(admin);
 });
 
@@ -47,6 +56,13 @@ const deleteAdmin = asyncHandler(async (req, res) => {
   if (req.user.role_type !== 'admin') return res.status(403).json({ message: 'Only admin can delete admins' });
   const admin = await Admin.findByIdAndDelete(req.params.id);
   if (!admin) return res.status(404).json({ message: 'Admin not found' });
+  // Log activity
+  await ActivityLog.create({
+    user: { _id: req.user.id, full_name: req.user.full_name, role: req.user.role_type },
+    action: 'delete_admin',
+    target: 'Admin',
+    targetId: req.params.id
+  });
   res.json({ message: 'Admin deleted' });
 });
 
@@ -69,6 +85,14 @@ const blockUser = asyncHandler(async (req, res) => {
   user.blocked_at = new Date();
   user.blocked_reason = reason || 'No reason provided';
   await user.save();
+  // Log activity
+  await ActivityLog.create({
+    user: { _id: req.user.id, full_name: req.user.full_name, role: req.user.role },
+    action: 'block_user',
+    target: 'User',
+    targetId: user._id,
+    details: { reason }
+  });
   
   res.json({ 
     message: 'User blocked successfully',
@@ -98,6 +122,13 @@ const unblockUser = asyncHandler(async (req, res) => {
   user.blocked_at = undefined;
   user.blocked_reason = undefined;
   await user.save();
+  // Log activity
+  await ActivityLog.create({
+    user: { _id: req.user.id, full_name: req.user.full_name, role: req.user.role },
+    action: 'unblock_user',
+    target: 'User',
+    targetId: user._id
+  });
   
   res.json({ 
     message: 'User unblocked successfully',
