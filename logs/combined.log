@@ -1,0 +1,3 @@
+2025-07-08T10:24:25.712Z [INFO]: Server running on port 5000 
+2025-07-08T10:24:26.374Z [INFO]: MongoDB connected 
+2025-07-08T10:24:56.162Z [INFO]: [0mPOST /api/auth/login [33m401[0m 59.971 ms - 33[0m 

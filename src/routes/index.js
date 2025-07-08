@@ -15,4 +15,9 @@ router.use('/craftsman-profiles', require('./craftsmanProfiles'));
 router.use('/client-profiles', require('./clientProfiles'));
 // TODO: Add other entity routes here
 
+// Catch-all 404 for non-existent API routes
+router.use((req, res, next) => {
+  res.status(404).json({ message: 'API route not found' });
+});
+
 module.exports = router; 

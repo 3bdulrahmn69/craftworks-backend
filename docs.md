@@ -1,5 +1,20 @@
 # Craftworks Backend API Documentation
 
+## Logging & Monitoring
+- All HTTP requests are logged using [morgan](https://www.npmjs.com/package/morgan) (dev format)
+- Application events and errors are logged using [winston](https://www.npmjs.com/package/winston)
+- Logs are written to:
+  - `logs/combined.log` (all logs)
+  - `logs/error.log` (errors only)
+- All errors, warnings, and important events are timestamped and logged
+- Console output is also formatted and timestamped
+
+## Error Handling
+- **404 Not Found**: Any request to a non-existent `/api/...` route returns `{ "message": "API route not found" }` with status 404
+- **Invalid ObjectId**: If a route expects an ObjectId and you pass an invalid string, you get `{ "message": "Resource not found (invalid ID)" }` with status 404
+- **Global Error Handler**: All unhandled errors return `{ "message": "Internal server error" }` with status 500 (unless a more specific status is set)
+- All errors are logged with details about the request and error
+
 ## Authentication
 
 - Register: `POST /api/auth/register`

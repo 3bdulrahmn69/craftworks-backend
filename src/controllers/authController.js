@@ -54,6 +54,11 @@ const login = asyncHandler(async (req, res) => {
   res.json({ token, user: resUser });
 });
 
+const logout = asyncHandler(async (req, res) => {
+  res.clearCookie('token');
+  res.json({ message: 'Logged out' });
+});
+
 const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
@@ -79,4 +84,4 @@ const resetPassword = asyncHandler(async (req, res) => {
   res.json({ message: 'Password has been reset' });
 });
 
-module.exports = { register, login, forgotPassword, resetPassword }; 
+module.exports = { register, login, logout, forgotPassword, resetPassword }; 
