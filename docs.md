@@ -69,9 +69,14 @@
     ```json
     {
       "email": "jane@example.com",
-      "password": "password123"
+      "password": "password123",
+      "type": "clients" // or "admins"
     }
     ```
+  - **Type field:**
+    - `clients`: Only users with role `client` or `craftsman` can log in (for website/mobile app)
+    - `admins`: Only users with role `admin` or `moderator` can log in (for dashboard)
+    - If the role does not match the type, a 403 Forbidden error is returned.
   - **Example Response:**
     ```json
     {

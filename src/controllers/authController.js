@@ -38,11 +38,12 @@ const register = asyncHandler(async (req, res) => {
 });
 
 const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ message: 'Email and password required' });
+  const { email, password, type } = req.body;
+  if (!email || !password || !type) return res.status(400).json({ message: 'Email, password, and type are required' });
+  if (!['clients', 'admins'].includes(type)) return res.status(400).json({ message: 'Invalid type. Must be "clients" or "admins".' });
   const user = await User.findOne({ email }).select('+password');
   if (!user) return res.status(401).json({ message: 'Invalid credentials' });
-  
+
   // Check if user is blocked
   if (user.blocked) {
     return res.status(403).json({ 
@@ -51,7 +52,15 @@ const login = asyncHandler(async (req, res) => {
       blocked_reason: user.blocked_reason 
     });
   }
-  
+
+  // Role/type logic
+  if (type === 'clients' && !['client', 'craftsman'].includes(user.role)) {
+    return res.status(403).json({ message: 'Admins and moderators cannot log in to the website or mobile app.' });
+  }
+  if (type === 'admins' && !['admin', 'moderator'].includes(user.role)) {
+    return res.status(403).json({ message: 'Clients and craftsmen cannot log in to the dashboard.' });
+  }
+
   const isMatch = await user.comparePassword(password);
   if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
   const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
