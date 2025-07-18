@@ -1,23 +1,15 @@
 # Craftworks Backend API Manual
 
-This manual provides practical usage instructions, example requests, and example responses for all available backend API endpoints. Use this as a guide for integrating with the Craftworks service marketplace backend.
+This manual provides practical usage instructions, example requests, and example responses for all currently implemented backend API endpoints. Use this as a guide for integrating with the Craftworks backend as it exists now.
 
 ---
 
 ## Table of Contents
 1. [Authentication](#authentication)
 2. [Users](#users)
-3. [Jobs](#jobs)
-4. [Quotes](#quotes)
-5. [Invitations](#invitations)
-6. [Payments & Wallet](#payments--wallet)
-7. [Reviews & Disputes](#reviews--disputes)
-8. [Admin](#admin)
-9. [Contact Email](#contact-email)
-10. [Services](#services)
-11. [Notifications](#notifications)
-12. [AI Recommendations](#ai-recommendations)
-13. [Error Responses](#error-responses)
+3. [Contact Email](#contact-email)
+4. [Logs (Admin Only)](#logs-admin-only)
+5. [Error Responses](#error-responses)
 
 ---
 
@@ -40,12 +32,16 @@ This manual provides practical usage instructions, example requests, and example
 **Response Example:**
 ```json
 {
-  "message": "Registration successful.",
+  "success": true,
   "data": {
-    "userId": "...",
-    "email": "client@example.com",
-    "role": "Client"
-  }
+    "user": {
+      "id": "...",
+      "email": "client@example.com",
+      "role": "Client"
+    },
+    "token": "<JWT_TOKEN>"
+  },
+  "message": "User registered successfully"
 }
 ```
 
@@ -64,20 +60,77 @@ This manual provides practical usage instructions, example requests, and example
 **Response Example:**
 ```json
 {
-  "token": "<JWT_TOKEN>",
-  "user": {
-    "userId": "...",
-    "email": "client@example.com",
-    "role": "Client"
-  }
+  "success": true,
+  "data": {
+    "user": {
+      "id": "...",
+      "email": "client@example.com",
+      "role": "Client"
+    },
+    "token": "<JWT_TOKEN>"
+  },
+  "message": "Login successful"
 }
 ```
 
-**Note:** Use the returned JWT token in the `Authorization: Bearer <token>` header for all protected endpoints.
+### Forgot Password
+`POST /api/auth/forgot-password`
+
+**Request Example:**
+```json
+{
+  "email": "client@example.com"
+}
+```
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "message": "If the email exists, a password reset link has been sent"
+}
+```
+
+### Reset Password
+`POST /api/auth/reset-password`
+
+**Request Example:**
+```json
+{
+  "token": "<RESET_TOKEN>",
+  "newPassword": "NewPassword123!"
+}
+```
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "message": "Password reset successful"
+}
+```
+
+### Logout
+`POST /api/auth/logout`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "message": "Logged out successfully"
+}
+```
 
 ---
 
 ## Users
+
+**All endpoints require authentication.**
 
 ### Get Current User Profile
 `GET /api/users/me`
@@ -90,6 +143,7 @@ Authorization: Bearer <token>
 **Response Example:**
 ```json
 {
+  "success": true,
   "data": {
     "_id": "...",
     "email": "client@example.com",
@@ -100,293 +154,102 @@ Authorization: Bearer <token>
     "location": { "type": "Point", "coordinates": [31.2, 30.1] },
     "wallet": { "balance": 10000, "withdrawableBalance": 5000 },
     "createdAt": "2024-06-01T12:00:00Z"
-  }
+  },
+  "message": "User profile retrieved successfully"
 }
 ```
 
 ### Update Current User Profile
 `PUT /api/users/me`
 
-**Request Example:**
+**Headers:**
+```
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+```
+
+**Request Example (JSON):**
 ```json
 {
   "firstName": "Jane",
-  "lastName": "Smith",
-  "profilePicture": "<base64 or file upload>"
+  "lastName": "Smith"
 }
 ```
 
 **Response Example:**
 ```json
 {
-  "message": "Profile updated successfully.",
+  "success": true,
   "data": {
     "_id": "...",
     "firstName": "Jane",
     "lastName": "Smith"
-  }
+  },
+  "message": "Profile updated successfully."
 }
 ```
 
-### Get All Craftsmen (for Invitation)
-`GET /api/users?role=craftsman&skills=Plumbing`
+### Get Public Profile of a User
+`GET /api/users/:userId`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
 
 **Response Example:**
 ```json
 {
-  "data": [
-    {
-      "_id": "...",
-      "firstName": "Ahmed",
-      "lastName": "Ali",
+  "success": true,
+  "data": {
+    "_id": "...",
+    "firstName": "Ahmed",
+    "lastName": "Ali",
+    "role": "Craftsman",
+    "profilePicture": "..."
+  },
+  "message": "User profile retrieved successfully"
+}
+```
+
+### Submit Verification Documents (Craftsman Only)
+`POST /api/users/craftsman/verification`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Example:**
+```json
+{
+  "skills": ["Plumbing", "Electrical"],
+  "bio": "Experienced plumber and electrician.",
+  "portfolioImageUrls": ["<cloudinary_url>"],
+  "verificationDocs": [
+    { "docType": "National ID", "docUrl": "<cloudinary_url>" }
+  ]
+}
+```
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "...",
+    "craftsmanInfo": {
       "skills": ["Plumbing", "Electrical"],
-      "profilePicture": "...",
-      "location": { "type": "Point", "coordinates": [31.2, 30.1] }
+      "bio": "Experienced plumber and electrician.",
+      "portfolioImageUrls": ["<cloudinary_url>"],
+      "verificationStatus": "Pending",
+      "verificationDocs": [
+        { "docType": "National ID", "docUrl": "<cloudinary_url>" }
+      ]
     }
-  ],
-  "pagination": {
-    "page": 1,
-    "limit": 10,
-    "totalPages": 1,
-    "totalItems": 1
-  }
-}
-```
-
----
-
-## Jobs
-
-### Create Job
-`POST /api/jobs`
-
-**Request Example:**
-```json
-{
-  "title": "Fix kitchen sink",
-  "description": "Leaking pipe under the sink.",
-  "category": "Plumbing",
-  "address": "123 Main St, Cairo",
-  "photos": ["<cloudinary_url>"]
-}
-```
-
-**Response Example:**
-```json
-{
-  "message": "Job created successfully.",
-  "data": {
-    "_id": "...",
-    "title": "Fix kitchen sink",
-    "status": "Posted"
-  }
-}
-```
-
-### Get Jobs (for Craftsmen)
-`GET /api/jobs?category=Plumbing&location=...`
-
-**Response Example:**
-```json
-{
-  "data": [
-    {
-      "_id": "...",
-      "title": "Fix kitchen sink",
-      "category": "Plumbing",
-      "status": "Posted",
-      "client": { "_id": "...", "firstName": "John" }
-    }
-  ],
-  "pagination": { "page": 1, "limit": 10, "totalPages": 1, "totalItems": 1 }
-}
-```
-
----
-
-## Quotes
-
-### Submit Quote (Craftsman)
-`POST /api/jobs/:jobId/quotes`
-
-**Request Example:**
-```json
-{
-  "price": 5000,
-  "notes": "Can fix it tomorrow."
-}
-```
-
-**Response Example:**
-```json
-{
-  "message": "Quote submitted successfully.",
-  "data": {
-    "_id": "...",
-    "price": 5000,
-    "status": "Submitted"
-  }
-}
-```
-
-### Get Quotes for a Job (Client)
-`GET /api/jobs/:jobId/quotes`
-
-**Response Example:**
-```json
-{
-  "data": [
-    {
-      "_id": "...",
-      "craftsman": { "_id": "...", "firstName": "Ahmed" },
-      "price": 5000,
-      "notes": "Can fix it tomorrow.",
-      "status": "Submitted"
-    }
-  ]
-}
-```
-
----
-
-## Invitations
-
-### Invite Craftsman to Job
-`POST /api/jobs/:jobId/invite`
-
-**Request Example:**
-```json
-{
-  "craftsmanId": "..."
-}
-```
-
-**Response Example:**
-```json
-{
-  "message": "Invitation sent successfully.",
-  "data": {
-    "invitationId": "...",
-    "status": "Pending"
-  }
-}
-```
-
-### View Invitations for a Job (Client)
-`GET /api/jobs/:jobId/invitations`
-
-**Response Example:**
-```json
-{
-  "data": [
-    {
-      "_id": "...",
-      "craftsman": { "_id": "...", "firstName": "Ahmed" },
-      "status": "Pending"
-    }
-  ]
-}
-```
-
-### Craftsman Responds to Invitation
-`POST /api/jobs/:jobId/invitations/respond`
-
-**Request Example:**
-```json
-{
-  "response": "Accepted"
-}
-```
-
-**Response Example:**
-```json
-{
-  "message": "Invitation response recorded.",
-  "data": {
-    "status": "Accepted"
-  }
-}
-```
-
----
-
-## Payments & Wallet
-
-### Get Wallet Balance
-`GET /api/wallet/balance`
-
-**Response Example:**
-```json
-{
-  "data": {
-    "balance": 10000,
-    "withdrawableBalance": 5000
-  }
-}
-```
-
-### Request Withdrawal
-`POST /api/wallet/withdraw`
-
-**Request Example:**
-```json
-{
-  "amount": 5000
-}
-```
-
-**Response Example:**
-```json
-{
-  "message": "Withdrawal request submitted.",
-  "data": {
-    "status": "Pending"
-  }
-}
-```
-
----
-
-## Reviews & Disputes
-
-### Submit Review
-`POST /api/reviews`
-
-**Request Example:**
-```json
-{
-  "jobId": "...",
-  "revieweeId": "...",
-  "rating": 5,
-  "comment": "Great work!"
-}
-```
-
-**Response Example:**
-```json
-{
-  "message": "Review submitted successfully.",
-  "data": {
-    "_id": "...",
-    "rating": 5
-  }
-}
-```
-
----
-
-## Admin
-
-### Get All Users (Admin)
-`GET /api/admin/users?page=1&limit=10`
-
-**Response Example:**
-```json
-{
-  "data": [
-    { "_id": "...", "email": "user@example.com", "role": "Client" }
-  ],
-  "pagination": { "page": 1, "limit": 10, "totalPages": 1, "totalItems": 1 }
+  },
+  "message": "Verification documents submitted successfully"
 }
 ```
 
@@ -409,88 +272,156 @@ Authorization: Bearer <token>
 **Response Example:**
 ```json
 {
+  "success": true,
   "message": "Email sent successfully."
 }
 ```
 
 ---
 
-## Services
+## Logs (Admin Only)
 
-### Get All Services
-`GET /api/services`
+**All endpoints require authentication and admin role.**
 
-**Response Example:**
-```json
-[
-  {
-    "id": "...",
-    "name": "Plumbing",
-    "icon": "faucet-icon",
-    "description": "Water systems and pipe work"
-  }
-]
+### Get All Action Logs
+`GET /api/logs`
+
+**Headers:**
 ```
-
----
-
-## Notifications
-
-### Get Notifications
-`GET /api/notifications`
+Authorization: Bearer <token>
+```
 
 **Response Example:**
 ```json
 {
-  "data": [
-    {
-      "_id": "...",
-      "type": "invitation",
-      "title": "You have a new job invitation!",
-      "message": "Client John invited you to a job.",
-      "read": false,
-      "createdAt": "2024-06-01T12:00:00Z"
-    }
-  ]
+  "success": true,
+  "data": {
+    "logs": [
+      {
+        "_id": "...",
+        "userId": "...",
+        "action": "login",
+        "category": "auth",
+        "success": true,
+        "timestamp": "2024-06-01T12:00:00Z"
+      }
+    ],
+    "totalCount": 1,
+    "page": 1,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  },
+  "message": "Logs retrieved successfully"
 }
 ```
 
-### Mark Notifications as Read
-`POST /api/notifications/mark-read`
+### Get Logs with Advanced Filtering
+`POST /api/logs/filter`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
 
 **Request Example:**
 ```json
 {
-  "notificationIds": ["..."]
+  "categories": ["auth", "system"],
+  "actions": ["login", "register"],
+  "success": true,
+  "page": 1,
+  "limit": 10
 }
 ```
 
 **Response Example:**
 ```json
 {
-  "message": "Notifications marked as read."
+  "success": true,
+  "data": {
+    "logs": [
+      {
+        "_id": "...",
+        "userId": "...",
+        "action": "login",
+        "category": "auth",
+        "success": true,
+        "timestamp": "2024-06-01T12:00:00Z"
+      }
+    ],
+    "totalCount": 1,
+    "page": 1,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  },
+  "message": "Filtered logs retrieved successfully"
 }
 ```
 
----
+### Get Action Logs Statistics
+`GET /api/logs/stats`
 
-## AI Recommendations
-
-### Get Recommended Craftsmen for a Job
-`GET /api/users/recommendations?jobId=...`
+**Headers:**
+```
+Authorization: Bearer <token>
+```
 
 **Response Example:**
 ```json
 {
-  "data": [
-    {
-      "_id": "...",
-      "firstName": "Ahmed",
-      "skills": ["Plumbing"],
-      "rating": 4.9,
-      "distance": 2.1
-    }
-  ]
+  "success": true,
+  "data": {
+    "login": 10,
+    "register": 5
+  },
+  "message": "Logs statistics retrieved successfully"
+}
+```
+
+### Get Filter Options for Logs
+`GET /api/logs/filter-options`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "categories": ["auth", "system", "user_management"],
+    "actions": ["login", "register", "logout"]
+  },
+  "message": "Filter options retrieved successfully"
+}
+```
+
+### Cleanup Old Logs
+`POST /api/logs/cleanup`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Example:**
+```json
+{
+  "olderThanDays": 365
+}
+```
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "message": "Old logs cleaned up successfully"
 }
 ```
 
@@ -529,8 +460,6 @@ Authorization: Bearer <token>
 
 **General Tips:**
 - Always use the JWT token in the `Authorization` header for protected endpoints.
-- Use pagination parameters (`page`, `limit`) where supported.
-- Filter and search parameters are available for many list endpoints.
 - All dates are in ISO 8601 format (UTC).
 - For file uploads (e.g., profile pictures), use multipart/form-data.
 
