@@ -206,6 +206,7 @@ All endpoints should be prefixed with `/api`.
     }
   }
   ```
+  - This endpoint allows the admin to browse all users and perform actions such as ban, unban, or view user details.
 - `POST /api/admin/users/create-admin` - Create a new user with the admin or moderator role.
 - `PATCH /api/admin/users/:userId/ban` - Ban a user account.
 - `PATCH /api/admin/users/:userId/unban` - Unban a user account.
