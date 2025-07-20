@@ -9,10 +9,16 @@ export const JobController = {
     try {
       const clientId = req.user?.userId;
       if (!clientId) return res.status(401).json({ message: 'Unauthorized' });
-      const job = await JobService.createJob({ ...req.body, client: new Types.ObjectId(clientId) });
+      const job = await JobService.createJob({
+        ...req.body,
+        client: new Types.ObjectId(clientId),
+      });
       return res.status(201).json({ data: job });
     } catch (error) {
-      return res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to create job' });
+      return res.status(400).json({
+        message:
+          error instanceof Error ? error.message : 'Failed to create job',
+      });
     }
   },
 
@@ -25,7 +31,11 @@ export const JobController = {
       const filter: any = {};
       if (req.query.category) filter.category = req.query.category;
       if (req.query.status) filter.status = req.query.status;
-      const { jobs, pagination } = await JobService.getJobs(filter, page, limit);
+      const { jobs, pagination } = await JobService.getJobs(
+        filter,
+        page,
+        limit
+      );
       return res.json({ data: jobs, pagination });
     } catch (error) {
       return res.status(500).json({ message: 'Failed to fetch jobs' });
@@ -48,11 +58,21 @@ export const JobController = {
     try {
       const clientId = req.user?.userId;
       if (!clientId) return res.status(401).json({ message: 'Unauthorized' });
-      const job = await JobService.updateJob(req.params.jobId, new Types.ObjectId(clientId), req.body);
-      if (!job) return res.status(404).json({ message: 'Job not found or not owned by user' });
+      const job = await JobService.updateJob(
+        req.params.jobId,
+        new Types.ObjectId(clientId),
+        req.body
+      );
+      if (!job)
+        return res
+          .status(404)
+          .json({ message: 'Job not found or not owned by user' });
       return res.json({ data: job });
     } catch (error) {
-      return res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to update job' });
+      return res.status(400).json({
+        message:
+          error instanceof Error ? error.message : 'Failed to update job',
+      });
     }
   },
 
@@ -61,8 +81,14 @@ export const JobController = {
     try {
       const clientId = req.user?.userId;
       if (!clientId) return res.status(401).json({ message: 'Unauthorized' });
-      const job = await JobService.deleteJob(req.params.jobId, new Types.ObjectId(clientId));
-      if (!job) return res.status(404).json({ message: 'Job not found or not owned by user' });
+      const job = await JobService.deleteJob(
+        req.params.jobId,
+        new Types.ObjectId(clientId)
+      );
+      if (!job)
+        return res
+          .status(404)
+          .json({ message: 'Job not found or not owned by user' });
       return res.json({ message: 'Job deleted' });
     } catch (error) {
       return res.status(500).json({ message: 'Failed to delete job' });
@@ -78,7 +104,12 @@ export const JobController = {
       if (!job) return res.status(404).json({ message: 'Job not found' });
       return res.json({ data: job });
     } catch (error) {
-      return res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to update job status' });
+      return res.status(400).json({
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to update job status',
+      });
     }
   },
-}; 
+};

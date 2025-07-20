@@ -8,18 +8,31 @@ export const InvitationController = {
   async inviteCraftsman(req: IAuthenticatedRequest, res: Response) {
     try {
       const { craftsmanId } = req.body;
-      if (!craftsmanId) return res.status(400).json({ message: 'craftsmanId is required' });
-      const invitation = await InvitationService.inviteCraftsman(req.params.jobId, new Types.ObjectId(craftsmanId));
+      if (!craftsmanId)
+        return res.status(400).json({ message: 'craftsmanId is required' });
+      const invitation = await InvitationService.inviteCraftsman(
+        req.params.jobId,
+        new Types.ObjectId(craftsmanId)
+      );
       return res.status(201).json({ data: invitation });
     } catch (error) {
-      return res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to invite craftsman' });
+      return res
+        .status(400)
+        .json({
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Failed to invite craftsman',
+        });
     }
   },
 
   // GET /api/jobs/:jobId/invitations (Client only)
   async getInvitationsForJob(req: IAuthenticatedRequest, res: Response) {
     try {
-      const invitations = await InvitationService.getInvitationsForJob(req.params.jobId);
+      const invitations = await InvitationService.getInvitationsForJob(
+        req.params.jobId
+      );
       return res.json({ data: invitations });
     } catch (error) {
       return res.status(500).json({ message: 'Failed to fetch invitations' });
@@ -30,11 +43,12 @@ export const InvitationController = {
   async respondToInvitation(req: IAuthenticatedRequest, res: Response) {
     try {
       const craftsmanId = req.user?.userId;
-      if (!craftsmanId) return res.status(401).json({ message: 'Unauthorized' });
+      if (!craftsmanId)
+        return res.status(401).json({ message: 'Unauthorized' });
       const { response } = req.body;
-      if (!['Accepted', 'Rejected'].includes(response)) 
+      if (!['Accepted', 'Rejected'].includes(response))
         return res.status(400).json({ message: 'Invalid response' });
-      
+
       const invitation = await InvitationService.respondToInvitation(
         req.params.jobId,
         new Types.ObjectId(craftsmanId),
@@ -42,7 +56,14 @@ export const InvitationController = {
       );
       return res.json({ data: invitation });
     } catch (error) {
-      return res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to respond to invitation' });
+      return res
+        .status(400)
+        .json({
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Failed to respond to invitation',
+        });
     }
   },
-}; 
+};

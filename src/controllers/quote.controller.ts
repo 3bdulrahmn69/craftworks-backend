@@ -8,12 +8,21 @@ export const QuoteController = {
   async submitQuote(req: IAuthenticatedRequest, res: Response) {
     try {
       const craftsmanId = req.user?.userId;
-      if (!craftsmanId) return res.status(401).json({ message: 'Unauthorized' });
+      if (!craftsmanId)
+        return res.status(401).json({ message: 'Unauthorized' });
       const { price, notes } = req.body;
-      const quote = await QuoteService.submitQuote(req.params.jobId, new Types.ObjectId(craftsmanId), price, notes);
+      const quote = await QuoteService.submitQuote(
+        req.params.jobId,
+        new Types.ObjectId(craftsmanId),
+        price,
+        notes
+      );
       return res.status(201).json({ data: quote });
     } catch (error) {
-      return res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to submit quote' });
+      return res.status(400).json({
+        message:
+          error instanceof Error ? error.message : 'Failed to submit quote',
+      });
     }
   },
 
@@ -33,10 +42,21 @@ export const QuoteController = {
     try {
       const clientId = req.user?.userId;
       if (!clientId) return res.status(401).json({ message: 'Unauthorized' });
-      const { job, quote } = await QuoteService.acceptQuote(req.params.jobId, req.params.quoteId, new Types.ObjectId(clientId));
-      return res.json({ message: 'Quote accepted and craftsman hired', job, quote });
+      const { job, quote } = await QuoteService.acceptQuote(
+        req.params.jobId,
+        req.params.quoteId,
+        new Types.ObjectId(clientId)
+      );
+      return res.json({
+        message: 'Quote accepted and craftsman hired',
+        job,
+        quote,
+      });
     } catch (error) {
-      return res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to accept quote' });
+      return res.status(400).json({
+        message:
+          error instanceof Error ? error.message : 'Failed to accept quote',
+      });
     }
   },
-}; 
+};

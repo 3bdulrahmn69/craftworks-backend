@@ -67,9 +67,7 @@ const userLogsSchema = new Schema<IUserLogs>(
       type: String,
       validate: {
         validator: function (v: string) {
-          if (!v) 
-            return true; // Allow empty/undefined
-          
+          if (!v) return true; // Allow empty/undefined
 
           // IPv4 validation
           const ipv4Regex =
@@ -114,9 +112,7 @@ const userSchema = new Schema<IUser>(
       validate: {
         validator: function (v: string) {
           // Skip validation if password is already hashed (starts with $2a$, $2b$, etc.)
-          if (/^\$2[abxy]\$/.test(v)) 
-            return true;
-          
+          if (/^\$2[abxy]\$/.test(v)) return true;
 
           // At least 8 characters, 1 uppercase, 1 lowercase, 1 number
           return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/.test(
@@ -195,8 +191,9 @@ const userSchema = new Schema<IUser>(
     },
     rating: {
       type: Number,
-      min: 1,
+      min: 0,
       max: 5,
+      default: 0,
       validate: {
         validator: function (v: number) {
           return !v || (v >= 1 && v <= 5);
@@ -234,9 +231,7 @@ userSchema.index({ createdAt: -1 });
 
 // Pre-save middleware for password hashing
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) 
-    return next();
-  
+  if (!this.isModified('password')) return next();
 
   try {
     this.password = await bcrypt.hash(
@@ -272,12 +267,9 @@ userSchema.statics.findByEmailOrPhone = function (
   phone?: string
 ) {
   const query: any = {};
-  if (email) 
-    query.email = email.toLowerCase();
-  
-  if (phone) 
-    query.phone = phone;
-  
+  if (email) query.email = email.toLowerCase();
+
+  if (phone) query.phone = phone;
 
   return this.findOne({
     $or: Object.keys(query).map((key) => ({ [key]: query[key] })),

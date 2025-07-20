@@ -24,17 +24,13 @@ export class UserController {
         const user = await UserService.getCurrentUser(userId);
         ApiResponse.success(res, user, 'User profile retrieved successfully');
       } catch (error) {
-        if (error instanceof UserServiceError) 
-          if (error.statusCode === 404) 
+        if (error instanceof UserServiceError)
+          if (error.statusCode === 404)
             ApiResponse.notFound(res, error.message);
-           else if (error.statusCode === 403) 
+          else if (error.statusCode === 403)
             ApiResponse.forbidden(res, error.message);
-           else 
-            ApiResponse.badRequest(res, error.message);
-          
-         else 
-          ApiResponse.internalError(res, 'Failed to retrieve user profile');
-        
+          else ApiResponse.badRequest(res, error.message);
+        else ApiResponse.internalError(res, 'Failed to retrieve user profile');
       }
     }
   );
@@ -112,19 +108,15 @@ export class UserController {
 
         ApiResponse.success(res, user, 'Profile updated successfully');
       } catch (error) {
-        if (error instanceof UserServiceError) 
-          if (error.statusCode === 404) 
+        if (error instanceof UserServiceError)
+          if (error.statusCode === 404)
             ApiResponse.notFound(res, error.message);
-           else if (error.statusCode === 403) 
+          else if (error.statusCode === 403)
             ApiResponse.forbidden(res, error.message);
-           else if (error.statusCode === 409) 
+          else if (error.statusCode === 409)
             ApiResponse.conflict(res, error.message);
-           else 
-            ApiResponse.badRequest(res, error.message);
-          
-         else 
-          ApiResponse.internalError(res, 'Failed to update profile');
-        
+          else ApiResponse.badRequest(res, error.message);
+        else ApiResponse.internalError(res, 'Failed to update profile');
       }
     }
   );
@@ -151,15 +143,11 @@ export class UserController {
         const user = await UserService.getPublicProfile(userId);
         ApiResponse.success(res, user, 'User profile retrieved successfully');
       } catch (error) {
-        if (error instanceof UserServiceError) 
-          if (error.statusCode === 404) 
+        if (error instanceof UserServiceError)
+          if (error.statusCode === 404)
             ApiResponse.notFound(res, error.message);
-           else 
-            ApiResponse.badRequest(res, error.message);
-          
-         else 
-          ApiResponse.internalError(res, 'Failed to retrieve user profile');
-        
+          else ApiResponse.badRequest(res, error.message);
+        else ApiResponse.internalError(res, 'Failed to retrieve user profile');
       }
     }
   );
@@ -202,17 +190,13 @@ export class UserController {
           201
         );
       } catch (error) {
-        if (error instanceof UserServiceError) 
-          if (error.statusCode === 404) 
+        if (error instanceof UserServiceError)
+          if (error.statusCode === 404)
             ApiResponse.notFound(res, error.message);
-           else if (error.statusCode === 403) 
+          else if (error.statusCode === 403)
             ApiResponse.forbidden(res, error.message);
-           else 
-            ApiResponse.badRequest(res, error.message);
-          
-         else 
-          ApiResponse.internalError(res, 'Failed to submit verification');
-        
+          else ApiResponse.badRequest(res, error.message);
+        else ApiResponse.internalError(res, 'Failed to submit verification');
       }
     }
   );
@@ -220,9 +204,9 @@ export class UserController {
   static async getRecommendations(req: IAuthenticatedRequest, res: Response) {
     try {
       const { jobId } = req.query;
-      if (!jobId || typeof jobId !== 'string') 
+      if (!jobId || typeof jobId !== 'string')
         return res.status(400).json({ message: 'jobId is required' });
-      
+
       const craftsmen = await UserService.getRecommendedCraftsmen(jobId);
       return res.json({ data: craftsmen });
     } catch (error) {

@@ -19,18 +19,32 @@ export const ServiceController = {
       const service = await ServiceService.createService(_req.body);
       return res.status(201).json({ data: service });
     } catch (error) {
-      return res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to create service' });
+      return res
+        .status(400)
+        .json({
+          message:
+            error instanceof Error ? error.message : 'Failed to create service',
+        });
     }
   },
 
   // PUT /api/services/:id (admin/moderator only)
   async updateService(_req: IAuthenticatedRequest, res: Response) {
     try {
-      const service = await ServiceService.updateService(_req.params.id, _req.body);
-      if (!service) return res.status(404).json({ message: 'Service not found' });
+      const service = await ServiceService.updateService(
+        _req.params.id,
+        _req.body
+      );
+      if (!service)
+        return res.status(404).json({ message: 'Service not found' });
       return res.json({ data: service });
     } catch (error) {
-      return res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to update service' });
+      return res
+        .status(400)
+        .json({
+          message:
+            error instanceof Error ? error.message : 'Failed to update service',
+        });
     }
   },
 
@@ -38,10 +52,11 @@ export const ServiceController = {
   async deleteService(_req: IAuthenticatedRequest, res: Response) {
     try {
       const service = await ServiceService.deleteService(_req.params.id);
-      if (!service) return res.status(404).json({ message: 'Service not found' });
+      if (!service)
+        return res.status(404).json({ message: 'Service not found' });
       return res.json({ message: 'Service deleted' });
     } catch (error) {
       return res.status(500).json({ message: 'Failed to delete service' });
     }
   },
-}; 
+};

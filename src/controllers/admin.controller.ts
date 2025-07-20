@@ -39,7 +39,13 @@ export const AdminController = {
   async createAdmin(req: IAuthenticatedRequest, res: Response) {
     try {
       const { email, password, fullName, role, phone } = req.body;
-      const newUser = await AdminService.createAdmin({ email, password, fullName, role, phone });
+      const newUser = await AdminService.createAdmin({
+        email,
+        password,
+        fullName,
+        role,
+        phone,
+      });
       await ActionLogService.logAction({
         userId: req.user?.userId,
         userRole: req.user?.role,
@@ -61,7 +67,12 @@ export const AdminController = {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
       });
-      res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to create admin user' });
+      res.status(400).json({
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to create admin user',
+      });
     }
   },
 
@@ -91,7 +102,9 @@ export const AdminController = {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
       });
-      res.status(404).json({ message: error instanceof Error ? error.message : 'Failed to ban user' });
+      res.status(404).json({
+        message: error instanceof Error ? error.message : 'Failed to ban user',
+      });
     }
   },
 
@@ -121,7 +134,10 @@ export const AdminController = {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
       });
-      res.status(404).json({ message: error instanceof Error ? error.message : 'Failed to unban user' });
+      res.status(404).json({
+        message:
+          error instanceof Error ? error.message : 'Failed to unban user',
+      });
     }
   },
 
@@ -150,7 +166,9 @@ export const AdminController = {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
       });
-      res.status(500).json({ message: 'Failed to fetch pending verifications' });
+      res
+        .status(500)
+        .json({ message: 'Failed to fetch pending verifications' });
     }
   },
 
@@ -180,7 +198,12 @@ export const AdminController = {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
       });
-      res.status(404).json({ message: error instanceof Error ? error.message : 'Failed to approve verification' });
+      res.status(404).json({
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to approve verification',
+      });
     }
   },
 
@@ -210,7 +233,12 @@ export const AdminController = {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
       });
-      res.status(404).json({ message: error instanceof Error ? error.message : 'Failed to reject verification' });
+      res.status(404).json({
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to reject verification',
+      });
     }
   },
-}; 
+};
