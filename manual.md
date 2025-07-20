@@ -23,9 +23,8 @@ This manual provides practical usage instructions, example requests, and example
 {
   "email": "client@example.com",
   "password": "Password123!",
-  "role": "Client",
-  "firstName": "John",
-  "lastName": "Doe"
+  "role": "client", // craftsman, adimn, moderator
+  "fullName": "John",
 }
 ```
 
