@@ -200,6 +200,21 @@ export class UserService {
     return this.sanitizeUserData(user);
   }
 
+  static async getRecommendedCraftsmen(jobId: string) {
+    // Get the job
+    const { Job } = await import('../models/job.model.js');
+    const job = await Job.findById(jobId).lean();
+    if (!job) throw new Error('Job not found');
+    // Find craftsmen with matching skills/category
+    const craftsmen = await (await import('../models/user.model.js')).User.find({
+      role: 'craftsman',
+      'craftsmanInfo.skills': job.category,
+      'craftsmanInfo.verificationStatus': 'verified',
+      isBanned: false,
+    }).select('fullName profilePicture rating rating_count craftsmanInfo').lean();
+    return craftsmen;
+  }
+
   /**
    * Sanitize user data for public response
    */

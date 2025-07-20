@@ -241,7 +241,7 @@ All endpoints should be prefixed with `/api`.
     ```
 
 ### 5.10. Services (`/services`)
-- `GET /api/services` - Get a list of all available services. This endpoint is used by craftsmen to select their skills/services for their profile, and by clients when creating a job to choose the job category.
+- `GET /api/services` - Get a list of all available services. This endpoint is used by craftsmen to select their skills/services for their profile, and by clients when creating a job to choose the job category, or publicly to display our services.
   - **Example Response:**
     ```json
     [

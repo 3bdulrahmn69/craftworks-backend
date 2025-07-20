@@ -212,4 +212,17 @@ export class UserController {
       }
     }
   );
+
+  static async getRecommendations(req: IAuthenticatedRequest, res: Response) {
+    try {
+      const { jobId } = req.query;
+      if (!jobId || typeof jobId !== 'string') {
+        return res.status(400).json({ message: 'jobId is required' });
+      }
+      const craftsmen = await UserService.getRecommendedCraftsmen(jobId);
+      return res.json({ data: craftsmen });
+    } catch (error) {
+      return res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to get recommendations' });
+    }
+  }
 } 

@@ -1,0 +1,58 @@
+import { Quote } from '../models/quote.model.js';
+import { Job } from '../models/job.model.js';
+import { Types } from 'mongoose';
+import { NotificationService } from './notification.service.js';
+
+export class QuoteService {
+  static async submitQuote(jobId: string, craftsmanId: Types.ObjectId, price: number, notes?: string) {
+    // Check if craftsman already submitted a quote for this job
+    const existing = await Quote.findOne({ job: jobId, craftsman: craftsmanId });
+    if (existing) throw new Error('You have already submitted a quote for this job');
+    const quote = new Quote({ job: jobId, craftsman: craftsmanId, price, notes });
+    await quote.save();
+    // Notify client
+    const job = await Job.findById(jobId).lean();
+    if (job && job.client) {
+      await NotificationService.sendNotification({
+        user: job.client,
+        type: 'quote',
+        title: 'New Quote Received',
+        message: `A craftsman has submitted a quote for your job: ${job.title}`,
+        data: { jobId, quoteId: quote._id, craftsmanId },
+      });
+    }
+    return quote;
+  }
+
+  static async getQuotesForJob(jobId: string) {
+    return Quote.find({ job: jobId }).populate('craftsman', 'fullName profilePicture rating rating_count').lean();
+  }
+
+  static async acceptQuote(jobId: string, quoteId: string, clientId: Types.ObjectId) {
+    // Find the quote and job
+    const quote = await Quote.findOne({ _id: quoteId, job: jobId });
+    if (!quote) throw new Error('Quote not found');
+    const job = await Job.findOne({ _id: jobId, client: clientId });
+    if (!job) throw new Error('Job not found or not owned by user');
+    // Accept the quote
+    quote.status = 'Accepted';
+    await quote.save();
+    // Decline all other quotes for this job
+    await Quote.updateMany({ job: jobId, _id: { $ne: quoteId } }, { status: 'Declined' });
+    // Update job status and assign craftsman
+    job.status = 'Hired';
+    job.craftsman = quote.craftsman;
+    job.jobPrice = quote.price;
+    job.hiredAt = new Date();
+    await job.save();
+    // Notify craftsman
+    await NotificationService.sendNotification({
+      user: quote.craftsman,
+      type: 'quote',
+      title: 'Your Quote Was Accepted',
+      message: `Your quote for the job '${job.title}' was accepted. You have been hired!`,
+      data: { jobId, quoteId, clientId },
+    });
+    return { job, quote };
+  }
+} 

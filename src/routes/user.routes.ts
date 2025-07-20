@@ -32,4 +32,7 @@ router.get('/:userId', UserController.getPublicProfile);
 // Submit verification documents (Craftsman only)
 router.post('/craftsman/verification', authorizeRoles('craftsman'), UserController.submitVerification);
 
+// Get recommended craftsmen for a job (Client only)
+router.get('/recommendations', authorizeRoles('client'), UserController.getRecommendations);
+
 export default router; 

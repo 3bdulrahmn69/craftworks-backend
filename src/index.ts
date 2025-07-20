@@ -19,6 +19,9 @@ import logsRoutes from './routes/logs.routes.js';
 import userRoutes from './routes/user.routes.js';
 import sendEmailRoutes from './routes/sendEmail.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import jobRoutes from './routes/job.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
+import serviceRoutes from './routes/service.routes.js';
 
 class CraftworksServer {
   private app: Application;
@@ -72,6 +75,9 @@ class CraftworksServer {
     this.app.use('/api/users', userRoutes);
     this.app.use('/api/send-email', sendEmailRoutes);
     this.app.use('/api/admin', adminRoutes);
+    this.app.use('/api/jobs', jobRoutes);
+    this.app.use('/api/notifications', notificationRoutes);
+    this.app.use('/api/services', serviceRoutes);
 
     // 404 handler for /api/* routes
     this.app.use('/api/*', notFoundHandler);
