@@ -50,7 +50,7 @@ This manual provides practical usage instructions, example requests, and example
 **Request Example:**
 ```json
 {
-  "loginIdentifier": "client@example.com",
+  "loginIdentifier": "client@example.com", //email, phone
   "password": "Password123!",
   "type": "clients"
 }

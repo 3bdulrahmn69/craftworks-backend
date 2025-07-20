@@ -65,6 +65,13 @@ export class AuthService {
         lastIP: userIP,
         // Don't set lastLocation without coordinates
       },
+      craftsmanInfo: role?.toLowerCase() === 'craftsman' ? {
+        skills: [],
+        bio: '',
+        portfolioImageUrls: [],
+        verificationStatus: 'pending',
+        verificationDocs: []
+      } : undefined,
     });
 
     await user.save();
