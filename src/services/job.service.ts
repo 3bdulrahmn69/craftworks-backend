@@ -24,8 +24,16 @@ export class JobService {
     return Job.findById(jobId).lean();
   }
 
-  static async updateJob(jobId: string, clientId: Types.ObjectId, update: Partial<IJob>) {
-    const job = await Job.findOneAndUpdate({ _id: jobId, client: clientId }, update, { new: true });
+  static async updateJob(
+    jobId: string,
+    clientId: Types.ObjectId,
+    update: Partial<IJob>
+  ) {
+    const job = await Job.findOneAndUpdate(
+      { _id: jobId, client: clientId },
+      update,
+      { new: true }
+    );
     return job;
   }
 
@@ -46,7 +54,7 @@ export class JobService {
         data: { jobId, status },
       });
       // Notify craftsman if assigned
-      if (job.craftsman) {
+      if (job.craftsman) 
         await NotificationService.sendNotification({
           user: job.craftsman,
           type: 'status',
@@ -54,8 +62,8 @@ export class JobService {
           message: `The status of job '${job.title}' has changed to ${status}.`,
           data: { jobId, status },
         });
-      }
+      
     }
     return job;
   }
-} 
+}

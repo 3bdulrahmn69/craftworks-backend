@@ -1,6 +1,9 @@
 import express from 'express';
 import { QuoteController } from '../controllers/quote.controller.js';
-import { authenticateJWT, authorizeRoles } from '../middlewares/auth.middleware.js';
+import {
+  authenticateJWT,
+  authorizeRoles,
+} from '../middlewares/auth.middleware.js';
 
 const router = express.Router({ mergeParams: true });
 
@@ -14,6 +17,10 @@ router.post('/', authorizeRoles('craftsman'), QuoteController.submitQuote);
 router.get('/', authorizeRoles('client'), QuoteController.getQuotesForJob);
 
 // POST /api/jobs/:jobId/quotes/:quoteId/accept (Client only)
-router.post('/:quoteId/accept', authorizeRoles('client'), QuoteController.acceptQuote);
+router.post(
+  '/:quoteId/accept',
+  authorizeRoles('client'),
+  QuoteController.acceptQuote
+);
 
-export default router; 
+export default router;

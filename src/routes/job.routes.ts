@@ -1,6 +1,9 @@
 import express from 'express';
 import { JobController } from '../controllers/job.controller.js';
-import { authenticateJWT, authorizeRoles } from '../middlewares/auth.middleware.js';
+import {
+  authenticateJWT,
+  authorizeRoles,
+} from '../middlewares/auth.middleware.js';
 import quoteRoutes from './quote.routes.js';
 import invitationRoutes from './invitation.routes.js';
 
@@ -32,6 +35,11 @@ router.use('/:jobId/quotes', quoteRoutes);
 // Mount invitation routes
 router.use('/:jobId/invitations', invitationRoutes);
 // Mount /invite as a direct POST route
-router.post('/:jobId/invite', authenticateJWT, authorizeRoles('client'), invitationRoutes);
+router.post(
+  '/:jobId/invite',
+  authenticateJWT,
+  authorizeRoles('client'),
+  invitationRoutes
+);
 
-export default router; 
+export default router;

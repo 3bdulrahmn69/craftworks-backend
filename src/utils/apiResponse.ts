@@ -96,9 +96,9 @@ export const asyncHandler = (
 };
 
 export const sanitizeUser = (user: any): any => {
-  if (!user) {
+  if (!user) 
     return null;
-  }
+  
 
   const userObject = user.toObject ? user.toObject() : user;
   const {

@@ -12,11 +12,18 @@ export interface IJob extends Document {
     type: 'Point';
     coordinates: [number, number];
   };
-  status: 'Posted' | 'Quoted' | 'Hired' | 'On The Way' | 'Completed' | 'Disputed' | 'Cancelled';
+  status:
+    | 'Posted'
+    | 'Quoted'
+    | 'Hired'
+    | 'On The Way'
+    | 'Completed'
+    | 'Disputed'
+    | 'Cancelled';
   paymentType: 'Escrow' | 'Cash' | 'CashProtected';
   jobPrice: number;
   platformFee: number;
   createdAt: Date;
   hiredAt?: Date;
   completedAt?: Date;
-} 
+}

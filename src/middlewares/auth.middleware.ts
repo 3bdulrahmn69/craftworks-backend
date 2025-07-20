@@ -136,9 +136,9 @@ export const optionalAuth = (
 ): void => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) 
     return next();
-  }
+  
 
   try {
     const token = authHeader.split(' ')[1];

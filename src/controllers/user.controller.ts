@@ -24,17 +24,17 @@ export class UserController {
         const user = await UserService.getCurrentUser(userId);
         ApiResponse.success(res, user, 'User profile retrieved successfully');
       } catch (error) {
-        if (error instanceof UserServiceError) {
-          if (error.statusCode === 404) {
+        if (error instanceof UserServiceError) 
+          if (error.statusCode === 404) 
             ApiResponse.notFound(res, error.message);
-          } else if (error.statusCode === 403) {
+           else if (error.statusCode === 403) 
             ApiResponse.forbidden(res, error.message);
-          } else {
+           else 
             ApiResponse.badRequest(res, error.message);
-          }
-        } else {
+          
+         else 
           ApiResponse.internalError(res, 'Failed to retrieve user profile');
-        }
+        
       }
     }
   );
@@ -54,7 +54,7 @@ export class UserController {
           return;
         }
 
-        let updateData = req.body;
+        const updateData = req.body;
         // If a file is uploaded, handle Cloudinary upload
         if (req.file) {
           // Import streamifier only if needed
@@ -78,7 +78,10 @@ export class UserController {
                   ],
                 },
                 (error, result) => {
-                  if (error || !result) return reject(error || new Error('No result from Cloudinary'));
+                  if (error || !result)
+                    return reject(
+                      error || new Error('No result from Cloudinary')
+                    );
                   resolve(result as { secure_url: string });
                 }
               );
@@ -87,7 +90,7 @@ export class UserController {
 
           try {
             const result = await uploadToCloudinary(req.file.buffer);
-            updateData.profilePicture  = result.secure_url;
+            updateData.profilePicture = result.secure_url;
           } catch (err) {
             ApiResponse.internalError(res, 'Failed to upload image');
             return;
@@ -109,19 +112,19 @@ export class UserController {
 
         ApiResponse.success(res, user, 'Profile updated successfully');
       } catch (error) {
-        if (error instanceof UserServiceError) {
-          if (error.statusCode === 404) {
+        if (error instanceof UserServiceError) 
+          if (error.statusCode === 404) 
             ApiResponse.notFound(res, error.message);
-          } else if (error.statusCode === 403) {
+           else if (error.statusCode === 403) 
             ApiResponse.forbidden(res, error.message);
-          } else if (error.statusCode === 409) {
+           else if (error.statusCode === 409) 
             ApiResponse.conflict(res, error.message);
-          } else {
+           else 
             ApiResponse.badRequest(res, error.message);
-          }
-        } else {
+          
+         else 
           ApiResponse.internalError(res, 'Failed to update profile');
-        }
+        
       }
     }
   );
@@ -148,15 +151,15 @@ export class UserController {
         const user = await UserService.getPublicProfile(userId);
         ApiResponse.success(res, user, 'User profile retrieved successfully');
       } catch (error) {
-        if (error instanceof UserServiceError) {
-          if (error.statusCode === 404) {
+        if (error instanceof UserServiceError) 
+          if (error.statusCode === 404) 
             ApiResponse.notFound(res, error.message);
-          } else {
+           else 
             ApiResponse.badRequest(res, error.message);
-          }
-        } else {
+          
+         else 
           ApiResponse.internalError(res, 'Failed to retrieve user profile');
-        }
+        
       }
     }
   );
@@ -179,7 +182,8 @@ export class UserController {
         const verificationData = req.body;
 
         // Validate input
-        const validation = ValidationHelper.validateVerificationSubmission(verificationData);
+        const validation =
+          ValidationHelper.validateVerificationSubmission(verificationData);
         if (!validation.isValid) {
           ApiResponse.badRequest(res, validation.errors.join(', '));
           return;
@@ -198,17 +202,17 @@ export class UserController {
           201
         );
       } catch (error) {
-        if (error instanceof UserServiceError) {
-          if (error.statusCode === 404) {
+        if (error instanceof UserServiceError) 
+          if (error.statusCode === 404) 
             ApiResponse.notFound(res, error.message);
-          } else if (error.statusCode === 403) {
+           else if (error.statusCode === 403) 
             ApiResponse.forbidden(res, error.message);
-          } else {
+           else 
             ApiResponse.badRequest(res, error.message);
-          }
-        } else {
+          
+         else 
           ApiResponse.internalError(res, 'Failed to submit verification');
-        }
+        
       }
     }
   );
@@ -216,13 +220,18 @@ export class UserController {
   static async getRecommendations(req: IAuthenticatedRequest, res: Response) {
     try {
       const { jobId } = req.query;
-      if (!jobId || typeof jobId !== 'string') {
+      if (!jobId || typeof jobId !== 'string') 
         return res.status(400).json({ message: 'jobId is required' });
-      }
+      
       const craftsmen = await UserService.getRecommendedCraftsmen(jobId);
       return res.json({ data: craftsmen });
     } catch (error) {
-      return res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to get recommendations' });
+      return res.status(400).json({
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to get recommendations',
+      });
     }
   }
-} 
+}

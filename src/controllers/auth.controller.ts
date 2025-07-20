@@ -41,15 +41,15 @@ export class AuthController {
             error instanceof Error ? error.message : 'Unknown error',
         });
 
-        if (error instanceof AuthenticationError) {
-          if (error.statusCode === 409) {
+        if (error instanceof AuthenticationError) 
+          if (error.statusCode === 409) 
             ApiResponse.conflict(res, error.message);
-          } else {
+           else 
             ApiResponse.badRequest(res, error.message);
-          }
-        } else {
+          
+         else 
           ApiResponse.internalError(res, 'Registration failed');
-        }
+        
       }
     }
   );
@@ -87,15 +87,15 @@ export class AuthController {
             error instanceof Error ? error.message : 'Unknown error',
         });
 
-        if (error instanceof AuthenticationError) {
-          if (error.statusCode === 403) {
+        if (error instanceof AuthenticationError) 
+          if (error.statusCode === 403) 
             ApiResponse.forbidden(res, error.message);
-          } else {
+           else 
             ApiResponse.unauthorized(res, error.message);
-          }
-        } else {
+          
+         else 
           ApiResponse.internalError(res, 'Login failed');
-        }
+        
       }
     }
   );
@@ -122,7 +122,7 @@ export class AuthController {
         ApiResponse.success(res, undefined, 'Logged out successfully');
       } catch (error) {
         // Log failed logout attempt
-        if (req.user?.userId) {
+        if (req.user?.userId) 
           await ActionLogService.logAuthAction('logout', req.user.userId, {
             userRole: req.user.role,
             ipAddress: req.ip,
@@ -130,13 +130,13 @@ export class AuthController {
             errorMessage:
               error instanceof Error ? error.message : 'Unknown error',
           });
-        }
+        
 
-        if (error instanceof AuthenticationError) {
+        if (error instanceof AuthenticationError) 
           ApiResponse.internalError(res, error.message);
-        } else {
+         else 
           ApiResponse.internalError(res, 'Logout failed');
-        }
+        
       }
     }
   );
@@ -182,11 +182,11 @@ export class AuthController {
         await AuthService.resetPassword(token, newPassword);
         ApiResponse.success(res, undefined, 'Password reset successful');
       } catch (error) {
-        if (error instanceof AuthenticationError) {
+        if (error instanceof AuthenticationError) 
           ApiResponse.badRequest(res, error.message);
-        } else {
+         else 
           ApiResponse.internalError(res, 'Password reset failed');
-        }
+        
       }
     }
   );

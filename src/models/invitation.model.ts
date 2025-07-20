@@ -15,4 +15,4 @@ const invitationSchema = new Schema<IInvitation>({
 
 invitationSchema.index({ job: 1, craftsman: 1 }, { unique: true });
 
-export const Invitation = model<IInvitation>('Invitation', invitationSchema); 
+export const Invitation = model<IInvitation>('Invitation', invitationSchema);

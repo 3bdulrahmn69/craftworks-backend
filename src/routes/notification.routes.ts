@@ -13,4 +13,4 @@ router.get('/', NotificationController.getUserNotifications);
 // POST /api/notifications/mark-read
 router.post('/mark-read', NotificationController.markNotificationsRead);
 
-export default router; 
+export default router;

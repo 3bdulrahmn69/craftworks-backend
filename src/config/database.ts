@@ -9,9 +9,9 @@ export class DatabaseConnection {
   private constructor() {}
 
   public static getInstance(): DatabaseConnection {
-    if (!DatabaseConnection.instance) {
+    if (!DatabaseConnection.instance) 
       DatabaseConnection.instance = new DatabaseConnection();
-    }
+    
     return DatabaseConnection.instance;
   }
 
@@ -54,9 +54,9 @@ export class DatabaseConnection {
   }
 
   public async disconnect(): Promise<void> {
-    if (!this.isConnected) {
+    if (!this.isConnected) 
       return;
-    }
+    
 
     try {
       await mongoose.disconnect();

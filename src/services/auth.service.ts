@@ -65,13 +65,16 @@ export class AuthService {
         lastIP: userIP,
         // Don't set lastLocation without coordinates
       },
-      craftsmanInfo: role?.toLowerCase() === 'craftsman' ? {
-        skills: [],
-        bio: '',
-        portfolioImageUrls: [],
-        verificationStatus: 'pending',
-        verificationDocs: []
-      } : undefined,
+      craftsmanInfo:
+        role?.toLowerCase() === 'craftsman'
+          ? {
+              skills: [],
+              bio: '',
+              portfolioImageUrls: [],
+              verificationStatus: 'pending',
+              verificationDocs: [],
+            }
+          : undefined,
     });
 
     await user.save();
@@ -97,17 +100,17 @@ export class AuthService {
   ): Promise<{ token: string; user: IUserPublic }> {
     const { email, phone, password, type } = loginData;
 
-    if (!password) {
+    if (!password) 
       throw new AuthenticationError('Password is required', 400);
-    }
+    
 
     // Find user by email or phone
     let user: IUser | null = null;
-    if (email) {
+    if (email) 
       user = await User.findOne({ email: email.toLowerCase() });
-    } else if (phone) {
+     else if (phone) 
       user = await User.findOne({ phone });
-    }
+    
 
     if (!user) {
       loggerHelpers.logAuthAttempt(false, email, phone, 'User not found');
@@ -150,9 +153,9 @@ export class AuthService {
 
     // Update user logs
     user.userLogs.lastLogin = new Date();
-    if (userIP) {
+    if (userIP) 
       user.userLogs.lastIP = userIP;
-    }
+    
     await user.save();
 
     // Generate JWT token
@@ -193,10 +196,10 @@ export class AuthService {
    */
   static async forgotPassword(email: string): Promise<void> {
     const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
+    if (!user) 
       // Don't reveal if user exists or not for security
       return;
-    }
+    
 
     const resetToken = crypto.randomBytes(32).toString('hex');
     user.resetPasswordToken = resetToken;
@@ -224,9 +227,9 @@ export class AuthService {
       resetPasswordExpires: { $gt: new Date() },
     });
 
-    if (!user) {
+    if (!user) 
       throw new AuthenticationError('Invalid or expired reset token', 400);
-    }
+    
 
     user.password = newPassword;
     user.resetPasswordToken = undefined;
@@ -260,12 +263,12 @@ export class AuthService {
     try {
       return jwt.verify(token, authConfig.jwtSecret) as IJWTPayload;
     } catch (error) {
-      if (error instanceof jwt.TokenExpiredError) {
+      if (error instanceof jwt.TokenExpiredError) 
         throw new AuthenticationError('Token expired');
-      }
-      if (error instanceof jwt.JsonWebTokenError) {
+      
+      if (error instanceof jwt.JsonWebTokenError) 
         throw new AuthenticationError('Invalid token');
-      }
+      
       throw new AuthenticationError('Authentication error', 500);
     }
   }
@@ -280,7 +283,7 @@ export class AuthService {
       phone: user.phone ?? undefined,
       role: user.role,
       fullName: user.fullName,
-      profilePicture : user.profilePicture  ?? undefined,
+      profilePicture: user.profilePicture ?? undefined,
       rating: user.rating ?? undefined,
       rating_count: user.rating_count,
     };

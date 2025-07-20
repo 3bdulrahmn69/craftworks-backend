@@ -1,7 +1,10 @@
 import express from 'express';
 // Import the (to be created) AdminController
 import { AdminController } from '../controllers/admin.controller.js';
-import { authenticateJWT, authorizeRoles } from '../middlewares/auth.middleware.js';
+import {
+  authenticateJWT,
+  authorizeRoles,
+} from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
@@ -24,9 +27,15 @@ router.patch('/users/:userId/unban', AdminController.unbanUser);
 router.get('/verifications', AdminController.getPendingVerifications);
 
 // Approve a craftsman's verification
-router.post('/verifications/:verificationId/approve', AdminController.approveVerification);
+router.post(
+  '/verifications/:verificationId/approve',
+  AdminController.approveVerification
+);
 
 // Reject a craftsman's verification
-router.post('/verifications/:verificationId/reject', AdminController.rejectVerification);
+router.post(
+  '/verifications/:verificationId/reject',
+  AdminController.rejectVerification
+);
 
-export default router; 
+export default router;

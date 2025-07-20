@@ -11,14 +11,26 @@ export class AdminService {
     return { users, pagination: { page, limit, totalPages, totalItems } };
   }
 
-  static async createAdmin({ email, password, fullName, role, phone }: { email: string; password: string; fullName: string; role: string; phone?: string; }) {
-    if (!['admin', 'moderator'].includes(role)) {
+  static async createAdmin({
+    email,
+    password,
+    fullName,
+    role,
+    phone,
+  }: {
+    email: string;
+    password: string;
+    fullName: string;
+    role: string;
+    phone?: string;
+  }) {
+    if (!['admin', 'moderator'].includes(role)) 
       throw new Error('Role must be admin or moderator');
-    }
+    
     const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
-    if (existingUser) {
+    if (existingUser) 
       throw new Error('Email or phone already exists');
-    }
+    
     const newUser = new User({
       email,
       password,
@@ -35,7 +47,9 @@ export class AdminService {
 
   static async banUser(userId: string) {
     const user = await User.findById(userId);
-    if (!user) throw new Error('User not found');
+    if (!user) 
+      throw new Error('User not found');
+    
     user.isBanned = true;
     await user.save();
     return user;
@@ -43,7 +57,9 @@ export class AdminService {
 
   static async unbanUser(userId: string) {
     const user = await User.findById(userId);
-    if (!user) throw new Error('User not found');
+    if (!user) 
+      throw new Error('User not found');
+    
     user.isBanned = false;
     await user.save();
     return user;
@@ -62,8 +78,12 @@ export class AdminService {
       role: 'craftsman',
       'craftsmanInfo.verificationStatus': 'pending',
     });
-    if (!user) throw new Error('Pending verification not found');
-    if (!user.craftsmanInfo) throw new Error('No craftsman info found');
+    if (!user) 
+      throw new Error('Pending verification not found');
+    
+    if (!user.craftsmanInfo) 
+      throw new Error('No craftsman info found');
+    
     user.craftsmanInfo.verificationStatus = 'verified';
     await user.save();
     return user;
@@ -75,10 +95,14 @@ export class AdminService {
       role: 'craftsman',
       'craftsmanInfo.verificationStatus': 'pending',
     });
-    if (!user) throw new Error('Pending verification not found');
-    if (!user.craftsmanInfo) throw new Error('No craftsman info found');
+    if (!user) 
+      throw new Error('Pending verification not found');
+    
+    if (!user.craftsmanInfo) 
+      throw new Error('No craftsman info found');
+    
     user.craftsmanInfo.verificationStatus = 'rejected';
     await user.save();
     return user;
   }
-} 
+}

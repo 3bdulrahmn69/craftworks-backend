@@ -14,4 +14,4 @@ const quoteSchema = new Schema<IQuote>({
   createdAt: { type: Date, default: Date.now },
 });
 
-export const Quote = model<IQuote>('Quote', quoteSchema); 
+export const Quote = model<IQuote>('Quote', quoteSchema);

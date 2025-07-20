@@ -16,13 +16,13 @@ export class UserService {
    */
   static async getCurrentUser(userId: string): Promise<IUserPublic> {
     const user = await User.findById(userId);
-    if (!user) {
+    if (!user) 
       throw new UserServiceError('User not found', 404);
-    }
+    
 
-    if (user.isBanned) {
+    if (user.isBanned) 
       throw new UserServiceError('Account is banned', 403);
-    }
+    
 
     return this.sanitizeUserData(user);
   }
@@ -36,34 +36,34 @@ export class UserService {
     userIP?: string
   ): Promise<IUserPublic> {
     const user = await User.findById(userId);
-    if (!user) {
+    if (!user) 
       throw new UserServiceError('User not found', 404);
-    }
+    
 
-    if (user.isBanned) {
+    if (user.isBanned) 
       throw new UserServiceError('Account is banned', 403);
-    }
+    
 
     // Validate email if being updated
     if (updateData.email && updateData.email !== user.email) {
-      const existingUser = await User.findOne({ 
+      const existingUser = await User.findOne({
         email: updateData.email.toLowerCase(),
-        _id: { $ne: userId }
+        _id: { $ne: userId },
       });
-      if (existingUser) {
+      if (existingUser) 
         throw new UserServiceError('Email already exists', 409);
-      }
+      
     }
 
     // Validate phone if being updated
     if (updateData.phone && updateData.phone !== user.phone) {
-      const existingUser = await User.findOne({ 
+      const existingUser = await User.findOne({
         phone: updateData.phone,
-        _id: { $ne: userId }
+        _id: { $ne: userId },
       });
-      if (existingUser) {
+      if (existingUser) 
         throw new UserServiceError('Phone number already exists', 409);
-      }
+      
     }
 
     // Update allowed fields
@@ -73,19 +73,19 @@ export class UserService {
       'phone',
       'profilePicture ',
       'address',
-      'craftsmanInfo'
+      'craftsmanInfo',
     ];
 
-    for (const field of allowedFields) {
-      if (updateData[field as keyof IUser] !== undefined) {
+    for (const field of allowedFields) 
+      if (updateData[field as keyof IUser] !== undefined) 
         (user as any)[field] = updateData[field as keyof IUser];
-      }
-    }
+      
+    
 
     // Update user logs
-    if (userIP) {
+    if (userIP) 
       user.userLogs.lastIP = userIP;
-    }
+    
 
     await user.save();
 
@@ -113,13 +113,13 @@ export class UserService {
    */
   static async getPublicProfile(userId: string): Promise<IUserPublic> {
     const user = await User.findById(userId);
-    if (!user) {
+    if (!user) 
       throw new UserServiceError('User not found', 404);
-    }
+    
 
-    if (user.isBanned) {
+    if (user.isBanned) 
       throw new UserServiceError('User not found', 404); // Don't reveal banned status
-    }
+    
 
     return this.sanitizeUserData(user);
   }
@@ -141,27 +141,33 @@ export class UserService {
     userIP?: string
   ): Promise<IUserPublic> {
     const user = await User.findById(userId);
-    if (!user) {
+    if (!user) 
       throw new UserServiceError('User not found', 404);
-    }
+    
 
-    if (user.isBanned) {
+    if (user.isBanned) 
       throw new UserServiceError('Account is banned', 403);
-    }
+    
 
-    if (user.role !== 'craftsman') {
+    if (user.role !== 'craftsman') 
       throw new UserServiceError('Only craftsmen can submit verification', 403);
-    }
+    
 
     // Validate skills
-    if (!verificationData.skills || verificationData.skills.length === 0) {
+    if (!verificationData.skills || verificationData.skills.length === 0) 
       throw new UserServiceError('At least one skill is required', 400);
-    }
+    
 
     // Validate verification documents
-    if (!verificationData.verificationDocs || verificationData.verificationDocs.length === 0) {
-      throw new UserServiceError('At least one verification document is required', 400);
-    }
+    if (
+      !verificationData.verificationDocs ||
+      verificationData.verificationDocs.length === 0
+    ) 
+      throw new UserServiceError(
+        'At least one verification document is required',
+        400
+      );
+    
 
     // Update craftsman info
     user.craftsmanInfo = {
@@ -173,9 +179,9 @@ export class UserService {
     };
 
     // Update user logs
-    if (userIP) {
+    if (userIP) 
       user.userLogs.lastIP = userIP;
-    }
+    
 
     await user.save();
 
@@ -204,14 +210,20 @@ export class UserService {
     // Get the job
     const { Job } = await import('../models/job.model.js');
     const job = await Job.findById(jobId).lean();
-    if (!job) throw new Error('Job not found');
+    if (!job) 
+      throw new Error('Job not found');
+    
     // Find craftsmen with matching skills/category
-    const craftsmen = await (await import('../models/user.model.js')).User.find({
+    const craftsmen = await (
+      await import('../models/user.model.js')
+    ).User.find({
       role: 'craftsman',
       'craftsmanInfo.skills': job.category,
       'craftsmanInfo.verificationStatus': 'verified',
       isBanned: false,
-    }).select('fullName profilePicture rating rating_count craftsmanInfo').lean();
+    })
+      .select('fullName profilePicture rating rating_count craftsmanInfo')
+      .lean();
     return craftsmen;
   }
 
@@ -225,9 +237,9 @@ export class UserService {
       phone: user.phone,
       role: user.role,
       fullName: user.fullName,
-      profilePicture : user.profilePicture ,
+      profilePicture: user.profilePicture,
       rating: user.rating,
       rating_count: user.rating_count,
     };
   }
-} 
+}

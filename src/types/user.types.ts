@@ -38,7 +38,7 @@ export interface IUser extends Document {
   phone?: string;
   role: 'client' | 'craftsman' | 'admin' | 'moderator';
   fullName: string;
-  profilePicture ?: string;
+  profilePicture?: string;
   address?: IAddress;
   craftsmanInfo?: ICraftsmanInfo;
   wallet: IWallet;
@@ -61,7 +61,7 @@ export interface IUserPublic {
   phone?: string;
   role: string;
   fullName: string;
-  profilePicture ?: string;
+  profilePicture?: string;
   rating?: number;
   rating_count: number;
 }

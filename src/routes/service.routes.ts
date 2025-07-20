@@ -1,6 +1,9 @@
 import express from 'express';
 import { ServiceController } from '../controllers/service.controller.js';
-import { authenticateJWT, authorizeRoles } from '../middlewares/auth.middleware.js';
+import {
+  authenticateJWT,
+  authorizeRoles,
+} from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
@@ -19,4 +22,4 @@ router.put('/:id', ServiceController.updateService);
 // DELETE /api/services/:id
 router.delete('/:id', ServiceController.deleteService);
 
-export default router; 
+export default router;

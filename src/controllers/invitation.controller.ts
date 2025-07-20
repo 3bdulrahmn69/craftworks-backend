@@ -32,9 +32,9 @@ export const InvitationController = {
       const craftsmanId = req.user?.userId;
       if (!craftsmanId) return res.status(401).json({ message: 'Unauthorized' });
       const { response } = req.body;
-      if (!['Accepted', 'Rejected'].includes(response)) {
+      if (!['Accepted', 'Rejected'].includes(response)) 
         return res.status(400).json({ message: 'Invalid response' });
-      }
+      
       const invitation = await InvitationService.respondToInvitation(
         req.params.jobId,
         new Types.ObjectId(craftsmanId),

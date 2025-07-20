@@ -18,15 +18,15 @@ export class SendEmailController {
       });
       ApiResponse.success(res, undefined, 'Email sent successfully.');
     } catch (error) {
-      if (error instanceof EmailServiceError) {
-        if (error.statusCode === 400) {
+      if (error instanceof EmailServiceError) 
+        if (error.statusCode === 400) 
           ApiResponse.badRequest(res, error.message);
-        } else {
+         else 
           ApiResponse.internalError(res, error.message);
-        }
-      } else {
+        
+       else 
         ApiResponse.internalError(res, 'Failed to send email.');
-      }
+      
     }
   });
 } 

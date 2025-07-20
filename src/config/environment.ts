@@ -27,30 +27,30 @@ const validateEnvironment = (): EnvironmentConfig => {
 
   // Required environment variables
   const requiredVars = ['JWT_SECRET', 'MONGODB_URI'];
-  for (const envVar of requiredVars) {
-    if (!process.env[envVar]) {
+  for (const envVar of requiredVars) 
+    if (!process.env[envVar]) 
       errors.push(`Missing required environment variable: ${envVar}`);
-    }
-  }
+    
+  
 
   // JWT Secret validation
-  if (process.env.JWT_SECRET && process.env.JWT_SECRET.length < 32) {
+  if (process.env.JWT_SECRET && process.env.JWT_SECRET.length < 32) 
     errors.push('JWT_SECRET must be at least 32 characters long');
-  }
+  
 
   // MongoDB URI validation
   if (
     process.env.MONGODB_URI &&
     !process.env.MONGODB_URI.startsWith('mongodb')
-  ) {
+  ) 
     errors.push('MONGODB_URI must be a valid MongoDB connection string');
-  }
+  
 
-  if (errors.length > 0) {
+  if (errors.length > 0) 
     throw new ConfigurationError(
       `Environment configuration is invalid:\n${errors.join('\n')}`
     );
-  }
+  
 
   const nodeEnv = process.env.NODE_ENV as EnvironmentConfig['NODE_ENV'];
   const validNodeEnvs: EnvironmentConfig['NODE_ENV'][] = [

@@ -22,7 +22,15 @@ const jobSchema = new Schema<IJob>({
   },
   status: {
     type: String,
-    enum: ['Posted', 'Quoted', 'Hired', 'On The Way', 'Completed', 'Disputed', 'Cancelled'],
+    enum: [
+      'Posted',
+      'Quoted',
+      'Hired',
+      'On The Way',
+      'Completed',
+      'Disputed',
+      'Cancelled',
+    ],
     default: 'Posted',
   },
   paymentType: {
@@ -38,4 +46,4 @@ const jobSchema = new Schema<IJob>({
 
 jobSchema.index({ location: '2dsphere' });
 
-export const Job = model<IJob>('Job', jobSchema); 
+export const Job = model<IJob>('Job', jobSchema);

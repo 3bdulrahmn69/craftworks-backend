@@ -43,37 +43,37 @@ export class LogsController {
       };
 
       // Add optional filters
-      if (userId) {
+      if (userId) 
         query.userId = userId as string;
-      }
-      if (userEmail) {
+      
+      if (userEmail) 
         query.userEmail = userEmail as string;
-      }
-      if (action) {
+      
+      if (action) 
         query.action = action as string;
-      }
-      if (category) {
+      
+      if (category) 
         query.category = category as ActionCategory;
-      }
-      if (success !== undefined) {
+      
+      if (success !== undefined) 
         query.success = success === 'true' || success === '1';
-      }
-      if (ipAddress) {
+      
+      if (ipAddress) 
         query.ipAddress = ipAddress as string;
-      }
+      
 
       // Parse dates
       if (startDate) {
         const parsed = new Date(startDate as string);
-        if (!isNaN(parsed.getTime())) {
+        if (!isNaN(parsed.getTime())) 
           query.startDate = parsed;
-        }
+        
       }
       if (endDate) {
         const parsed = new Date(endDate as string);
-        if (!isNaN(parsed.getTime())) {
+        if (!isNaN(parsed.getTime())) 
           query.endDate = parsed;
-        }
+        
       }
 
       try {
@@ -137,29 +137,29 @@ export class LogsController {
       // Build filter object
       const filters: ILogFilter = {};
 
-      if (categories && Array.isArray(categories)) {
+      if (categories && Array.isArray(categories)) 
         filters.category = categories as ActionCategory[];
-      }
-      if (actions && Array.isArray(actions)) {
+      
+      if (actions && Array.isArray(actions)) 
         filters.actions = actions;
-      }
-      if (typeof success === 'boolean') {
+      
+      if (typeof success === 'boolean') 
         filters.success = success;
-      }
-      if (userRoles && Array.isArray(userRoles)) {
+      
+      if (userRoles && Array.isArray(userRoles)) 
         filters.userRoles = userRoles;
-      }
-      if (search) {
+      
+      if (search) 
         filters.search = search;
-      }
+      
 
       // Parse date range
       if (startDate && endDate) {
         const start = new Date(startDate);
         const end = new Date(endDate);
-        if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+        if (!isNaN(start.getTime()) && !isNaN(end.getTime())) 
           filters.dateRange = { start, end };
-        }
+        
       }
 
       const pageNum = Math.max(1, parseInt(page) || 1);
@@ -226,9 +226,9 @@ export class LogsController {
       if (startDate && endDate) {
         const start = new Date(startDate as string);
         const end = new Date(endDate as string);
-        if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+        if (!isNaN(start.getTime()) && !isNaN(end.getTime())) 
           dateRange = { start, end };
-        }
+        
       }
 
       try {

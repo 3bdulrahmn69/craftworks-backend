@@ -21,4 +21,4 @@ export class ServiceService {
     const service = await Service.findByIdAndDelete(id);
     return service;
   }
-} 
+}

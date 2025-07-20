@@ -15,6 +15,9 @@ A modern, scalable backend API for the Egyptian local craftsmen service marketpl
 - **Security**: Helmet, CORS, and other security best practices
 - **Action Logging**: Comprehensive audit trail with admin-only access
 - **Logging**: Structured logging with Winston and action tracking
+- **Notification System**: In-app notifications for all major user actions (quotes, invitations, job status, etc.)
+- **Service Management**: Admin/moderator endpoints for managing available services
+- **Recommendations**: Endpoint for job-based craftsman recommendations (AI-ready, currently category-based)
 - **Testing Ready**: Jest configuration for unit and integration tests
 - **ES6 Modules**: Modern import/export syntax throughout
 
@@ -92,6 +95,23 @@ src/
 
 4. **Start the development server**
 
+   > **Note:** This project uses Node.js's new `register()` loader API for TypeScript ESM support. You must have a `register-ts-node.mjs` file in your project root:
+   >
+   > ```js
+   > // register-ts-node.mjs
+   > import { register } from "node:module";
+   > import { pathToFileURL } from "node:url";
+   > register("ts-node/esm", pathToFileURL("./"));
+   > ```
+   >
+   > Your `package.json` dev script should be:
+   >
+   > ```json
+   > "dev": "nodemon --watch src --ext ts --exec \"node --import ./register-ts-node.mjs src/index.ts\""
+   > ```
+
+   Then run:
+
    ```bash
    npm run dev
    ```
@@ -104,7 +124,7 @@ src/
 
 ### Available Scripts
 
-- `npm run dev` - Start development server with hot reload
+- `npm run dev` - Start development server with hot reload (using register-ts-node.mjs)
 - `npm run build` - Build the project for production
 - `npm run start` - Start the production server
 - `npm run test` - Run tests
@@ -116,22 +136,6 @@ src/
 - `npm run check` - Run type check and linting
 - `npm run init-logs` - Initialize logging system with sample data
 
-## 🔧 Configuration
-
-### Environment Variables
-
-| Variable            | Description                       | Default       | Required |
-| ------------------- | --------------------------------- | ------------- | -------- |
-| `NODE_ENV`          | Application environment           | `development` | No       |
-| `PORT`              | Server port                       | `5000`        | No       |
-| `MONGODB_URI`       | MongoDB connection string         | -             | Yes      |
-| `JWT_SECRET`        | JWT signing secret (min 32 chars) | -             | Yes      |
-| `JWT_EXPIRATION`    | JWT token expiration              | `7d`          | No       |
-| `RATE_LIMIT`        | Max requests per window           | `100`         | No       |
-| `RATE_LIMIT_WINDOW` | Rate limit window (ms)            | `900000`      | No       |
-| `CORS_ORIGIN`       | CORS allowed origins              | `*`           | No       |
-| `LOG_LEVEL`         | Logging level                     | `info`        | No       |
-
 ## 📡 API Endpoints
 
 ### Authentication (`/api/auth`)
@@ -142,19 +146,61 @@ src/
 - `POST /api/auth/forgot-password` - Request password reset
 - `POST /api/auth/reset-password` - Reset password with token
 
-### Action Logs (`/api/logs`) - Admin Only
+### Users (`/api/users`)
 
-- `GET /api/logs` - Retrieve action logs with filtering and pagination
-- `POST /api/logs/filter` - Advanced log filtering with complex criteria
-- `GET /api/logs/stats` - Get logging statistics and analytics
-- `GET /api/logs/filter-options` - Get available filter options
-- `POST /api/logs/cleanup` - Clean up old log entries
+- `GET /api/users/me` - Get current user profile
+- `PUT /api/users/me` - Update current user profile
+- `GET /api/users/:userId` - Get public profile of a user
+- `POST /api/users/craftsman/verification` - Submit verification documents (craftsman only)
+- `GET /api/users/recommendations?jobId=...` - Get recommended craftsmen for a job (client only, category-based for now)
 
-> **Note**: All logging endpoints require admin authentication. See [LOGGING.md](./LOGGING.md) for detailed documentation.
+### Jobs (`/api/jobs`)
 
-### Health Check
+- `POST /api/jobs` - Create a new job (client only)
+- `GET /api/jobs` - List jobs (with filters)
+- `GET /api/jobs/:jobId` - Get job details
+- `PUT /api/jobs/:jobId` - Update a job (client only)
+- `DELETE /api/jobs/:jobId` - Delete/cancel a job (client only)
+- `PATCH /api/jobs/:jobId/status` - Update job status (notifies client/craftsman)
 
-- `GET /health` - Application health status
+#### Quotes (`/api/jobs/:jobId/quotes`)
+
+- `POST /api/jobs/:jobId/quotes` - Submit a quote (craftsman only, notifies client)
+- `GET /api/jobs/:jobId/quotes` - Get all quotes for a job (client only)
+- `POST /api/jobs/:jobId/quotes/:quoteId/accept` - Accept a quote and hire craftsman (client only, notifies craftsman)
+
+#### Invitations (`/api/jobs/:jobId/invitations`)
+
+- `POST /api/jobs/:jobId/invite` - Invite a craftsman to a job (client only, notifies craftsman)
+- `GET /api/jobs/:jobId/invitations` - View invitations for a job (client only)
+- `POST /api/jobs/:jobId/invitations/respond` - Craftsman responds to invitation (notifies client)
+
+### Notifications (`/api/notifications`)
+
+- `GET /api/notifications` - List user notifications
+- `POST /api/notifications/mark-read` - Mark notifications as read
+
+### Services (`/api/services`)
+
+- `GET /api/services` - List all available services (public)
+- `POST /api/services` - Create a new service (admin/moderator only)
+- `PUT /api/services/:id` - Update a service (admin/moderator only)
+- `DELETE /api/services/:id` - Delete a service (admin/moderator only)
+
+### Admin (`/api/admin`)
+
+- User management, verification, and dispute endpoints (see requirements.md for full list)
+
+## 🔔 Notification System
+
+- In-app notifications are sent for all major user actions:
+  - When a craftsman applies to a job (client notified)
+  - When a client accepts a quote (craftsman notified)
+  - When a client invites a craftsman (craftsman notified)
+  - When a craftsman responds to an invitation (client notified)
+  - When job status changes (client and craftsman notified)
+- Notifications are stored in the database and can be fetched/marked as read via `/api/notifications`.
+- Real-time/push notification integration is ready for future expansion.
 
 ## 🏗️ Architecture
 
@@ -248,50 +294,3 @@ Structured logging with Winston:
 - File-based logging (combined.log, error.log)
 - Console output in development
 - Automatic log rotation
-- Structured log format with metadata
-
-## 🚀 Production Deployment
-
-### Build for Production
-
-```bash
-npm run build
-npm start
-```
-
-### Environment Considerations
-
-- Set `NODE_ENV=production`
-- Use a strong JWT secret
-- Configure proper CORS origins
-- Set up MongoDB Atlas or production MongoDB
-- Configure proper logging levels
-- Set up monitoring and health checks
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes
-4. Run tests: `npm test`
-5. Run linting: `npm run lint:fix`
-6. Commit changes: `git commit -m 'Add amazing feature'`
-7. Push to branch: `git push origin feature/amazing-feature`
-8. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-If you have any questions or need help with setup, please:
-
-1. Check the [requirements.md](./requirements.md) for detailed specifications
-2. Review the existing code and comments
-3. Check the logs for any error messages
-4. Create an issue with detailed information about your problem
-
----
-
-**Built with ❤️ for the Egyptian craftsmen community**
