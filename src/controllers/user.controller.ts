@@ -22,6 +22,7 @@ export class UserController {
         }
 
         const user = await UserService.getCurrentUser(userId);
+        console.log(user);
         ApiResponse.success(res, user, 'User profile retrieved successfully');
       } catch (error) {
         if (error instanceof UserServiceError)

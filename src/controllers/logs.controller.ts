@@ -7,6 +7,7 @@ import {
   ILogFilter,
   ActionCategory,
 } from '../types/actionLog.types.js';
+import { ValidationHelper } from '../utils/validation.js';
 
 export class LogsController {
   /**
@@ -44,24 +45,32 @@ export class LogsController {
 
       // Add optional filters
       if (userId) query.userId = userId as string;
-
       if (userEmail) query.userEmail = userEmail as string;
-
       if (action) query.action = action as string;
-
       if (category) query.category = category as ActionCategory;
-
       if (success !== undefined)
         query.success = success === 'true' || success === '1';
-
       if (ipAddress) query.ipAddress = ipAddress as string;
 
       // Parse dates
       if (startDate) {
+        const dateValidation = ValidationHelper.validateDateRange(startDate);
+        if (!dateValidation.isValid) {
+          ApiResponse.badRequest(res, dateValidation.errors.join(', '));
+          return;
+        }
         const parsed = new Date(startDate as string);
         if (!isNaN(parsed.getTime())) query.startDate = parsed;
       }
       if (endDate) {
+        const dateValidation = ValidationHelper.validateDateRange(
+          undefined,
+          endDate
+        );
+        if (!dateValidation.isValid) {
+          ApiResponse.badRequest(res, dateValidation.errors.join(', '));
+          return;
+        }
         const parsed = new Date(endDate as string);
         if (!isNaN(parsed.getTime())) query.endDate = parsed;
       }
@@ -129,17 +138,34 @@ export class LogsController {
 
       if (categories && Array.isArray(categories))
         filters.category = categories as ActionCategory[];
-
       if (actions && Array.isArray(actions)) filters.actions = actions;
-
       if (typeof success === 'boolean') filters.success = success;
-
       if (userRoles && Array.isArray(userRoles)) filters.userRoles = userRoles;
-
       if (search) filters.search = search;
+
+      // Validate filters
+      const filterValidation = ValidationHelper.validateLogFilters({
+        categories,
+        actions,
+        userRoles,
+        success,
+        search,
+      });
+      if (!filterValidation.isValid) {
+        ApiResponse.badRequest(res, filterValidation.errors.join(', '));
+        return;
+      }
 
       // Parse date range
       if (startDate && endDate) {
+        const dateValidation = ValidationHelper.validateDateRange(
+          startDate,
+          endDate
+        );
+        if (!dateValidation.isValid) {
+          ApiResponse.badRequest(res, dateValidation.errors.join(', '));
+          return;
+        }
         const start = new Date(startDate);
         const end = new Date(endDate);
         if (!isNaN(start.getTime()) && !isNaN(end.getTime()))
@@ -208,6 +234,14 @@ export class LogsController {
       let dateRange: { start: Date; end: Date } | undefined;
 
       if (startDate && endDate) {
+        const dateValidation = ValidationHelper.validateDateRange(
+          startDate,
+          endDate
+        );
+        if (!dateValidation.isValid) {
+          ApiResponse.badRequest(res, dateValidation.errors.join(', '));
+          return;
+        }
         const start = new Date(startDate as string);
         const end = new Date(endDate as string);
         if (!isNaN(start.getTime()) && !isNaN(end.getTime()))

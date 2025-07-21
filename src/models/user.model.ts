@@ -7,6 +7,7 @@ import {
   IUserLogs,
 } from '../types/user.types.js';
 import { authConfig } from '../config/environment.js';
+import { ValidationHelper } from '../utils/validation.js';
 
 const craftsmanInfoSchema = new Schema<ICraftsmanInfo>(
   {
@@ -67,17 +68,7 @@ const userLogsSchema = new Schema<IUserLogs>(
       type: String,
       validate: {
         validator: function (v: string) {
-          if (!v) return true; // Allow empty/undefined
-
-          // IPv4 validation
-          const ipv4Regex =
-            /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-
-          // IPv6 validation (including ::1 and other short forms)
-          const ipv6Regex =
-            /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$|^::1$|^::$|^(?:[0-9a-fA-F]{0,4}:){1,7}:$|^:(?::[0-9a-fA-F]{0,4}){1,7}$/;
-
-          return ipv4Regex.test(v) || ipv6Regex.test(v);
+          return ValidationHelper.validateIpAddress(v);
         },
         message: 'Invalid IP address format',
       },
@@ -100,7 +91,7 @@ const userSchema = new Schema<IUser>(
       trim: true,
       validate: {
         validator: function (v: string) {
-          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+          return ValidationHelper.validateEmail(v);
         },
         message: 'Invalid email format',
       },
@@ -113,11 +104,7 @@ const userSchema = new Schema<IUser>(
         validator: function (v: string) {
           // Skip validation if password is already hashed (starts with $2a$, $2b$, etc.)
           if (/^\$2[abxy]\$/.test(v)) return true;
-
-          // At least 8 characters, 1 uppercase, 1 lowercase, 1 number
-          return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/.test(
-            v
-          );
+          return ValidationHelper.validatePassword(v).isValid;
         },
         message:
           'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number',
@@ -129,7 +116,7 @@ const userSchema = new Schema<IUser>(
       sparse: true,
       validate: {
         validator: function (v: string) {
-          return !v || /^\+?[1-9]\d{1,14}$/.test(v);
+          return !v || ValidationHelper.validatePhone(v);
         },
         message: 'Invalid phone number format',
       },
@@ -150,7 +137,7 @@ const userSchema = new Schema<IUser>(
       type: String,
       validate: {
         validator: function (v: string) {
-          return !v || /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(v);
+          return ValidationHelper.validateImageUrl(v);
         },
         message: 'Invalid image URL format',
       },
@@ -196,7 +183,7 @@ const userSchema = new Schema<IUser>(
       default: 0,
       validate: {
         validator: function (v: number) {
-          return !v || (v >= 1 && v <= 5);
+          return ValidationHelper.validateRating(v);
         },
         message: 'Rating must be between 1 and 5',
       },

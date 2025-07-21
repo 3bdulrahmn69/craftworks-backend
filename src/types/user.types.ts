@@ -59,11 +59,13 @@ export interface IUserPublic {
   id: string;
   email?: string;
   phone?: string;
+  address?: IAddress;
   role: string;
   fullName: string;
   profilePicture?: string;
   rating?: number;
   ratingCount: number;
+  createdAt?: Date;
 }
 
 export interface IAuthRequest {

@@ -134,8 +134,9 @@ export class AuthController {
     async (req: Request, res: Response): Promise<Response | void> => {
       const { email } = req.body;
 
-      if (!email || !ValidationHelper.validateEmail(email)) {
-        ApiResponse.badRequest(res, 'Valid email is required');
+      const validation = ValidationHelper.validateForgotPassword({ email });
+      if (!validation.isValid) {
+        ApiResponse.badRequest(res, validation.errors.join(', '));
         return;
       }
 
@@ -156,14 +157,12 @@ export class AuthController {
     async (req: Request, res: Response): Promise<Response | void> => {
       const { token, newPassword } = req.body;
 
-      if (!token || !newPassword) {
-        ApiResponse.badRequest(res, 'Token and new password are required');
-        return;
-      }
-
-      const passwordValidation = ValidationHelper.validatePassword(newPassword);
-      if (!passwordValidation.isValid) {
-        ApiResponse.badRequest(res, passwordValidation.errors.join(', '));
+      const validation = ValidationHelper.validateResetPassword({
+        token,
+        newPassword,
+      });
+      if (!validation.isValid) {
+        ApiResponse.badRequest(res, validation.errors.join(', '));
         return;
       }
 

@@ -58,6 +58,7 @@ async function seed() {
     const [client, craftsman] = await User.insertMany([
       {
         email: 'client@example.com',
+        phone: '01018326780',
         password: hashedClientPassword,
         role: 'client',
         fullName: 'Client User',
@@ -65,6 +66,7 @@ async function seed() {
       },
       {
         email: 'craftsman@example.com',
+        phone: '01018326781',
         password: hashedCraftsmanPassword,
         role: 'craftsman',
         fullName: 'Craftsman User',
