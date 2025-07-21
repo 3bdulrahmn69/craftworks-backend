@@ -304,7 +304,7 @@ Authorization: Bearer <token>
       "fullName": "Craftsman Name",
       "profilePicture": "...",
       "rating": 4.8,
-      "rating_count": 12,
+      "ratingCount": 12,
       "craftsmanInfo": {
         "skills": ["Plumbing"],
         "verificationStatus": "verified"
@@ -910,7 +910,7 @@ Authorization: Bearer <token>
       "fullName": "Craftsman Name",
       "profilePicture": "...",
       "rating": 4.8,
-      "rating_count": 12,
+      "ratingCount": 12,
       "craftsmanInfo": {
         "skills": ["Plumbing"],
         "verificationStatus": "verified"

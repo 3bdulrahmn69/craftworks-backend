@@ -41,7 +41,7 @@ export class QuoteService {
 
   static async getQuotesForJob(jobId: string) {
     return Quote.find({ job: jobId })
-      .populate('craftsman', 'fullName profilePicture rating rating_count')
+      .populate('craftsman', 'fullName profilePicture rating ratingCount')
       .lean();
   }
 

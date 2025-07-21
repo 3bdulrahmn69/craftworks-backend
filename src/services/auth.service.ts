@@ -276,7 +276,7 @@ export class AuthService {
       fullName: user.fullName,
       profilePicture: user.profilePicture ?? undefined,
       rating: user.rating ?? undefined,
-      rating_count: user.rating_count,
+      ratingCount: user.ratingCount,
     };
   }
 }

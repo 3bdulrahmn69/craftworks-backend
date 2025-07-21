@@ -475,7 +475,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 - **craftsman:** Can submit proposals, manage profile, message, etc.
 
 ### 7.7. User Ratings
-- Every user (client or craftsman) has a `rating` (average, 1-5) and `rating_count` (number of received reviews) field on their user profile.
+- Every user (client or craftsman) has a `rating` (average, 1-5) and `ratingCount` (number of received reviews) field on their user profile.
 - Ratings are updated automatically whenever a review is created or updated.
 - Both clients and craftsmen can review each other after a job is completed, but only after the contract is marked as completed and only once per contract.
 

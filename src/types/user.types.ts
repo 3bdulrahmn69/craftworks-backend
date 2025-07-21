@@ -49,7 +49,7 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   rating?: number;
-  rating_count: number;
+  ratingCount: number;
 
   // Methods
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -63,7 +63,7 @@ export interface IUserPublic {
   fullName: string;
   profilePicture?: string;
   rating?: number;
-  rating_count: number;
+  ratingCount: number;
 }
 
 export interface IAuthRequest {

@@ -222,7 +222,7 @@ export class UserService {
       'craftsmanInfo.verificationStatus': 'verified',
       isBanned: false,
     })
-      .select('fullName profilePicture rating rating_count craftsmanInfo')
+      .select('fullName profilePicture rating ratingCount craftsmanInfo')
       .lean();
     return craftsmen;
   }
@@ -239,7 +239,7 @@ export class UserService {
       fullName: user.fullName,
       profilePicture: user.profilePicture,
       rating: user.rating,
-      rating_count: user.rating_count,
+      ratingCount: user.ratingCount,
     };
   }
 }

@@ -156,7 +156,7 @@ const userSchema = new Schema<IUser>(
       },
     },
     address: {
-      country: { type: String, trim: true },
+      country: { type: String, trim: true, default: 'Egypt' },
       state: { type: String, trim: true },
       city: { type: String, trim: true },
       street: { type: String, trim: true },
@@ -201,7 +201,7 @@ const userSchema = new Schema<IUser>(
         message: 'Rating must be between 1 and 5',
       },
     },
-    rating_count: {
+    ratingCount: {
       type: Number,
       default: 0,
       min: 0,

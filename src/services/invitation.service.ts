@@ -31,7 +31,7 @@ export class InvitationService {
 
   static async getInvitationsForJob(jobId: string) {
     return Invitation.find({ job: jobId })
-      .populate('craftsman', 'fullName profilePicture rating rating_count')
+      .populate('craftsman', 'fullName profilePicture rating ratingCount')
       .lean();
   }
 
