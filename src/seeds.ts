@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 dotenv.config();
 
+import bcrypt from 'bcryptjs';
+
 const MONGODB_URI =
   process.env.MONGODB_URI || 'mongodb://localhost:27017/craftworks';
 
@@ -49,17 +51,21 @@ async function seed() {
     console.log('Seeded services');
 
     // Create users
+    const hashedClientPassword = await bcrypt.hash('123456!Aa', 10);
+    const hashedCraftsmanPassword = await bcrypt.hash('123456!Aa', 10);
+    const hashedAdminPassword = await bcrypt.hash('123456!Aa', 10);
+    const hashModeratorPassword = await bcrypt.hash('123456!Aa', 10);
     const [client, craftsman] = await User.insertMany([
       {
         email: 'client@example.com',
-        password: '123456!Aa',
+        password: hashedClientPassword,
         role: 'client',
         fullName: 'Client User',
         wallet: { balance: 10000, withdrawableBalance: 5000 },
       },
       {
         email: 'craftsman@example.com',
-        password: '123456!Aa',
+        password: hashedCraftsmanPassword,
         role: 'craftsman',
         fullName: 'Craftsman User',
         craftsmanInfo: {
@@ -73,9 +79,15 @@ async function seed() {
       },
       {
         email: 'admin@example.com',
-        password: '123456!Aa',
+        password: hashedAdminPassword,
         role: 'admin',
         fullName: 'Admin User',
+      },
+      {
+        email: 'mod@example.com',
+        password: hashModeratorPassword,
+        role: 'moderator',
+        fullName: 'Moderator User',
       },
     ]);
     console.log('Seeded users');
