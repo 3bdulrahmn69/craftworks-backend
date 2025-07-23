@@ -6,4 +6,5 @@ export interface IInvitation extends Document {
   status: 'Pending' | 'Accepted' | 'Rejected';
   respondedAt?: Date;
   createdAt: Date;
+  updatedAt: Date;
 }

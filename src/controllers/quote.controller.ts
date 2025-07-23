@@ -3,9 +3,9 @@ import { QuoteService } from '../services/quote.service.js';
 import { IAuthenticatedRequest } from '../types/common.types.js';
 import { Types } from 'mongoose';
 
-export const QuoteController = {
+export class QuoteController {
   // POST /api/jobs/:jobId/quotes (Craftsman only)
-  async submitQuote(req: IAuthenticatedRequest, res: Response) {
+  static async submitQuote(req: IAuthenticatedRequest, res: Response) {
     try {
       const craftsmanId = req.user?.userId;
       if (!craftsmanId)
@@ -24,10 +24,10 @@ export const QuoteController = {
           error instanceof Error ? error.message : 'Failed to submit quote',
       });
     }
-  },
+  }
 
   // GET /api/jobs/:jobId/quotes (Client only)
-  async getQuotesForJob(req: IAuthenticatedRequest, res: Response) {
+  static async getQuotesForJob(req: IAuthenticatedRequest, res: Response) {
     try {
       // Optionally, check if req.user is the job owner
       const quotes = await QuoteService.getQuotesForJob(req.params.jobId);
@@ -35,10 +35,10 @@ export const QuoteController = {
     } catch (error) {
       return res.status(500).json({ message: 'Failed to fetch quotes' });
     }
-  },
+  }
 
   // POST /api/jobs/:jobId/quotes/:quoteId/accept (Client only)
-  async acceptQuote(req: IAuthenticatedRequest, res: Response) {
+  static async acceptQuote(req: IAuthenticatedRequest, res: Response) {
     try {
       const clientId = req.user?.userId;
       if (!clientId) return res.status(401).json({ message: 'Unauthorized' });
@@ -58,5 +58,5 @@ export const QuoteController = {
           error instanceof Error ? error.message : 'Failed to accept quote',
       });
     }
-  },
-};
+  }
+}

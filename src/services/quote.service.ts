@@ -10,14 +10,25 @@ export class QuoteService {
     price: number,
     notes?: string
   ) {
-    // Check if craftsman already submitted a quote for this job
+    // Check if craftsman already applied for this job
+    const job = await Job.findById(jobId);
+    if (!job) throw new Error('Job not found');
+
+    if (job.appliedCraftsmen.includes(craftsmanId))
+      throw new Error('You have already applied for this job');
+
+    // Check if craftsman already submitted a quote for this job (additional safety check)
     const existing = await Quote.findOne({
       job: jobId,
       craftsman: craftsmanId,
     });
-    if (existing) 
+    if (existing)
       throw new Error('You have already submitted a quote for this job');
-    
+
+    // Add craftsman to appliedCraftsmen array
+    job.appliedCraftsmen.push(craftsmanId);
+    await job.save();
+
     const quote = new Quote({
       job: jobId,
       craftsman: craftsmanId,
@@ -25,17 +36,18 @@ export class QuoteService {
       notes,
     });
     await quote.save();
+
     // Notify client
-    const job = await Job.findById(jobId).lean();
-    if (job && job.client) 
+    const jobForNotification = await Job.findById(jobId).lean();
+    if (jobForNotification && jobForNotification.client)
       await NotificationService.sendNotification({
-        user: job.client,
+        user: jobForNotification.client,
         type: 'quote',
         title: 'New Quote Received',
-        message: `A craftsman has submitted a quote for your job: ${job.title}`,
+        message: `A craftsman has submitted a quote for your job: ${jobForNotification.title}`,
         data: { jobId, quoteId: quote._id, craftsmanId },
       });
-    
+
     return quote;
   }
 
@@ -52,13 +64,11 @@ export class QuoteService {
   ) {
     // Find the quote and job
     const quote = await Quote.findOne({ _id: quoteId, job: jobId });
-    if (!quote) 
-      throw new Error('Quote not found');
-    
+    if (!quote) throw new Error('Quote not found');
+
     const job = await Job.findOne({ _id: jobId, client: clientId });
-    if (!job) 
-      throw new Error('Job not found or not owned by user');
-    
+    if (!job) throw new Error('Job not found or not owned by user');
+
     // Accept the quote
     quote.status = 'Accepted';
     await quote.save();

@@ -26,7 +26,7 @@ export const requestLogger = (
       // Determine action based on method and path
       const action = determineAction(req.method, req.path);
 
-      if (action) 
+      if (action)
         // Async logging (non-blocking)
         ActionLogService.logAction({
           userId: authenticatedReq.user.userId,
@@ -53,7 +53,6 @@ export const requestLogger = (
             method: req.method,
           });
         });
-      
     }
 
     return originalSend.call(this, data);
@@ -67,9 +66,7 @@ export const requestLogger = (
  */
 function determineAction(method: string, path: string): string | null {
   // Skip logging for health checks and non-meaningful endpoints
-  if (path === '/health' || path.startsWith('/api/logs')) 
-    return null;
-  
+  if (path === '/health' || path.startsWith('/api/logs')) return null;
 
   const pathSegments = path.split('/').filter(Boolean);
   const resource = pathSegments[1]; // Usually 'auth', 'users', etc.
@@ -78,15 +75,12 @@ function determineAction(method: string, path: string): string | null {
     case 'GET':
       return `view_${resource}`;
     case 'POST':
-      if (path.includes('/login')) 
-        return 'login';
-      
-      if (path.includes('/register')) 
-        return 'register';
-      
-      if (path.includes('/logout')) 
-        return 'logout';
-      
+      if (path.includes('/login')) return 'login';
+
+      if (path.includes('/register')) return 'register';
+
+      if (path.includes('/logout')) return 'logout';
+
       return `create_${resource}`;
     case 'PUT':
     case 'PATCH':
@@ -102,30 +96,21 @@ function determineAction(method: string, path: string): string | null {
  * Categorize action based on path
  */
 function categorizeAction(path: string): ActionCategory {
-  if (path.includes('/auth')) 
-    return 'auth';
-  
-  if (path.includes('/user')) 
-    return 'user_management';
-  
-  if (path.includes('/admin')) 
-    return 'system';
-  
-  if (path.includes('/log')) 
-    return 'system';
-  
-  if (path.includes('/craftsman')) 
-    return 'user_management';
-  
-  if (path.includes('/order')) 
-    return 'content';
-  
-  if (path.includes('/payment')) 
-    return 'financial';
-  
-  if (path.includes('/message')) 
-    return 'communication';
-  
+  if (path.includes('/auth')) return 'auth';
+
+  if (path.includes('/user')) return 'user_management';
+
+  if (path.includes('/admin')) return 'system';
+
+  if (path.includes('/log')) return 'system';
+
+  if (path.includes('/craftsman')) return 'user_management';
+
+  if (path.includes('/order')) return 'content';
+
+  if (path.includes('/payment')) return 'financial';
+
+  if (path.includes('/message')) return 'communication';
 
   return 'system';
 }

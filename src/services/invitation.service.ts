@@ -10,14 +10,13 @@ export class InvitationService {
       job: jobId,
       craftsman: craftsmanId,
     });
-    if (existing) 
-      throw new Error('Craftsman already invited to this job');
-    
+    if (existing) throw new Error('Craftsman already invited to this job');
+
     const invitation = new Invitation({ job: jobId, craftsman: craftsmanId });
     await invitation.save();
     // Notify craftsman
     const job = await Job.findById(jobId).lean();
-    if (job) 
+    if (job)
       await NotificationService.sendNotification({
         user: craftsmanId,
         type: 'invitation',
@@ -25,7 +24,7 @@ export class InvitationService {
         message: `You have been invited to apply for the job: ${job.title}`,
         data: { jobId, invitationId: invitation._id, clientId: job.client },
       });
-    
+
     return invitation;
   }
 
@@ -44,18 +43,17 @@ export class InvitationService {
       job: jobId,
       craftsman: craftsmanId,
     });
-    if (!invitation) 
-      throw new Error('Invitation not found');
-    
-    if (invitation.status !== 'Pending') 
+    if (!invitation) throw new Error('Invitation not found');
+
+    if (invitation.status !== 'Pending')
       throw new Error('Invitation already responded to');
-    
+
     invitation.status = response;
     invitation.respondedAt = new Date();
     await invitation.save();
     // Notify client
     const job = await Job.findById(jobId).lean();
-    if (job && job.client) 
+    if (job && job.client)
       await NotificationService.sendNotification({
         user: job.client,
         type: 'invitation',
@@ -65,7 +63,7 @@ export class InvitationService {
         }`,
         data: { jobId, invitationId: invitation._id, craftsmanId, response },
       });
-    
+
     return invitation;
   }
 }

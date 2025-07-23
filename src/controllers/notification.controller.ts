@@ -3,9 +3,9 @@ import { NotificationService } from '../services/notification.service.js';
 import { IAuthenticatedRequest } from '../types/common.types.js';
 import { Types } from 'mongoose';
 
-export const NotificationController = {
+export class NotificationController {
   // GET /api/notifications
-  async getUserNotifications(req: IAuthenticatedRequest, res: Response) {
+  static async getUserNotifications(req: IAuthenticatedRequest, res: Response) {
     try {
       const userId = req.user?.userId;
       if (!userId) return res.status(401).json({ message: 'Unauthorized' });
@@ -21,10 +21,13 @@ export const NotificationController = {
     } catch (error) {
       return res.status(500).json({ message: 'Failed to fetch notifications' });
     }
-  },
+  }
 
   // POST /api/notifications/mark-read
-  async markNotificationsRead(req: IAuthenticatedRequest, res: Response) {
+  static async markNotificationsRead(
+    req: IAuthenticatedRequest,
+    res: Response
+  ) {
     try {
       const userId = req.user?.userId;
       if (!userId) return res.status(401).json({ message: 'Unauthorized' });
@@ -39,5 +42,5 @@ export const NotificationController = {
         .status(400)
         .json({ message: 'Failed to mark notifications as read' });
     }
-  },
-};
+  }
+}

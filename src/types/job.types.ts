@@ -23,7 +23,9 @@ export interface IJob extends Document {
   paymentType: 'Escrow' | 'Cash' | 'CashProtected';
   jobPrice: number;
   platformFee: number;
-  createdAt: Date;
+  appliedCraftsmen: Types.ObjectId[]; // Track who applied to prevent multiple applications
   hiredAt?: Date;
   completedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }

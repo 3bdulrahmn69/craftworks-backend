@@ -7,16 +7,18 @@ This manual provides practical usage instructions, example requests, and example
 ## Table of Contents
 
 1. [Authentication](#authentication)
-2. [Users](#users)
-3. [Jobs](#jobs)
-4. [Quotes](#quotes)
-5. [Invitations](#invitations)
-6. [Notifications](#notifications)
-7. [Services](#services)
-8. [Recommendations](#recommendations)
-9. [Admin](#admin)
-10. [Contact Email](#contact-email)
-11. [Error Responses](#error-responses)
+2. [Business Rules](#business-rules)
+3. [Users](#users)
+4. [Users](#users)
+5. [Jobs](#jobs)
+6. [Quotes](#quotes)
+7. [Invitations](#invitations)
+8. [Notifications](#notifications)
+9. [Services](#services)
+10. [Recommendations](#recommendations)
+11. [Admin](#admin)
+12. [Contact Email](#contact-email)
+13. [Error Responses](#error-responses)
 
 ---
 
@@ -32,7 +34,8 @@ This manual provides practical usage instructions, example requests, and example
 {
   "email": "client@example.com",
   "password": "Password123!",
-  "role": "client", // craftsman, admin, moderator
+  "phone": "+201018326780", // optional
+  "role": "client", // client, craftsman
   "fullName": "John Doe"
 }
 ```
@@ -43,16 +46,33 @@ This manual provides practical usage instructions, example requests, and example
 {
   "success": true,
   "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "user": {
-      "id": "...",
+      "id": "507f1f77bcf86cd799439011",
       "email": "client@example.com",
-      "role": "client"
-    },
-    "token": "<JWT_TOKEN>"
+      "phone": "+201018326780",
+      "role": "client",
+      "fullName": "John Doe",
+      "profilePicture": null,
+      "address": {
+        "country": "Egypt"
+      },
+      "rating": 0,
+      "ratingCount": 0,
+      "createdAt": "2025-07-23T10:30:00.000Z"
+    }
   },
   "message": "User registered successfully"
 }
 ```
+
+**Note:**
+
+- Admin and moderator accounts can only be created by existing admins
+- Craftsmen will have additional fields: `wallet` and can have `craftsmanInfo` after verification
+- Clients and craftsmen get `address` and `rating` fields, admins/moderators don't
+
+````
 
 ### Login
 
@@ -62,7 +82,17 @@ This manual provides practical usage instructions, example requests, and example
 
 ```json
 {
-  "loginIdentifier": "client@example.com", // email or phone
+  "email": "client@example.com", // can use email or phone
+  "password": "Password123!",
+  "type": "clients" // clients (for client/craftsman) or admins (for admin/moderator)
+}
+````
+
+**Alternative with phone:**
+
+```json
+{
+  "phone": "+201018326780",
   "password": "Password123!",
   "type": "clients"
 }
@@ -74,16 +104,85 @@ This manual provides practical usage instructions, example requests, and example
 {
   "success": true,
   "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "user": {
-      "id": "...",
+      "id": "507f1f77bcf86cd799439011",
       "email": "client@example.com",
-      "role": "client"
-    },
-    "token": "<JWT_TOKEN>"
+      "phone": "+201018326780",
+      "role": "client",
+      "fullName": "John Doe",
+      "profilePicture": "https://res.cloudinary.com/demo/image/upload/d_avatar.png/client.png",
+      "address": {
+        "country": "Egypt",
+        "state": "Cairo",
+        "city": "New Cairo",
+        "street": "123 Main Street"
+      },
+      "rating": 4.2,
+      "ratingCount": 15,
+      "createdAt": "2025-07-23T10:30:00.000Z"
+    }
   },
   "message": "Login successful"
 }
 ```
+
+**For Craftsman Login Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": "507f1f77bcf86cd799439012",
+      "email": "craftsman@example.com",
+      "phone": "+201018326781",
+      "role": "craftsman",
+      "fullName": "Ahmed Craftsman",
+      "profilePicture": "https://res.cloudinary.com/demo/image/upload/d_avatar.png/craftsman.png",
+      "address": {
+        "country": "Egypt",
+        "state": "Cairo",
+        "city": "Cairo",
+        "street": "321 Workshop Street"
+      },
+      "rating": 4.8,
+      "ratingCount": 142,
+      "wallet": {
+        "balance": 12500,
+        "withdrawableBalance": 8000
+      },
+      "createdAt": "2025-07-23T10:30:00.000Z"
+    }
+  },
+  "message": "Login successful"
+}
+```
+
+**For Admin/Moderator Login Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": "507f1f77bcf86cd799439013",
+      "email": "admin@example.com",
+      "role": "admin",
+      "fullName": "System Administrator",
+      "profilePicture": "https://res.cloudinary.com/demo/image/upload/d_avatar.png/admin.png",
+      "createdAt": "2025-07-23T10:30:00.000Z"
+    }
+  },
+  "message": "Login successful"
+}
+```
+
+**Note:** Admin and moderator users don't have `address`, `rating`, `ratingCount`, or `wallet` fields.
+
+````
 
 ### Forgot Password
 
@@ -95,7 +194,7 @@ This manual provides practical usage instructions, example requests, and example
 {
   "email": "client@example.com"
 }
-```
+````
 
 **Response Example:**
 
@@ -149,6 +248,55 @@ Authorization: Bearer <token>
 
 ---
 
+## Business Rules
+
+### User Field Access by Role
+
+The system implements role-based field access restrictions:
+
+#### **Clients**
+
+- ✅ Have: `address`, `rating`, `ratingCount`
+- ❌ Don't have: `wallet`, `craftsmanInfo`
+
+#### **Craftsmen**
+
+- ✅ Have: `address`, `rating`, `ratingCount`, `wallet`, `craftsmanInfo`
+- Can access all user features including wallet management
+
+#### **Admins & Moderators**
+
+- ✅ Have: Basic profile fields only (`id`, `email`, `role`, `fullName`, `profilePicture`, `createdAt`)
+- ❌ Don't have: `address`, `rating`, `ratingCount`, `wallet`, `craftsmanInfo`
+
+### Job Application Rules
+
+#### **Single Application Per Job**
+
+- Each craftsman can only apply once per job
+- Attempting to submit multiple quotes for the same job returns error: `"You have already applied for this job"`
+- The system tracks applied craftsmen in the job's `appliedCraftsmen` array
+
+#### **Wallet Access**
+
+- Only craftsmen have wallet functionality
+- Clients and admins cannot access wallet features
+- Wallet includes `balance` and `withdrawableBalance` fields
+
+### Authentication Types
+
+#### **Client Portal** (`type: "clients"`)
+
+- For `client` and `craftsman` roles
+- Access to job posting, quote management, hiring features
+
+#### **Admin Portal** (`type: "admins"`)
+
+- For `admin` and `moderator` roles
+- Access to user management, verification, system administration
+
+---
+
 ## Users
 
 **All endpoints require authentication.**
@@ -163,19 +311,74 @@ Authorization: Bearer <token>
 Authorization: Bearer <token>
 ```
 
-**Response Example:**
+**Response Example (Client):**
 
 ```json
 {
   "success": true,
   "data": {
-    "_id": "...",
+    "id": "507f1f77bcf86cd799439011",
     "email": "client@example.com",
+    "phone": "+201018326780",
     "role": "client",
     "fullName": "John Doe",
-    "profilePicture": "...",
-    "wallet": { "balance": 10000, "withdrawableBalance": 5000 },
-    "createdAt": "2024-06-01T12:00:00Z"
+    "profilePicture": "https://res.cloudinary.com/demo/image/upload/d_avatar.png/client.png",
+    "address": {
+      "country": "Egypt",
+      "state": "Cairo",
+      "city": "New Cairo",
+      "street": "123 Main Street"
+    },
+    "rating": 4.2,
+    "ratingCount": 15,
+    "createdAt": "2025-07-23T10:30:00.000Z"
+  },
+  "message": "User profile retrieved successfully"
+}
+```
+
+**Response Example (Craftsman):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "507f1f77bcf86cd799439012",
+    "email": "craftsman@example.com",
+    "phone": "+201018326781",
+    "role": "craftsman",
+    "fullName": "Ahmed Craftsman",
+    "profilePicture": "https://res.cloudinary.com/demo/image/upload/d_avatar.png/craftsman.png",
+    "address": {
+      "country": "Egypt",
+      "state": "Cairo",
+      "city": "Cairo",
+      "street": "321 Workshop Street"
+    },
+    "rating": 4.8,
+    "ratingCount": 142,
+    "wallet": {
+      "balance": 12500,
+      "withdrawableBalance": 8000
+    },
+    "createdAt": "2025-07-23T10:30:00.000Z"
+  },
+  "message": "User profile retrieved successfully"
+}
+```
+
+**Response Example (Admin/Moderator):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "507f1f77bcf86cd799439013",
+    "email": "admin@example.com",
+    "role": "admin",
+    "fullName": "System Administrator",
+    "profilePicture": "https://res.cloudinary.com/demo/image/upload/d_avatar.png/admin.png",
+    "createdAt": "2025-07-23T10:30:00.000Z"
   },
   "message": "User profile retrieved successfully"
 }
@@ -531,8 +734,8 @@ Content-Type: application/json
 
 ```json
 {
-  "price": 500,
-  "notes": "Can fix it today."
+  "price": 1500,
+  "notes": "I can fix the leak today. Price includes parts and labor. 2 year warranty on work."
 }
 ```
 
@@ -542,14 +745,23 @@ Content-Type: application/json
 {
   "success": true,
   "data": {
-    "_id": "...",
-    "job": "...",
-    "craftsman": "...",
-    "price": 500,
-    "status": "Submitted"
+    "_id": "507f1f77bcf86cd799439020",
+    "job": "507f1f77bcf86cd799439015",
+    "craftsman": "507f1f77bcf86cd799439012",
+    "price": 1500,
+    "notes": "I can fix the leak today. Price includes parts and labor. 2 year warranty on work.",
+    "status": "Submitted",
+    "createdAt": "2025-07-23T11:00:00.000Z"
   },
   "message": "Quote submitted successfully."
 }
+```
+
+**Note:**
+
+- Craftsmen can only apply once per job
+- If a craftsman tries to submit a second quote for the same job, they'll get an error: "You have already applied for this job"
+
 ```
 
 ### Get All Quotes for a Job (Client Only)
@@ -559,8 +771,10 @@ Content-Type: application/json
 **Headers:**
 
 ```
+
 Authorization: Bearer <token>
-```
+
+````
 
 **Response Example:**
 
@@ -581,7 +795,7 @@ Authorization: Bearer <token>
     }
   ]
 }
-```
+````
 
 ### Accept a Quote and Hire Craftsman (Client Only)
 

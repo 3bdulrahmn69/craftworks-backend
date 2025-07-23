@@ -2,6 +2,7 @@ import { Job } from '../models/job.model.js';
 import { IJob } from '../types/job.types.js';
 import { Types } from 'mongoose';
 import { NotificationService } from './notification.service.js';
+import { PaginationHelper } from '../utils/paginationHelper.js';
 
 export class JobService {
   static async createJob(data: Partial<IJob> & { client: Types.ObjectId }) {
@@ -11,13 +12,9 @@ export class JobService {
   }
 
   static async getJobs(filter: any = {}, page = 1, limit = 10) {
-    const skip = (page - 1) * limit;
-    const [jobs, totalItems] = await Promise.all([
-      Job.find(filter).skip(skip).limit(limit).lean(),
-      Job.countDocuments(filter),
-    ]);
-    const totalPages = Math.ceil(totalItems / limit);
-    return { jobs, pagination: { page, limit, totalPages, totalItems } };
+    return PaginationHelper.paginate(Job, filter, page, limit, {
+      createdAt: -1,
+    });
   }
 
   static async getJobById(jobId: string) {
@@ -54,7 +51,7 @@ export class JobService {
         data: { jobId, status },
       });
       // Notify craftsman if assigned
-      if (job.craftsman) 
+      if (job.craftsman)
         await NotificationService.sendNotification({
           user: job.craftsman,
           type: 'status',
@@ -62,7 +59,6 @@ export class JobService {
           message: `The status of job '${job.title}' has changed to ${status}.`,
           data: { jobId, status },
         });
-      
     }
     return job;
   }

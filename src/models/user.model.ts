@@ -143,7 +143,7 @@ const userSchema = new Schema<IUser>(
       },
     },
     address: {
-      country: { type: String, trim: true, default: 'Egypt' },
+      country: { type: String, trim: true },
       state: { type: String, trim: true },
       city: { type: String, trim: true },
       street: { type: String, trim: true },
@@ -156,7 +156,6 @@ const userSchema = new Schema<IUser>(
     },
     wallet: {
       type: walletSchema,
-      default: () => ({ balance: 0, withdrawableBalance: 0 }),
     },
     isBanned: {
       type: Boolean,
@@ -168,19 +167,10 @@ const userSchema = new Schema<IUser>(
       type: userLogsSchema,
       default: () => ({}),
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now,
-    },
     rating: {
       type: Number,
       min: 0,
       max: 5,
-      default: 0,
       validate: {
         validator: function (v: number) {
           return ValidationHelper.validateRating(v);
@@ -190,7 +180,6 @@ const userSchema = new Schema<IUser>(
     },
     ratingCount: {
       type: Number,
-      default: 0,
       min: 0,
     },
   },
@@ -231,9 +220,33 @@ userSchema.pre('save', async function (next) {
   }
 });
 
-// Pre-save middleware for updating updatedAt
+// Pre-save middleware for wallet initialization
 userSchema.pre('save', function (next) {
-  this.updatedAt = new Date();
+  // Initialize wallet only for craftsmen
+  if (this.role === 'craftsman' && !this.wallet)
+    this.wallet = { balance: 0, withdrawableBalance: 0 };
+
+  // Remove wallet for non-craftsmen
+  if (this.role !== 'craftsman') this.set('wallet', undefined);
+
+  // Handle address for different roles
+  if (this.role === 'admin' || this.role === 'moderator')
+    // Remove address for admins and moderators
+    this.set('address', undefined);
+  else if (!this.address)
+    // Set default country for clients and craftsmen if not set
+    this.address = { country: 'Egypt' };
+  else if (!this.address.country) this.address.country = 'Egypt';
+
+  // Remove rating fields only from admins and moderators
+  if (this.role === 'admin' || this.role === 'moderator') {
+    this.set('rating', undefined);
+    this.set('ratingCount', undefined);
+  } else if (this.rating === undefined) {
+    this.rating = 0;
+    this.ratingCount = 0;
+  }
+
   next();
 });
 

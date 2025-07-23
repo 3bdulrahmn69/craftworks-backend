@@ -13,11 +13,11 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (_req, file, cb) => {
-    if (!file.mimetype.match(/^image\/(jpeg|png|gif|webp)$/)) 
+    if (!file.mimetype.match(/^image\/(jpeg|png|gif|webp)$/))
       return cb(
         new Error('Only image files are allowed (jpg, png, gif, webp)')
       );
-    
+
     cb(null, true);
   },
 });

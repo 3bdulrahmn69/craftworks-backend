@@ -1,6 +1,7 @@
 import { User } from '../models/user.model.js';
 import { IUser, IUserPublic } from '../types/user.types.js';
 import { ActionLogService } from './actionLog.service.js';
+import { UserTransformHelper } from '../utils/userTransformHelper.js';
 import { loggerHelpers } from './logger.js';
 
 export class UserServiceError extends Error {
@@ -202,17 +203,6 @@ export class UserService {
    * Sanitize user data for public response
    */
   private static sanitizeUserData(user: IUser): IUserPublic {
-    return {
-      id: user._id.toString(),
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-      address: user.address,
-      fullName: user.fullName,
-      profilePicture: user.profilePicture,
-      rating: user.rating,
-      ratingCount: user.ratingCount,
-      createdAt: user.createdAt,
-    };
+    return UserTransformHelper.toPublic(user);
   }
 }

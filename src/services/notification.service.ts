@@ -47,9 +47,9 @@ export class NotificationService {
     notificationIds?: string[]
   ) {
     const filter: any = { user: userId };
-    if (notificationIds && notificationIds.length > 0) 
+    if (notificationIds && notificationIds.length > 0)
       filter._id = { $in: notificationIds };
-    
+
     await Notification.updateMany(filter, { read: true });
     return true;
   }

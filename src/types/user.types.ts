@@ -41,7 +41,7 @@ export interface IUser extends Document {
   profilePicture?: string;
   address?: IAddress;
   craftsmanInfo?: ICraftsmanInfo;
-  wallet: IWallet;
+  wallet?: IWallet; // Only for craftsmen
   isBanned: boolean;
   resetPasswordToken?: string | undefined;
   resetPasswordExpires?: Date | undefined;
@@ -59,12 +59,13 @@ export interface IUserPublic {
   id: string;
   email?: string;
   phone?: string;
-  address?: IAddress;
+  address?: IAddress; // Only for clients and craftsmen
   role: string;
   fullName: string;
   profilePicture?: string;
-  rating?: number;
-  ratingCount: number;
+  rating?: number; // Only for craftsmen
+  ratingCount?: number; // Only for craftsmen
+  wallet?: IWallet; // Only for craftsmen
   createdAt?: Date;
 }
 
@@ -74,7 +75,7 @@ export interface IAuthRequest {
   password: string;
   role?: string;
   fullName?: string;
-  type?: 'clients' | 'admins';
+  type?: 'public' | 'internal';
 }
 
 export interface IAuthResponse {

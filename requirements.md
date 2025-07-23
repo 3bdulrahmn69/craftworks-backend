@@ -9,26 +9,28 @@ This document outlines the backend technical and functional requirements for the
 1. [Core Architecture & Technology Stack](#1-core-architecture--technology-stack)
 2. [Key Functional Requirements](#2-key-functional-requirements)
 
-   * [User & Job Management](#21-user--job-management)
-   * [Payments, Wallet, and Fees](#22-payments-wallet-and-fees)
-   * [Ratings, Disputes, & Cancellations](#23-ratings-disputes--cancellations)
-   * [Notification System](#25-notification-system)
-   * [AI Recommendations](#26-ai-recommendations)
+   - [User & Job Management](#21-user--job-management)
+   - [Payments, Wallet, and Fees](#22-payments-wallet-and-fees)
+   - [Ratings, Disputes, & Cancellations](#23-ratings-disputes--cancellations)
+   - [Notification System](#25-notification-system)
+   - [AI Recommendations](#26-ai-recommendations)
+
 3. [Admin & Operational Backend](#3-admin--operational-backend)
 4. [Security & Non-Functional Requirements](#4-security--non-functional-requirements)
 5. [Proposed API Endpoints](#5-proposed-api-endpoints)
 
-   * [Authentication](#51-authentication-auth)
-   * [Users](#52-users-users)
-   * [Jobs](#53-jobs-jobs)
-   * [Quotes](#54-quotes-jobsjobidquotes)
-   * [Invitations](#55-invitations-jobid-invitations)
-   * [Payments & Wallet](#56-payments--wallet-wallet)
-   * [Reviews & Disputes](#57-reviews--disputes-reviews-disputes)
-   * [Admin](#58-admin-admin)
-   * [Contact Email](#59-contact-email-send-email)
-   * [Services](#510-services-services)
-   * [Notifications](#511-notifications)
+   - [Authentication](#51-authentication-auth)
+   - [Users](#52-users-users)
+   - [Jobs](#53-jobs-jobs)
+   - [Quotes](#54-quotes-jobsjobidquotes)
+   - [Invitations](#55-invitations-jobid-invitations)
+   - [Payments & Wallet](#56-payments--wallet-wallet)
+   - [Reviews & Disputes](#57-reviews--disputes-reviews-disputes)
+   - [Admin](#58-admin-admin)
+   - [Contact Email](#59-contact-email-send-email)
+   - [Services](#510-services-services)
+   - [Notifications](#511-notifications)
+
 6. [MongoDB Database Schemas (Mongoose-style)](#6-mongodb-database-schemas-mongoose-style)
 7. [Implementation & Operational Details](#7-implementation--operational-details)
 
@@ -55,6 +57,7 @@ The backend infrastructure will be built on a modern, scalable stack to support 
 These are the core features that the backend must support to enable the end-to-end user journeys.
 
 ### 2.1. User & Job Management
+
 - **User Roles:** System must support distinct roles: client, craftsman, admin, and moderator.
 - **Craftsman Verification:** API endpoints for craftsmen to upload skill tags and certification documents. An admin-facing workflow to review and approve/reject craftsman profiles.
 - **Job Lifecycle Management:**
@@ -63,22 +66,25 @@ These are the core features that the backend must support to enable the end-to-e
   - A state machine for job status tracking (e.g., Posted, Quoted, Hired, On The Way, Completed, Disputed, Cancelled).
 
 ### 2.2. Payments, Wallet, and Fees
+
 - **Payment Gateway Integration:** Deep integration with Stripe Connect and FawryPay.
 - **Payment Flows:** Support for Escrow, Standard Cash, and Cash with Protected Payment.
 - **Craftsman Wallet System:** A dedicated wallet for each craftsman with auto-deductions, top-up capability, and withdrawal processing.
 - **Fee Remittance:** Automated system for tracking and reminding craftsmen to remit fees from cash jobs.
 
 ### 2.3. Ratings, Disputes, & Cancellations
+
 - **Double-Blind Rating System:** Ratings are revealed only after both parties submit or after 14 days.
 - **Dispute Resolution Workflow:** A system for users to raise disputes and for admins to manage them.
 - **Cancellation Logic:** Rules for cancellation based on job status.
 
 ### 2.4. Craftsman Invitations
+
 - **Craftsman Invitations**:
 
-  * Clients can now invite specific craftsmen to posted jobs.
-  * Craftsmen can accept or reject invitations.
-  * Accepted craftsmen can submit quotes.
+  - Clients can now invite specific craftsmen to posted jobs.
+  - Craftsmen can accept or reject invitations.
+  - Accepted craftsmen can submit quotes.
 
 ### 2.5. Notification System
 
@@ -89,12 +95,12 @@ These are the core features that the backend must support to enable the end-to-e
 
 #### Notification Events Table
 
-| Event                        | Recipient    | Channel(s)         |
-|------------------------------|--------------|--------------------|
-| Craftsman invited to job     | Craftsman    | In-app, Push, Email|
-| Craftsman applies/quotes     | Client       | In-app, Push, Email|
-| Invitation accepted/rejected | Client       | In-app, Push, Email|
-| Job status changes           | Both parties | In-app, Push, Email|
+| Event                        | Recipient    | Channel(s)          |
+| ---------------------------- | ------------ | ------------------- |
+| Craftsman invited to job     | Craftsman    | In-app, Push, Email |
+| Craftsman applies/quotes     | Client       | In-app, Push, Email |
+| Invitation accepted/rejected | Client       | In-app, Push, Email |
+| Job status changes           | Both parties | In-app, Push, Email |
 
 ### 2.6. AI Recommendations
 
@@ -106,6 +112,7 @@ These are the core features that the backend must support to enable the end-to-e
 ---
 
 ## 3. Admin & Operational Backend
+
 - **Admin Tooling:** Secure endpoints for all admin functions with Role-Based Access Control (RBAC), including Moderator role management.
 - **CRM & Reporting:** Endpoints to fetch user history and generate data for BI dashboards.
 - **AI & Automation:** Backend support for AI-powered job matching and an FAQ chatbot.
@@ -113,6 +120,7 @@ These are the core features that the backend must support to enable the end-to-e
 ---
 
 ## 4. Security & Non-Functional Requirements
+
 - **Data Security & Backups:**
   - Utilize MongoDB Atlas's built-in automated backup features.
   - Store backups in multi-region replicas.
@@ -131,6 +139,7 @@ These are the core features that the backend must support to enable the end-to-e
 All endpoints should be prefixed with `/api`.
 
 ### 5.1. Authentication (`/auth`)
+
 - `POST /api/auth/register` - Creates a new user account (Client or Craftsman).
 - `POST /api/auth/login` - Authenticates a user and returns a JWT token. The request body should include a loginIdentifier (which can be an email or a phone number for clients/craftsmen, and must be an email for Admins), a password, and a type (clients, admins).
 - `POST /api/auth/logout` - Invalidates the user's current session/token.
@@ -138,6 +147,7 @@ All endpoints should be prefixed with `/api`.
 - `POST /api/auth/reset-password` - Resets the user's password using a valid token.
 
 ### 5.2. Users (`/users`)
+
 - `GET /api/users/me` - Get the profile of the currently authenticated user.
 - `PUT /api/users/me` - Update the profile of the currently authenticated user.
 - `GET /api/users/:userId` - Get the public profile of a specific user (client or craftsman).
@@ -145,6 +155,7 @@ All endpoints should be prefixed with `/api`.
 - `GET /api/users/recommendations?jobId=...` — Get a list of recommended craftsmen for a specific job, based on AI/matching logic. Only accessible to clients.
 
 ### 5.3. Jobs (`/jobs`)
+
 - `POST /api/jobs` - (Client only) Create a new job posting.
 - `GET /api/jobs` - Get a list of jobs (for craftsmen to browse, with filters).
 - `GET /api/jobs/:jobId` - Get details of a specific job.
@@ -153,6 +164,7 @@ All endpoints should be prefixed with `/api`.
 - `PATCH /api/jobs/:jobId/status` - Update the status of a job (e.g., hire, start, complete).
 
 ### 5.4. Quotes (`/jobs/:jobId/quotes`)
+
 - `POST /api/jobs/:jobId/quotes` - (Craftsman only) Submit a quote for a job.
 - `GET /api/jobs/:jobId/quotes` - (Client only) Get all quotes for a job.
 - `POST /api/jobs/:jobId/quotes/:quoteId/accept` - (Client only) Accept a quote and hire the craftsman.
@@ -180,7 +192,8 @@ All endpoints should be prefixed with `/api`.
 }
 ```
 
-### 5.6. Payments & Wallet (`/wallet`)
+### 5.6. Payments & Wallet (`/wallet`) (craftsman only)
+
 - `GET /api/wallet/balance` - Get the current user's wallet balance.
 - `GET /api/wallet/transactions` - Get a list of wallet transactions.
 - `POST /api/wallet/withdraw` - Request a withdrawal from the wallet.
@@ -188,12 +201,14 @@ All endpoints should be prefixed with `/api`.
 - `POST /api/payments/webhook` - Webhook endpoint for Stripe/Fawry to send payment status updates.
 
 ### 5.7. Reviews & Disputes (`/reviews`, `/disputes`)
+
 - `POST /api/reviews` - Submit a review for a completed job.
 - `POST /api/disputes` - Create a new dispute for a job.
 - `GET /api/disputes/:disputeId` - Get details of a dispute.
 - `POST /api/disputes/:disputeId/evidence` - Add evidence (messages, photos) to a dispute.
 
 ### 5.8. Admin (`/admin`)
+
 - `GET /api/admin/users` - Get a paginated list of all users for admin management. Supports `page` and `limit` query parameters. Returns paginated results in the standard format:
   ```json
   {
@@ -218,6 +233,7 @@ All endpoints should be prefixed with `/api`.
 - `DELETE /api/admin/jobs/:jobId` - Forcibly delete a job posting.
 
 ### 5.9. Contact Email (`/send-email`)
+
 - `POST /api/send-email` - Send a contact email from the website. Allows users to reach out to support or the team using a form.
   - **Request Body Example:**
     ```json
@@ -241,6 +257,7 @@ All endpoints should be prefixed with `/api`.
     ```
 
 ### 5.10. Services (`/services`)
+
 - `GET /api/services` - Get a list of all available services. This endpoint is used by craftsmen to select their skills/services for their profile, and by clients when creating a job to choose the job category, or publicly to display our services.
   - **Example Response:**
     ```json
@@ -275,6 +292,7 @@ Only users with the Admin or Moderator role can create, update, or delete servic
 This section details the proposed document structures for the main collections.
 
 ### 6.1. users Collection
+
 ```js
 {
   _id: ObjectId,
@@ -316,6 +334,7 @@ This section details the proposed document structures for the main collections.
 ```
 
 ### 6.2. jobs Collection
+
 ```js
 {
   _id: ObjectId,
@@ -345,6 +364,7 @@ This section details the proposed document structures for the main collections.
 ```
 
 ### 6.3. quotes Collection
+
 ```js
 {
   _id: ObjectId,
@@ -358,6 +378,7 @@ This section details the proposed document structures for the main collections.
 ```
 
 ### 6.4. reviews Collection
+
 ```js
 {
   _id: ObjectId,
@@ -373,6 +394,7 @@ This section details the proposed document structures for the main collections.
 ```
 
 ### 6.5. transactions Collection
+
 ```js
 {
   _id: ObjectId,
@@ -420,7 +442,9 @@ This section details the proposed document structures for the main collections.
 ## 7. Implementation & Operational Details
 
 ### 7.1. Environment Variables
+
 The following environment variables are required for the backend to function:
+
 ```env
 # Database
 MONGODB_URI=mongodb://localhost:27017/craftworks
@@ -435,6 +459,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 ### 7.2. Image Upload (Cloudinary)
+
 - Profile images are uploaded to Cloudinary and stored in the `profile-images` folder.
 - Images are automatically resized to 400x400 pixels and optimized.
 - Old profile images are automatically deleted when a new one is uploaded.
@@ -443,6 +468,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 - Temporary files are automatically cleaned up after upload.
 
 ### 7.3. Logging & Monitoring
+
 - All HTTP requests are logged (e.g., using morgan).
 - Application events and errors are logged (e.g., using winston).
 - Logs are written to:
@@ -452,12 +478,14 @@ CLOUDINARY_API_SECRET=your_api_secret
 - Console output is also formatted and timestamped.
 
 ### 7.4. Error Handling
+
 - **404 Not Found:** Any request to a non-existent `/api/...` route returns `{ "message": "API route not found" }` with status 404.
 - **Invalid ObjectId:** If a route expects an ObjectId and you pass an invalid string, you get `{ "message": "Resource not found (invalid ID)" }` with status 404.
 - **Global Error Handler:** All unhandled errors return `{ "message": "Internal server error" }` with status 500 (unless a more specific status is set).
 - All errors are logged with details about the request and error.
 
 ### 7.5. Authentication & Authorization (Updated)
+
 - All protected endpoints require a Bearer JWT token in the `Authorization` header.
 - The `type` field in login determines which roles can log in:
   - `clients`: Only users with role `client` or `craftsman` can log in (for website/mobile app).
@@ -469,17 +497,20 @@ CLOUDINARY_API_SECRET=your_api_secret
 - Role-based access enforced with 403 Forbidden errors.
 
 ### 7.6. User Roles & Permissions
+
 - **admin:** Can manage users, jobs, services, reports, etc.
 - **moderator:** Can moderate content and manage reports, but cannot access admin-only endpoints like activity logs.
 - **client:** Can post jobs, review craftsmen, message, etc.
 - **craftsman:** Can submit proposals, manage profile, message, etc.
 
 ### 7.7. User Ratings
+
 - Every user (client or craftsman) has a `rating` (average, 1-5) and `ratingCount` (number of received reviews) field on their user profile.
 - Ratings are updated automatically whenever a review is created or updated.
 - Both clients and craftsmen can review each other after a job is completed, but only after the contract is marked as completed and only once per contract.
 
 ### 7.8. Pagination
+
 - All paginated endpoints return:
   ```json
   {
@@ -494,6 +525,7 @@ CLOUDINARY_API_SECRET=your_api_secret
   ```
 
 ### 7.9. HTTP Status Codes
+
 - `200 OK`: Successful GET, PUT, DELETE
 - `201 Created`: Successful POST
 - `400 Bad Request`: Invalid input
@@ -503,6 +535,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 - `500 Server Error`: Unexpected error
 
 ### 7.10. Business Logic (Updated)
+
 - For user update endpoints, support profile image upload, optional fields, and validation.
 - For password change, require current and new password, validate length, and return appropriate error messages.
 - For job, proposal, contract, review, and message flows, clarify who can access or modify what, and under what conditions (e.g., only job owner, admin, or moderator can update/delete jobs).
@@ -512,11 +545,13 @@ CLOUDINARY_API_SECRET=your_api_secret
 - Only active jobs (status = `Posted`) can have invitations sent.
 
 ### 7.11. Activity Logging
+
 - All important actions (user registration, admin actions, deletions, service changes, etc.) are logged in the ActivityLog collection.
 - Each log entry includes: who did the action, what action, what target, details, and timestamp.
 - Only admins can access the activity log endpoint.
 
 ### 7.12. Resource Relationships
+
 - **Jobs → Proposals → Contracts → Reviews**
 - A job is posted by a client, craftsmen submit proposals, client accepts a proposal to create a contract, contract is completed, then both parties can review each other.
 
@@ -534,6 +569,7 @@ graph TD
 ```
 
 ### 7.14. File Uploads
+
 - Use `/api/services/uploads` as a placeholder for now. In production, integrate with S3, Cloudinary, or similar.
 
 ---

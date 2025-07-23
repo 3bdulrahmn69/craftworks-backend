@@ -15,7 +15,8 @@
     "typecheck": "tsc --noEmit",
     "prepare": "npm run build",
     "check": "npm run typecheck && npm run lint",
-    "init-logs": "node --loader ts-node/esm scripts/init-logging.ts"
+    "init-logs": "node --loader ts-node/esm scripts/init-logging.ts",
+    "seed": "node --loader ./register-ts-node.mjs src/seeds.ts"
   },
   "author": "",
   "license": "MIT",

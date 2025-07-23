@@ -14,13 +14,9 @@ const logFormat = winston.format.combine(
   winston.format.printf(({ timestamp, level, message, stack, ...meta }) => {
     let logEntry = `${timestamp} [${level.toUpperCase()}]: ${message}`;
 
-    if (Object.keys(meta).length > 0) 
-      logEntry += ` ${JSON.stringify(meta)}`;
-    
+    if (Object.keys(meta).length > 0) logEntry += ` ${JSON.stringify(meta)}`;
 
-    if (stack) 
-      logEntry += `\n${stack}`;
-    
+    if (stack) logEntry += `\n${stack}`;
 
     return logEntry;
   })
@@ -60,7 +56,7 @@ const logger = winston.createLogger({
 });
 
 // Add console transport in development
-if (isDevelopment) 
+if (isDevelopment)
   logger.add(
     new winston.transports.Console({
       format: winston.format.combine(
@@ -69,7 +65,6 @@ if (isDevelopment)
       ),
     })
   );
-
 
 // Create a stream for morgan HTTP logging
 export const morganStream = {

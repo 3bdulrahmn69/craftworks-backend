@@ -3,9 +3,9 @@ import { JobService } from '../services/job.service.js';
 import { IAuthenticatedRequest } from '../types/common.types.js';
 import { Types } from 'mongoose';
 
-export const JobController = {
+export class JobController {
   // POST /api/jobs (Client only)
-  async createJob(req: IAuthenticatedRequest, res: Response) {
+  static async createJob(req: IAuthenticatedRequest, res: Response) {
     try {
       const clientId = req.user?.userId;
       if (!clientId) return res.status(401).json({ message: 'Unauthorized' });
@@ -20,10 +20,10 @@ export const JobController = {
           error instanceof Error ? error.message : 'Failed to create job',
       });
     }
-  },
+  }
 
   // GET /api/jobs
-  async getJobs(req: IAuthenticatedRequest, res: Response) {
+  static async getJobs(req: IAuthenticatedRequest, res: Response) {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
@@ -31,7 +31,7 @@ export const JobController = {
       const filter: any = {};
       if (req.query.category) filter.category = req.query.category;
       if (req.query.status) filter.status = req.query.status;
-      const { jobs, pagination } = await JobService.getJobs(
+      const { data: jobs, pagination } = await JobService.getJobs(
         filter,
         page,
         limit
@@ -40,10 +40,10 @@ export const JobController = {
     } catch (error) {
       return res.status(500).json({ message: 'Failed to fetch jobs' });
     }
-  },
+  }
 
   // GET /api/jobs/:jobId
-  async getJobById(req: IAuthenticatedRequest, res: Response) {
+  static async getJobById(req: IAuthenticatedRequest, res: Response) {
     try {
       const job = await JobService.getJobById(req.params.jobId);
       if (!job) return res.status(404).json({ message: 'Job not found' });
@@ -51,10 +51,10 @@ export const JobController = {
     } catch (error) {
       return res.status(500).json({ message: 'Failed to fetch job' });
     }
-  },
+  }
 
   // PUT /api/jobs/:jobId (Client only)
-  async updateJob(req: IAuthenticatedRequest, res: Response) {
+  static async updateJob(req: IAuthenticatedRequest, res: Response) {
     try {
       const clientId = req.user?.userId;
       if (!clientId) return res.status(401).json({ message: 'Unauthorized' });
@@ -74,10 +74,10 @@ export const JobController = {
           error instanceof Error ? error.message : 'Failed to update job',
       });
     }
-  },
+  }
 
   // DELETE /api/jobs/:jobId (Client only)
-  async deleteJob(req: IAuthenticatedRequest, res: Response) {
+  static async deleteJob(req: IAuthenticatedRequest, res: Response) {
     try {
       const clientId = req.user?.userId;
       if (!clientId) return res.status(401).json({ message: 'Unauthorized' });
@@ -93,10 +93,10 @@ export const JobController = {
     } catch (error) {
       return res.status(500).json({ message: 'Failed to delete job' });
     }
-  },
+  }
 
   // PATCH /api/jobs/:jobId/status
-  async updateJobStatus(req: IAuthenticatedRequest, res: Response) {
+  static async updateJobStatus(req: IAuthenticatedRequest, res: Response) {
     try {
       const { jobId } = req.params;
       const { status } = req.body;
@@ -111,5 +111,5 @@ export const JobController = {
             : 'Failed to update job status',
       });
     }
-  },
-};
+  }
+}

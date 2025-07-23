@@ -7,4 +7,5 @@ export interface IQuote extends Document {
   notes?: string;
   status: 'Submitted' | 'Accepted' | 'Declined';
   createdAt: Date;
+  updatedAt: Date;
 }

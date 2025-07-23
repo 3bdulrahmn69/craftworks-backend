@@ -80,23 +80,21 @@ export class ActionLogService {
 
     // Get user info if userId is provided
     let userInfo: { email?: string; fullName?: string; role?: string } = {};
-    if (userId) 
+    if (userId)
       try {
         const user = await User.findById(userId).select('email fullName role');
-        if (user) 
+        if (user)
           userInfo = {
             email: user.email,
             fullName: user.fullName,
             role: user.role,
           };
-        
       } catch (error) {
         logger.warn('Failed to fetch user info for action log', {
           userId,
           error,
         });
       }
-    
 
     return this.logAction({
       userId,
@@ -143,34 +141,24 @@ export class ActionLogService {
       // Build filter object
       const filter: any = {};
 
-      if (userId) 
-        filter.userId = userId;
-      
-      if (userEmail) 
-        filter.userEmail = { $regex: userEmail, $options: 'i' };
-      
-      if (action) 
-        filter.action = { $regex: action, $options: 'i' };
-      
-      if (category) 
-        filter.category = category;
-      
-      if (typeof success === 'boolean') 
-        filter.success = success;
-      
-      if (ipAddress) 
-        filter.ipAddress = ipAddress;
-      
+      if (userId) filter.userId = userId;
+
+      if (userEmail) filter.userEmail = { $regex: userEmail, $options: 'i' };
+
+      if (action) filter.action = { $regex: action, $options: 'i' };
+
+      if (category) filter.category = category;
+
+      if (typeof success === 'boolean') filter.success = success;
+
+      if (ipAddress) filter.ipAddress = ipAddress;
 
       // Date range filter
       if (startDate || endDate) {
         filter.timestamp = {};
-        if (startDate) 
-          filter.timestamp.$gte = startDate;
-        
-        if (endDate) 
-          filter.timestamp.$lte = endDate;
-        
+        if (startDate) filter.timestamp.$gte = startDate;
+
+        if (endDate) filter.timestamp.$lte = endDate;
       }
 
       // Calculate pagination
@@ -215,32 +203,27 @@ export class ActionLogService {
       const filter: any = {};
 
       // Category filter
-      if (filters.category && filters.category.length > 0) 
+      if (filters.category && filters.category.length > 0)
         filter.category = { $in: filters.category };
-      
 
       // Actions filter
-      if (filters.actions && filters.actions.length > 0) 
+      if (filters.actions && filters.actions.length > 0)
         filter.action = { $in: filters.actions };
-      
 
       // Success filter
-      if (typeof filters.success === 'boolean') 
+      if (typeof filters.success === 'boolean')
         filter.success = filters.success;
-      
 
       // User roles filter
-      if (filters.userRoles && filters.userRoles.length > 0) 
+      if (filters.userRoles && filters.userRoles.length > 0)
         filter.userRole = { $in: filters.userRoles };
-      
 
       // Date range filter
-      if (filters.dateRange) 
+      if (filters.dateRange)
         filter.timestamp = {
           $gte: filters.dateRange.start,
           $lte: filters.dateRange.end,
         };
-      
 
       // Search filter (searches in action, userEmail, userName)
       if (filters.search) {
@@ -275,12 +258,11 @@ export class ActionLogService {
     try {
       const matchStage: any = {};
 
-      if (dateRange) 
+      if (dateRange)
         matchStage.timestamp = {
           $gte: dateRange.start,
           $lte: dateRange.end,
         };
-      
 
       const stats = await ActionLog.aggregate([
         { $match: matchStage },

@@ -3,13 +3,16 @@ import { ActionLogService } from '../services/actionLog.service.js';
 import { IAuthenticatedRequest } from '../types/common.types.js';
 import { AdminService } from '../services/admin.service.js';
 
-export const AdminController = {
+export class AdminController {
   // GET /api/admin/users
-  async getAllUsers(req: IAuthenticatedRequest, res: Response) {
+  static async getAllUsers(req: IAuthenticatedRequest, res: Response) {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
-      const { users, pagination } = await AdminService.getAllUsers(page, limit);
+      const { data: users, pagination } = await AdminService.getAllUsers(
+        page,
+        limit
+      );
       await ActionLogService.logAction({
         userId: req.user?.userId,
         userRole: req.user?.role,
@@ -33,10 +36,10 @@ export const AdminController = {
       });
       res.status(500).json({ message: 'Failed to fetch users' });
     }
-  },
+  }
 
   // POST /api/admin/users/create-admin
-  async createAdmin(req: IAuthenticatedRequest, res: Response) {
+  static async createAdmin(req: IAuthenticatedRequest, res: Response) {
     try {
       const { email, password, fullName, role, phone } = req.body;
       const newUser = await AdminService.createAdmin({
@@ -74,10 +77,10 @@ export const AdminController = {
             : 'Failed to create admin user',
       });
     }
-  },
+  }
 
   // PATCH /api/admin/users/:userId/ban
-  async banUser(req: IAuthenticatedRequest, res: Response) {
+  static async banUser(req: IAuthenticatedRequest, res: Response) {
     try {
       const { userId } = req.params;
       await AdminService.banUser(userId);
@@ -106,10 +109,10 @@ export const AdminController = {
         message: error instanceof Error ? error.message : 'Failed to ban user',
       });
     }
-  },
+  }
 
   // PATCH /api/admin/users/:userId/unban
-  async unbanUser(req: IAuthenticatedRequest, res: Response) {
+  static async unbanUser(req: IAuthenticatedRequest, res: Response) {
     try {
       const { userId } = req.params;
       await AdminService.unbanUser(userId);
@@ -139,10 +142,13 @@ export const AdminController = {
           error instanceof Error ? error.message : 'Failed to unban user',
       });
     }
-  },
+  }
 
   // GET /api/admin/verifications
-  async getPendingVerifications(req: IAuthenticatedRequest, res: Response) {
+  static async getPendingVerifications(
+    req: IAuthenticatedRequest,
+    res: Response
+  ) {
     try {
       const pending = await AdminService.getPendingVerifications();
       await ActionLogService.logAction({
@@ -170,10 +176,10 @@ export const AdminController = {
         .status(500)
         .json({ message: 'Failed to fetch pending verifications' });
     }
-  },
+  }
 
   // POST /api/admin/verifications/:verificationId/approve
-  async approveVerification(req: IAuthenticatedRequest, res: Response) {
+  static async approveVerification(req: IAuthenticatedRequest, res: Response) {
     try {
       const { verificationId } = req.params;
       await AdminService.approveVerification(verificationId);
@@ -205,10 +211,10 @@ export const AdminController = {
             : 'Failed to approve verification',
       });
     }
-  },
+  }
 
   // POST /api/admin/verifications/:verificationId/reject
-  async rejectVerification(req: IAuthenticatedRequest, res: Response) {
+  static async rejectVerification(req: IAuthenticatedRequest, res: Response) {
     try {
       const { verificationId } = req.params;
       await AdminService.rejectVerification(verificationId);
@@ -240,5 +246,5 @@ export const AdminController = {
             : 'Failed to reject verification',
       });
     }
-  },
-};
+  }
+}

@@ -9,6 +9,7 @@ import {
   IAuthRequest,
 } from '../types/user.types.js';
 import { ValidationHelper } from '../utils/validation.js';
+import { UserTransformHelper } from '../utils/userTransformHelper.js';
 import logger, { loggerHelpers } from './logger.js';
 
 export class AuthenticationError extends Error {
@@ -118,22 +119,22 @@ export class AuthService {
     }
 
     // Validate role based on login type
-    if (type === 'clients' && !['client', 'craftsman'].includes(user.role)) {
+    if (type === 'public' && !['client', 'craftsman'].includes(user.role)) {
       loggerHelpers.logAuthAttempt(
         false,
         email,
         phone,
-        'Invalid role for client login'
+        'Invalid role for public login'
       );
       throw new AuthenticationError('Access denied for this user type', 403);
     }
 
-    if (type === 'admins' && !['admin', 'moderator'].includes(user.role)) {
+    if (type === 'internal' && !['admin', 'moderator'].includes(user.role)) {
       loggerHelpers.logAuthAttempt(
         false,
         email,
         phone,
-        'Invalid role for admin login'
+        'Invalid role for public login'
       );
       throw new AuthenticationError('Access denied for this user type', 403);
     }
@@ -268,15 +269,6 @@ export class AuthService {
    * Sanitize user data for response
    */
   private static sanitizeUserData(user: IUser): IUserPublic {
-    return {
-      id: user._id.toString(),
-      email: user.email ?? undefined,
-      phone: user.phone ?? undefined,
-      role: user.role,
-      fullName: user.fullName,
-      profilePicture: user.profilePicture ?? undefined,
-      rating: user.rating ?? undefined,
-      ratingCount: user.ratingCount,
-    };
+    return UserTransformHelper.toPublic(user);
   }
 }

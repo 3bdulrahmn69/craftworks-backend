@@ -8,4 +8,5 @@ export interface INotification extends Document {
   data?: Record<string, any>;
   read: boolean;
   createdAt: Date;
+  updatedAt: Date;
 }

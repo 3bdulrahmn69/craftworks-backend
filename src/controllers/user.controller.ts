@@ -22,7 +22,6 @@ export class UserController {
         }
 
         const user = await UserService.getCurrentUser(userId);
-        console.log(user);
         ApiResponse.success(res, user, 'User profile retrieved successfully');
       } catch (error) {
         if (error instanceof UserServiceError)
@@ -41,7 +40,7 @@ export class UserController {
    */
   static updateCurrentUser = asyncHandler(
     async (
-      req: IAuthenticatedRequest & { file?: Express.Multer.File },
+      req: IAuthenticatedRequest & { file?: any },
       res: Response
     ): Promise<Response | void> => {
       try {
