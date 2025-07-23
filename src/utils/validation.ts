@@ -84,7 +84,7 @@ export class ValidationHelper {
     if (!data.password) errors.push('Password is required');
 
     if (!data.type) errors.push('Login type is required');
-    else if (!['clients', 'admins'].includes(data.type))
+    else if (!['public', 'internal'].includes(data.type))
       errors.push('Invalid login type');
 
     if (!data.email && !data.phone)
