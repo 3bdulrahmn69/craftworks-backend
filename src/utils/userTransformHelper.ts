@@ -1,4 +1,5 @@
 import { IUser, IUserPublic } from '../types/user.types.js';
+import { Service } from '../models/service.model.js';
 
 /**
  * Helper function to transform user data based on role
@@ -7,7 +8,7 @@ export class UserTransformHelper {
   /**
    * Transform user document to public interface based on role
    */
-  static toPublic(user: IUser): IUserPublic {
+  static async toPublic(user: IUser): Promise<IUserPublic> {
     const publicUser: IUserPublic = {
       id: user._id.toString(),
       email: user.email,
@@ -27,7 +28,27 @@ export class UserTransformHelper {
       publicUser.ratingCount = user.ratingCount;
     }
 
-    if (user.role === 'craftsman') publicUser.wallet = user.wallet;
+    if (user.role === 'craftsman') {
+      publicUser.wallet = user.wallet;
+
+      // Populate service data if craftsman has a service
+      if (user.craftsmanInfo?.service)
+        try {
+          const service = await Service.findById(user.craftsmanInfo.service);
+          if (service)
+            publicUser.service = {
+              _id: service._id.toString(),
+              name: service.name,
+              icon: service.icon,
+              description: service.description,
+              createdAt: service.createdAt,
+              updatedAt: service.updatedAt,
+            } as any;
+          else publicUser.service = user.craftsmanInfo.service; // Fallback to ID if service not found
+        } catch (error) {
+          publicUser.service = user.craftsmanInfo.service; // Fallback to ID on error
+        }
+    }
 
     return publicUser;
   }
@@ -35,11 +56,11 @@ export class UserTransformHelper {
   /**
    * Filter user fields for different contexts (login response, profile, etc.)
    */
-  static filterForContext(
+  static async filterForContext(
     user: IUser,
     context: 'login' | 'profile' | 'public' = 'public'
-  ): IUserPublic {
-    const publicUser = this.toPublic(user);
+  ): Promise<IUserPublic> {
+    const publicUser = await this.toPublic(user);
 
     // For login context, include more sensitive fields if needed
     if (context === 'login') {

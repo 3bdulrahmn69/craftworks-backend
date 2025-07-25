@@ -69,6 +69,7 @@ export class AuthService {
         role?.toLowerCase() === 'craftsman'
           ? {
               skills: [],
+              services: [],
               bio: '',
               portfolioImageUrls: [],
               verificationStatus: 'pending',
@@ -86,7 +87,7 @@ export class AuthService {
 
     // Generate JWT token
     const token = this.generateToken(user._id.toString(), user.role);
-    const userResponse = this.sanitizeUserData(user);
+    const userResponse = await this.sanitizeUserData(user);
 
     return { token, user: userResponse };
   }
@@ -160,7 +161,7 @@ export class AuthService {
       role: user.role,
     });
 
-    const userResponse = this.sanitizeUserData(user);
+    const userResponse = await this.sanitizeUserData(user);
 
     return { token, user: userResponse };
   }
@@ -268,7 +269,7 @@ export class AuthService {
   /**
    * Sanitize user data for response
    */
-  private static sanitizeUserData(user: IUser): IUserPublic {
-    return UserTransformHelper.toPublic(user);
+  private static async sanitizeUserData(user: IUser): Promise<IUserPublic> {
+    return await UserTransformHelper.toPublic(user);
   }
 }

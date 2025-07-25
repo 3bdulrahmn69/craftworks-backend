@@ -15,6 +15,16 @@ const craftsmanInfoSchema = new Schema<ICraftsmanInfo>(
       type: [String],
       default: [],
     },
+    service: {
+      type: String,
+      validate: {
+        validator: function (v: string) {
+          // Validate that service ID is a valid MongoDB ObjectId
+          return !v || /^[0-9a-fA-F]{24}$/.test(v);
+        },
+        message: 'Service ID must be a valid ObjectId',
+      },
+    },
     bio: {
       type: String,
       maxlength: 1000,
@@ -225,6 +235,17 @@ userSchema.pre('save', function (next) {
   // Initialize wallet only for craftsmen
   if (this.role === 'craftsman' && !this.wallet)
     this.wallet = { balance: 0, withdrawableBalance: 0 };
+
+  // Initialize craftsman info if missing for craftsmen
+  if (this.role === 'craftsman' && !this.craftsmanInfo)
+    this.craftsmanInfo = {
+      skills: [],
+      service: '',
+      bio: '',
+      portfolioImageUrls: [],
+      verificationStatus: 'pending',
+      verificationDocs: [],
+    };
 
   // Remove wallet for non-craftsmen
   if (this.role !== 'craftsman') this.set('wallet', undefined);

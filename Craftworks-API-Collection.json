@@ -18,7 +18,7 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:3000/api",
+      "value": "http://localhost:5000/api",
       "type": "string"
     },
     {
@@ -43,7 +43,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"client@example.com\",\n  \"password\": \"Password123!\",\n  \"phone\": \"+201018326780\",\n  \"role\": \"client\",\n  \"fullName\": \"John Client\"\n}"
+              "raw": "{\n  \"email\": \"client@example.com\",\n  \"password\": \"123456!Aa\",\n  \"phone\": \"+201018326780\",\n  \"role\": \"client\",\n  \"fullName\": \"John Client\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/register",
@@ -65,7 +65,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"craftsman@example.com\",\n  \"password\": \"Password123!\",\n  \"phone\": \"+201018326781\",\n  \"role\": \"craftsman\",\n  \"fullName\": \"Ahmed Craftsman\"\n}"
+              "raw": "{\n  \"email\": \"craftsman@example.com\",\n  \"password\": \"123456!Aa\",\n  \"phone\": \"+201018326781\",\n  \"role\": \"craftsman\",\n  \"fullName\": \"Ahmed Craftsman\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/register",
@@ -100,7 +100,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"client@example.com\",\n  \"password\": \"Password123!\",\n  \"type\": \"clients\"\n}"
+              "raw": "{\n  \"email\": \"client@example.com\",\n  \"password\": \"123456!Aa\",\n  \"type\": \"public\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
@@ -135,7 +135,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phone\": \"+201018326780\",\n  \"password\": \"Password123!\",\n  \"type\": \"clients\"\n}"
+              "raw": "{\n  \"phone\": \"+201018326780\",\n  \"password\": \"123456!Aa\",\n  \"type\": \"public\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
@@ -170,7 +170,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"123456!Aa\",\n  \"type\": \"admins\"\n}"
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"123456!Aa\",\n  \"type\": \"internal\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
@@ -214,7 +214,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"token\": \"RESET_TOKEN_HERE\",\n  \"newPassword\": \"NewPassword123!\"\n}"
+              "raw": "{\n  \"token\": \"RESET_TOKEN_HERE\",\n  \"newPassword\": \"New123456!Aa\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/reset-password",
@@ -936,7 +936,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"newadmin@example.com\",\n  \"password\": \"AdminPassword123!\",\n  \"role\": \"admin\",\n  \"fullName\": \"New Admin User\"\n}"
+              "raw": "{\n  \"email\": \"newadmin@example.com\",\n  \"password\": \"Admin123456!Aa\",\n  \"role\": \"admin\",\n  \"fullName\": \"New Admin User\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/admin/users",

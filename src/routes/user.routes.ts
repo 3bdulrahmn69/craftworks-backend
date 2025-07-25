@@ -45,6 +45,13 @@ router.post(
   UserController.submitVerification
 );
 
+// Update craftsman service (Craftsman only)
+router.put(
+  '/craftsman/service',
+  authorizeRoles('craftsman'),
+  UserController.updateCraftsmanService
+);
+
 // Get recommended craftsmen for a job (Client only)
 router.get(
   '/recommendations',

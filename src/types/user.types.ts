@@ -1,4 +1,5 @@
 import { Document } from 'mongoose';
+import { IService } from './service.types.js';
 
 export interface IAddress {
   country?: string;
@@ -14,6 +15,7 @@ export interface IVerificationDoc {
 
 export interface ICraftsmanInfo {
   skills: string[];
+  service: string; // Single service ID that the craftsman provides
   bio?: string;
   portfolioImageUrls: string[];
   verificationStatus: 'pending' | 'verified' | 'rejected';
@@ -66,6 +68,7 @@ export interface IUserPublic {
   rating?: number; // Only for craftsmen
   ratingCount?: number; // Only for craftsmen
   wallet?: IWallet; // Only for craftsmen
+  service?: string | IService; // Only for craftsmen - service ID or full service object
   createdAt?: Date;
 }
 

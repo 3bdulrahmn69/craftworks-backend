@@ -21,7 +21,7 @@ export class UserService {
 
     if (user.isBanned) throw new UserServiceError('Account is banned', 403);
 
-    return this.sanitizeUserData(user);
+    return await this.sanitizeUserData(user);
   }
 
   /**
@@ -61,7 +61,7 @@ export class UserService {
       'fullName',
       'email',
       'phone',
-      'profilePicture ',
+      'profilePicture',
       'address',
       'craftsmanInfo',
     ];
@@ -91,7 +91,7 @@ export class UserService {
       updatedFields: Object.keys(updateData),
     });
 
-    return this.sanitizeUserData(user);
+    return await this.sanitizeUserData(user);
   }
 
   /**
@@ -103,7 +103,7 @@ export class UserService {
 
     if (user.isBanned) throw new UserServiceError('User not found', 404); // Don't reveal banned status
 
-    return this.sanitizeUserData(user);
+    return await this.sanitizeUserData(user);
   }
 
   /**
@@ -113,6 +113,7 @@ export class UserService {
     userId: string,
     verificationData: {
       skills: string[];
+      service?: string;
       bio?: string;
       portfolioImageUrls?: string[];
       verificationDocs: Array<{
@@ -147,6 +148,7 @@ export class UserService {
     // Update craftsman info
     user.craftsmanInfo = {
       skills: verificationData.skills,
+      service: verificationData.service || '',
       bio: verificationData.bio || '',
       portfolioImageUrls: verificationData.portfolioImageUrls || [],
       verificationStatus: 'pending',
@@ -176,7 +178,63 @@ export class UserService {
       docsCount: verificationData.verificationDocs.length,
     });
 
-    return this.sanitizeUserData(user);
+    return await this.sanitizeUserData(user);
+  }
+
+  /**
+   * Update craftsman service
+   */
+  static async updateCraftsmanService(
+    userId: string,
+    serviceId: string,
+    userIP?: string
+  ): Promise<IUserPublic> {
+    const user = await User.findById(userId);
+    if (!user) throw new UserServiceError('User not found', 404);
+
+    if (user.isBanned) throw new UserServiceError('Account is banned', 403);
+
+    if (user.role !== 'craftsman')
+      throw new UserServiceError('Only craftsmen can update service', 403);
+
+    // Validate service ID (basic ObjectId format validation)
+    if (serviceId && !/^[0-9a-fA-F]{24}$/.test(serviceId))
+      throw new UserServiceError(`Invalid service ID: ${serviceId}`, 400);
+
+    // Update service
+    if (!user.craftsmanInfo)
+      user.craftsmanInfo = {
+        skills: [],
+        service: serviceId,
+        bio: '',
+        portfolioImageUrls: [],
+        verificationStatus: 'pending',
+        verificationDocs: [],
+      };
+    else user.craftsmanInfo.service = serviceId;
+
+    // Update user logs
+    if (userIP) user.userLogs.lastIP = userIP;
+
+    await user.save();
+
+    // Log the service update
+    await ActionLogService.logAction({
+      userId,
+      action: 'service_updated',
+      category: 'user_management',
+      details: {
+        serviceId,
+      },
+      ipAddress: userIP,
+      success: true,
+    });
+
+    loggerHelpers.logUserAction('service_updated', userId, {
+      serviceId,
+    });
+
+    return await this.sanitizeUserData(user);
   }
 
   static async getRecommendedCraftsmen(jobId: string) {
@@ -202,7 +260,7 @@ export class UserService {
   /**
    * Sanitize user data for public response
    */
-  private static sanitizeUserData(user: IUser): IUserPublic {
-    return UserTransformHelper.toPublic(user);
+  private static async sanitizeUserData(user: IUser): Promise<IUserPublic> {
+    return await UserTransformHelper.toPublic(user);
   }
 }

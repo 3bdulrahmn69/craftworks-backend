@@ -201,6 +201,48 @@ export class UserController {
     }
   );
 
+  /**
+   * Update craftsman service
+   */
+  static updateCraftsmanService = asyncHandler(
+    async (
+      req: IAuthenticatedRequest,
+      res: Response
+    ): Promise<Response | void> => {
+      try {
+        const userId = req.user?.userId;
+        if (!userId) {
+          ApiResponse.unauthorized(res, 'Authentication required');
+          return;
+        }
+
+        const { serviceId } = req.body;
+
+        // Validate input
+        if (serviceId && typeof serviceId !== 'string') {
+          ApiResponse.badRequest(res, 'serviceId must be a string');
+          return;
+        }
+
+        const user = await UserService.updateCraftsmanService(
+          userId,
+          serviceId,
+          req.ip
+        );
+
+        ApiResponse.success(res, user, 'Service updated successfully');
+      } catch (error) {
+        if (error instanceof UserServiceError)
+          if (error.statusCode === 404)
+            ApiResponse.notFound(res, error.message);
+          else if (error.statusCode === 403)
+            ApiResponse.forbidden(res, error.message);
+          else ApiResponse.badRequest(res, error.message);
+        else ApiResponse.internalError(res, 'Failed to update service');
+      }
+    }
+  );
+
   static async getRecommendations(req: IAuthenticatedRequest, res: Response) {
     try {
       const { jobId } = req.query;

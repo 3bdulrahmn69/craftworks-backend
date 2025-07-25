@@ -31,7 +31,7 @@ async function seed() {
     console.log('Cleared all collections');
 
     // Create services
-    await Service.insertMany([
+    const services = await Service.insertMany([
       {
         name: 'Plumbing',
         icon: 'faucet-icon',
@@ -64,6 +64,20 @@ async function seed() {
       },
     ]);
     console.log('Seeded services');
+
+    // Get service IDs for reference
+    const plumbingService = services
+      .find((s) => s.name === 'Plumbing')
+      ?._id.toString();
+    const electricalService = services
+      .find((s) => s.name === 'Electrical')
+      ?._id.toString();
+    const paintingService = services
+      .find((s) => s.name === 'Painting')
+      ?._id.toString();
+    const carpentryService = services
+      .find((s) => s.name === 'Carpentry')
+      ?._id.toString();
 
     // Create users
     const hashedPassword = await bcrypt.hash('123456!Aa', 10);
@@ -146,6 +160,7 @@ async function seed() {
         },
         craftsmanInfo: {
           skills: ['Plumbing', 'HVAC'],
+          service: plumbingService!,
           bio: 'Experienced plumber with 10+ years in residential and commercial plumbing. Specialized in emergency repairs and installations.',
           portfolioImageUrls: [
             'https://res.cloudinary.com/demo/image/upload/plumbing1.jpg',
@@ -174,6 +189,7 @@ async function seed() {
         },
         craftsmanInfo: {
           skills: ['Electrical'],
+          service: electricalService!,
           bio: 'Licensed electrician specializing in home wiring, electrical repairs, and smart home installations.',
           portfolioImageUrls: [
             'https://res.cloudinary.com/demo/image/upload/electrical1.jpg',
@@ -201,6 +217,7 @@ async function seed() {
         },
         craftsmanInfo: {
           skills: ['Painting'],
+          service: paintingService!,
           bio: 'Professional painter with expertise in interior and exterior painting, wallpaper installation.',
           portfolioImageUrls: [
             'https://res.cloudinary.com/demo/image/upload/painting1.jpg',
@@ -230,6 +247,7 @@ async function seed() {
         },
         craftsmanInfo: {
           skills: ['Carpentry', 'Masonry'],
+          service: carpentryService!,
           bio: 'Master carpenter and mason with 15+ years experience. Custom furniture, kitchen cabinets, and stone work.',
           portfolioImageUrls: [
             'https://res.cloudinary.com/demo/image/upload/carpentry1.jpg',
