@@ -66,4 +66,52 @@ export class InvitationService {
 
     return invitation;
   }
+
+  /**
+   * Get all invitations received by a specific craftsman
+   */
+  static async getCraftsmanInvitations(
+    craftsmanId: Types.ObjectId,
+    page: number = 1,
+    limit: number = 10,
+    status?: string
+  ) {
+    const filter: any = { craftsman: craftsmanId };
+    if (status) filter.status = status;
+
+    const skip = (page - 1) * limit;
+    const sort = { createdAt: -1 as const }; // Most recent first
+
+    const [invitations, totalItems] = await Promise.all([
+      Invitation.find(filter)
+        .populate({
+          path: 'job',
+          select:
+            'title description category photos address location status client createdAt paymentType',
+          populate: {
+            path: 'client',
+            select: 'fullName profilePicture rating ratingCount',
+          },
+        })
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Invitation.countDocuments(filter),
+    ]);
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: invitations,
+      pagination: {
+        page,
+        limit,
+        totalPages,
+        totalItems,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    };
+  }
 }

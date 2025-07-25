@@ -1,5 +1,7 @@
 import express from 'express';
 import { UserController } from '../controllers/user.controller.js';
+import { QuoteController } from '../controllers/quote.controller.js';
+import { InvitationController } from '../controllers/invitation.controller.js';
 import {
   authenticateJWT,
   authorizeRoles,
@@ -57,6 +59,20 @@ router.get(
   '/recommendations',
   authorizeRoles('client'),
   UserController.getRecommendations
+);
+
+// Get craftsman's submitted quotes (Craftsman only)
+router.get(
+  '/me/quotes',
+  authorizeRoles('craftsman'),
+  QuoteController.getCraftsmanQuotes
+);
+
+// Get craftsman's received invitations (Craftsman only)
+router.get(
+  '/me/invitations',
+  authorizeRoles('craftsman'),
+  InvitationController.getCraftsmanInvitations
 );
 
 export default router;

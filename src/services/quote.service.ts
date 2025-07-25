@@ -93,4 +93,52 @@ export class QuoteService {
     });
     return { job, quote };
   }
+
+  /**
+   * Get all quotes submitted by a specific craftsman
+   */
+  static async getCraftsmanQuotes(
+    craftsmanId: Types.ObjectId,
+    page: number = 1,
+    limit: number = 10,
+    status?: string
+  ) {
+    const filter: any = { craftsman: craftsmanId };
+    if (status) filter.status = status;
+
+    const skip = (page - 1) * limit;
+    const sort = { createdAt: -1 as const }; // Most recent first
+
+    const [quotes, totalItems] = await Promise.all([
+      Quote.find(filter)
+        .populate({
+          path: 'job',
+          select:
+            'title description category photos address location status client createdAt',
+          populate: {
+            path: 'client',
+            select: 'fullName profilePicture rating ratingCount',
+          },
+        })
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Quote.countDocuments(filter),
+    ]);
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: quotes,
+      pagination: {
+        page,
+        limit,
+        totalPages,
+        totalItems,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    };
+  }
 }

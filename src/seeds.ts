@@ -296,7 +296,7 @@ async function seed() {
     console.log('Cleaned up admin/moderator users');
 
     // Create multiple jobs
-    const [job1, job2, job3, job4] = await Job.insertMany([
+    const jobs = await Job.insertMany([
       {
         client: client1._id,
         title: 'Fix kitchen sink leak',
@@ -359,13 +359,249 @@ async function seed() {
         paymentType: 'CashProtected',
         appliedCraftsmen: [],
       },
+      {
+        client: client2._id,
+        title: 'Bathroom tile repair',
+        description:
+          'Several tiles in the bathroom are cracked and need to be replaced. Looking for professional tiling work.',
+        category: 'Masonry',
+        photos: [
+          'https://res.cloudinary.com/demo/image/upload/tile_repair1.jpg',
+        ],
+        address: '456 Alexandria Street, Alexandria',
+        location: { type: 'Point', coordinates: [31.1, 29.9] },
+        status: 'Posted',
+        paymentType: 'Cash',
+        appliedCraftsmen: [craftsman4._id],
+      },
+      {
+        client: client3._id,
+        title: 'HVAC system maintenance',
+        description:
+          'Annual maintenance and cleaning of central air conditioning system including filter replacement.',
+        category: 'HVAC',
+        photos: ['https://res.cloudinary.com/demo/image/upload/hvac1.jpg'],
+        address: '789 Pyramid Road, Giza',
+        location: { type: 'Point', coordinates: [31.0, 29.8] },
+        status: 'Posted',
+        paymentType: 'Escrow',
+        appliedCraftsmen: [craftsman1._id],
+      },
+      {
+        client: client1._id,
+        title: 'Living room ceiling fan installation',
+        description:
+          'Install a new ceiling fan in the living room including electrical connections and mounting.',
+        category: 'Electrical',
+        photos: [
+          'https://res.cloudinary.com/demo/image/upload/ceiling_fan1.jpg',
+        ],
+        address: '123 Main Street, New Cairo',
+        location: { type: 'Point', coordinates: [31.2, 30.1] },
+        status: 'Posted',
+        paymentType: 'Cash',
+        appliedCraftsmen: [craftsman2._id],
+      },
+      {
+        client: client2._id,
+        title: 'Bedroom wall painting',
+        description:
+          'Paint two bedrooms with neutral colors. Need primer application and two coats of paint.',
+        category: 'Painting',
+        photos: [
+          'https://res.cloudinary.com/demo/image/upload/bedroom_paint1.jpg',
+          'https://res.cloudinary.com/demo/image/upload/bedroom_paint2.jpg',
+        ],
+        address: '456 Alexandria Street, Alexandria',
+        location: { type: 'Point', coordinates: [31.1, 29.9] },
+        status: 'Posted',
+        paymentType: 'CashProtected',
+        appliedCraftsmen: [craftsman3._id],
+      },
+      {
+        client: client3._id,
+        title: 'Garden fence repair',
+        description:
+          'Wooden garden fence needs repair and reinforcement. Several panels are loose or damaged.',
+        category: 'Carpentry',
+        photos: [
+          'https://res.cloudinary.com/demo/image/upload/fence_repair1.jpg',
+        ],
+        address: '789 Pyramid Road, Giza',
+        location: { type: 'Point', coordinates: [31.0, 29.8] },
+        status: 'Posted',
+        paymentType: 'Cash',
+        appliedCraftsmen: [craftsman4._id],
+      },
+      {
+        client: client1._id,
+        title: 'Toilet installation',
+        description:
+          'Replace old toilet with new one. Need professional plumbing work and proper installation.',
+        category: 'Plumbing',
+        photos: [
+          'https://res.cloudinary.com/demo/image/upload/toilet_install1.jpg',
+        ],
+        address: '123 Main Street, New Cairo',
+        location: { type: 'Point', coordinates: [31.2, 30.1] },
+        status: 'Posted',
+        paymentType: 'Escrow',
+        appliedCraftsmen: [craftsman1._id],
+      },
+      {
+        client: client2._id,
+        title: 'Outdoor lighting installation',
+        description:
+          'Install garden and pathway lighting for security and aesthetics. Need electrical wiring.',
+        category: 'Electrical',
+        photos: [
+          'https://res.cloudinary.com/demo/image/upload/outdoor_lighting1.jpg',
+        ],
+        address: '456 Alexandria Street, Alexandria',
+        location: { type: 'Point', coordinates: [31.1, 29.9] },
+        status: 'Posted',
+        paymentType: 'Cash',
+        appliedCraftsmen: [],
+      },
+      {
+        client: client3._id,
+        title: 'Balcony waterproofing',
+        description:
+          'Balcony has water leakage issues. Need professional waterproofing treatment.',
+        category: 'Masonry',
+        photos: [
+          'https://res.cloudinary.com/demo/image/upload/balcony_waterproof1.jpg',
+        ],
+        address: '789 Pyramid Road, Giza',
+        location: { type: 'Point', coordinates: [31.0, 29.8] },
+        status: 'Posted',
+        paymentType: 'CashProtected',
+        appliedCraftsmen: [craftsman4._id],
+      },
+      {
+        client: client1._id,
+        title: 'Air conditioning repair',
+        description:
+          'Central AC unit not cooling properly. Need diagnosis and repair of cooling system.',
+        category: 'HVAC',
+        photos: ['https://res.cloudinary.com/demo/image/upload/ac_repair1.jpg'],
+        address: '123 Main Street, New Cairo',
+        location: { type: 'Point', coordinates: [31.2, 30.1] },
+        status: 'Posted',
+        paymentType: 'Cash',
+        appliedCraftsmen: [craftsman1._id],
+      },
+      {
+        client: client2._id,
+        title: 'Kitchen backsplash installation',
+        description:
+          'Install ceramic tile backsplash in kitchen. Need professional tiling work with proper grouting.',
+        category: 'Masonry',
+        photos: [
+          'https://res.cloudinary.com/demo/image/upload/backsplash1.jpg',
+        ],
+        address: '456 Alexandria Street, Alexandria',
+        location: { type: 'Point', coordinates: [31.1, 29.9] },
+        status: 'Posted',
+        paymentType: 'Escrow',
+        appliedCraftsmen: [craftsman4._id],
+      },
+      {
+        client: client3._id,
+        title: 'Built-in wardrobe construction',
+        description:
+          'Design and build custom built-in wardrobe for master bedroom with sliding doors.',
+        category: 'Carpentry',
+        photos: ['https://res.cloudinary.com/demo/image/upload/wardrobe1.jpg'],
+        address: '789 Pyramid Road, Giza',
+        location: { type: 'Point', coordinates: [31.0, 29.8] },
+        status: 'Posted',
+        paymentType: 'CashProtected',
+        appliedCraftsmen: [craftsman4._id],
+      },
+      {
+        client: client1._id,
+        title: 'Water heater installation',
+        description:
+          'Install new electric water heater in bathroom. Need plumbing and electrical connections.',
+        category: 'Plumbing',
+        photos: [
+          'https://res.cloudinary.com/demo/image/upload/water_heater1.jpg',
+        ],
+        address: '123 Main Street, New Cairo',
+        location: { type: 'Point', coordinates: [31.2, 30.1] },
+        status: 'Posted',
+        paymentType: 'Cash',
+        appliedCraftsmen: [craftsman1._id, craftsman2._id],
+      },
+      {
+        client: client2._id,
+        title: 'Gate automation system',
+        description:
+          'Install automatic gate opener with remote control for main entrance gate.',
+        category: 'Electrical',
+        photos: [
+          'https://res.cloudinary.com/demo/image/upload/gate_automation1.jpg',
+        ],
+        address: '456 Alexandria Street, Alexandria',
+        location: { type: 'Point', coordinates: [31.1, 29.9] },
+        status: 'Posted',
+        paymentType: 'Escrow',
+        appliedCraftsmen: [craftsman2._id],
+      },
+      {
+        client: client3._id,
+        title: 'Roof waterproofing',
+        description:
+          'Complete roof waterproofing and insulation work. Prevent water leakage during rainy season.',
+        category: 'Masonry',
+        photos: [
+          'https://res.cloudinary.com/demo/image/upload/roof_waterproof1.jpg',
+          'https://res.cloudinary.com/demo/image/upload/roof_waterproof2.jpg',
+        ],
+        address: '789 Pyramid Road, Giza',
+        location: { type: 'Point', coordinates: [31.0, 29.8] },
+        status: 'Posted',
+        paymentType: 'Cash',
+        appliedCraftsmen: [craftsman4._id],
+      },
+      {
+        client: client1._id,
+        title: 'Window frame painting',
+        description:
+          'Paint all window frames in the house. Need surface preparation and weather-resistant paint.',
+        category: 'Painting',
+        photos: [
+          'https://res.cloudinary.com/demo/image/upload/window_frames1.jpg',
+        ],
+        address: '123 Main Street, New Cairo',
+        location: { type: 'Point', coordinates: [31.2, 30.1] },
+        status: 'Posted',
+        paymentType: 'CashProtected',
+        appliedCraftsmen: [craftsman3._id],
+      },
+      {
+        client: client2._id,
+        title: 'Shower installation',
+        description:
+          'Install new walk-in shower with glass doors and modern fixtures. Need plumbing work.',
+        category: 'Plumbing',
+        photos: [
+          'https://res.cloudinary.com/demo/image/upload/shower_install1.jpg',
+        ],
+        address: '456 Alexandria Street, Alexandria',
+        location: { type: 'Point', coordinates: [31.1, 29.9] },
+        status: 'Posted',
+        paymentType: 'Cash',
+        appliedCraftsmen: [craftsman1._id],
+      },
     ]);
-    console.log('Seeded jobs');
+    console.log('Seeded 20 jobs');
 
     // Create multiple quotes
     const [quote1, quote2, quote3] = await Quote.insertMany([
       {
-        job: job1._id,
+        job: jobs[0]._id,
         craftsman: craftsman1._id,
         price: 1500,
         notes:
@@ -373,7 +609,7 @@ async function seed() {
         status: 'Submitted',
       },
       {
-        job: job2._id,
+        job: jobs[1]._id,
         craftsman: craftsman2._id,
         price: 3200,
         notes:
@@ -381,7 +617,7 @@ async function seed() {
         status: 'Submitted',
       },
       {
-        job: job3._id,
+        job: jobs[2]._id,
         craftsman: craftsman3._id,
         price: 8500,
         notes:
@@ -394,12 +630,12 @@ async function seed() {
     // Create invitations
     const [invitation1, invitation2] = await Invitation.insertMany([
       {
-        job: job1._id,
+        job: jobs[0]._id,
         craftsman: craftsman1._id,
         status: 'Accepted',
       },
       {
-        job: job4._id,
+        job: jobs[3]._id,
         craftsman: craftsman4._id,
         status: 'Pending',
       },
@@ -415,7 +651,7 @@ async function seed() {
         message:
           'Mahmoud Plumber has submitted a quote for your plumbing job: Fix kitchen sink leak',
         data: {
-          jobId: job1._id,
+          jobId: jobs[0]._id,
           quoteId: quote1._id,
           craftsmanId: craftsman1._id,
         },
@@ -428,7 +664,7 @@ async function seed() {
         message:
           'Hassan Electrician has submitted a quote for your electrical job',
         data: {
-          jobId: job2._id,
+          jobId: jobs[1]._id,
           quoteId: quote2._id,
           craftsmanId: craftsman2._id,
         },
@@ -441,7 +677,7 @@ async function seed() {
         message:
           'Ahmed Mohamed has invited you to apply for: Fix kitchen sink leak',
         data: {
-          jobId: job1._id,
+          jobId: jobs[0]._id,
           invitationId: invitation1._id,
           clientId: client1._id,
         },
@@ -454,7 +690,7 @@ async function seed() {
         message:
           'Ahmed Mohamed has invited you to apply for: Custom kitchen cabinets',
         data: {
-          jobId: job4._id,
+          jobId: jobs[3]._id,
           invitationId: invitation2._id,
           clientId: client1._id,
         },
@@ -466,7 +702,7 @@ async function seed() {
         title: 'Quote Accepted',
         message: 'Your quote for house exterior painting has been accepted!',
         data: {
-          jobId: job3._id,
+          jobId: jobs[2]._id,
           quoteId: quote3._id,
           craftsmanId: craftsman3._id,
         },

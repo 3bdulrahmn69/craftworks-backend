@@ -1101,6 +1101,121 @@ Authorization: Bearer <token>
 
 ---
 
+## Craftsman Dashboard
+
+### Get Craftsman's Submitted Quotes (Craftsman Only)
+
+`GET /api/users/me/quotes`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+
+- `page` (optional): Page number for pagination (default: 1)
+- `limit` (optional): Number of items per page (default: 10, max: 100)
+- `status` (optional): Filter by quote status (Submitted, Accepted, Declined)
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "67891234567890123456789a",
+      "price": 1500,
+      "notes": "I can fix the leak today. Price includes parts and labor.",
+      "status": "Submitted",
+      "createdAt": "2025-07-25T10:00:00.000Z",
+      "job": {
+        "_id": "67891234567890123456789b",
+        "title": "Fix kitchen sink leak",
+        "description": "There is a persistent leak under the kitchen sink...",
+        "category": "Plumbing",
+        "address": "123 Main Street, New Cairo",
+        "status": "Posted",
+        "client": {
+          "_id": "67891234567890123456789c",
+          "fullName": "Ahmed Mohamed",
+          "profilePicture": "https://...",
+          "rating": 4.2,
+          "ratingCount": 15
+        }
+      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "totalPages": 3,
+    "totalItems": 25,
+    "hasNextPage": true,
+    "hasPrevPage": false
+  }
+}
+```
+
+### Get Craftsman's Received Invitations (Craftsman Only)
+
+`GET /api/users/me/invitations`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+
+- `page` (optional): Page number for pagination (default: 1)
+- `limit` (optional): Number of items per page (default: 10, max: 100)
+- `status` (optional): Filter by invitation status (Pending, Accepted, Rejected)
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "67891234567890123456789d",
+      "status": "Pending",
+      "createdAt": "2025-07-25T09:30:00.000Z",
+      "job": {
+        "_id": "67891234567890123456789e",
+        "title": "Custom kitchen cabinets",
+        "description": "Design and build custom kitchen cabinets...",
+        "category": "Carpentry",
+        "address": "123 Main Street, New Cairo",
+        "status": "Posted",
+        "paymentType": "CashProtected",
+        "client": {
+          "_id": "67891234567890123456789f",
+          "fullName": "Ahmed Mohamed",
+          "profilePicture": "https://...",
+          "rating": 4.2,
+          "ratingCount": 15
+        }
+      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "totalPages": 2,
+    "totalItems": 12,
+    "hasNextPage": true,
+    "hasPrevPage": false
+  }
+}
+```
+
+---
+
 ## Recommendations
 
 ### Get Recommended Craftsmen for a Job (Client Only)

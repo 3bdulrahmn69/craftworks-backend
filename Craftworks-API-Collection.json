@@ -364,6 +364,76 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Get My Quotes (Craftsman Only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/me/quotes?page=1&limit=10&status=Submitted",
+              "host": ["{{base_url}}"],
+              "path": ["users", "me", "quotes"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "Submitted",
+                  "description": "Filter by quote status (Submitted, Accepted, Declined)"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Invitations (Craftsman Only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/me/invitations?page=1&limit=10&status=Pending",
+              "host": ["{{base_url}}"],
+              "path": ["users", "me", "invitations"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "Pending",
+                  "description": "Filter by invitation status (Pending, Accepted, Rejected)"
+                }
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },

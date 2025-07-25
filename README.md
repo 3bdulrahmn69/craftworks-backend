@@ -175,6 +175,19 @@ src/
 - `GET /api/jobs/:jobId/invitations` - View invitations for a job (client only)
 - `POST /api/jobs/:jobId/invitations/respond` - Craftsman responds to invitation (notifies client)
 
+### Users (`/api/users`)
+
+- `GET /api/users/me` - Get current user profile
+- `PUT /api/users/me` - Update current user profile
+- `GET /api/users/:userId` - Get public profile of a user
+- `POST /api/users/craftsman/verification` - Submit verification documents (craftsman only)
+- `GET /api/users/recommendations` - Get recommended craftsmen for a job (client only)
+
+#### Craftsman Dashboard
+
+- `GET /api/users/me/quotes` - Get all quotes submitted by craftsman (craftsman only, paginated)
+- `GET /api/users/me/invitations` - Get all invitations received by craftsman (craftsman only, paginated)
+
 ### Notifications (`/api/notifications`)
 
 - `GET /api/notifications` - List user notifications
