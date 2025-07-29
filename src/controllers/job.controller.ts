@@ -3,21 +3,16 @@ import { JobService } from '../services/job.service.js';
 import { IAuthenticatedRequest } from '../types/common.types.js';
 import { Types } from 'mongoose';
 import cloudinary from '../utils/cloudinary.js';
+import { ApiResponse } from '../utils/apiResponse.js';
 
 export class JobController {
   // POST /api/jobs (Client only)
   static async createJob(req: IAuthenticatedRequest, res: Response) {
     try {
       const clientId = req.user?.userId;
-      if (!clientId)
-        return res.status(401).json({
-          success: false,
-          message: 'Unauthorized',
-        });
+      if (!clientId) return ApiResponse.unauthorized(res, 'Unauthorized');
 
       const jobData = { ...req.body, client: new Types.ObjectId(clientId) };
-
-      console.log('Creating job with data:', jobData);
 
       // Process form data if it comes from multipart/form-data
       if (req.headers['content-type']?.includes('multipart/form-data')) {
@@ -115,12 +110,12 @@ export class JobController {
               coordinates.length !== 2 ||
               coordinates.some(isNaN)
             )
-              return res.status(400).json({
-                success: false,
-                message: `Location coordinates must be two valid numbers. Received: ${JSON.stringify(
+              return ApiResponse.badRequest(
+                res,
+                `Location coordinates must be two valid numbers. Received: ${JSON.stringify(
                   coordinates
-                )}. Format: "31.2,30.1" or [31.2, 30.1]`,
-              });
+                )}. Format: "31.2,30.1" or [31.2, 30.1]`
+              );
 
             jobData.location = {
               type: req.body['location[type]'] || 'Point',
@@ -134,10 +129,10 @@ export class JobController {
               parseError instanceof Error
                 ? parseError.message
                 : 'Unknown parsing error';
-            return res.status(400).json({
-              success: false,
-              message: `Invalid location coordinates format. Parse error: ${errorMessage}. Use "31.2,30.1" or "[31.2, 30.1]"`,
-            });
+            return ApiResponse.badRequest(
+              res,
+              `Invalid location coordinates format. Parse error: ${errorMessage}. Use "31.2,30.1" or "[31.2, 30.1]"`
+            );
           }
       }
 
@@ -160,10 +155,10 @@ export class JobController {
           if (coordinates.length === 2)
             jobData.location.coordinates = coordinates;
           else
-            return res.status(400).json({
-              success: false,
-              message: `Invalid coordinates format: ${coordStr}. Expected format: "31.2,30.1"`,
-            });
+            return ApiResponse.badRequest(
+              res,
+              `Invalid coordinates format: ${coordStr}. Expected format: "31.2,30.1"`
+            );
         }
 
       // Handle image uploads if any files are provided
@@ -207,10 +202,10 @@ export class JobController {
           const photoUrls = await Promise.all(uploadPromises);
           jobData.photos = photoUrls;
         } catch (uploadError) {
-          return res.status(400).json({
-            success: false,
-            message: 'Failed to upload images to cloud storage',
-          });
+          return ApiResponse.badRequest(
+            res,
+            'Failed to upload images to cloud storage'
+          );
         }
 
       console.log(
@@ -219,17 +214,11 @@ export class JobController {
       );
 
       const job = await JobService.createJob(jobData);
-      return res.status(201).json({
-        success: true,
-        data: job,
-        message: 'Job created successfully',
-      });
+      return ApiResponse.success(res, job, 'Job created successfully', 201);
     } catch (error) {
-      return res.status(400).json({
-        success: false,
-        message:
-          error instanceof Error ? error.message : 'Failed to create job',
-      });
+      const message =
+        error instanceof Error ? error.message : 'Failed to create job';
+      return ApiResponse.badRequest(res, message);
     }
   }
 
@@ -249,17 +238,13 @@ export class JobController {
 
       const { data: jobs, pagination } =
         await JobService.getJobsWithAdvancedFilters(filters, page, limit);
-      return res.json({
-        success: true,
-        data: jobs,
-        pagination,
-        message: 'Jobs retrieved successfully',
-      });
+      return ApiResponse.success(
+        res,
+        { data: jobs, pagination },
+        'Jobs retrieved successfully'
+      );
     } catch (error) {
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to fetch jobs',
-      });
+      return ApiResponse.error(res, 'Failed to fetch jobs', 500);
     }
   }
 
@@ -269,10 +254,7 @@ export class JobController {
       const searchTerm = req.query.q as string;
 
       if (!searchTerm || searchTerm.trim().length === 0)
-        return res.status(400).json({
-          success: false,
-          message: 'Search term is required',
-        });
+        return ApiResponse.badRequest(res, 'Search term is required');
 
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
@@ -294,20 +276,17 @@ export class JobController {
         limit
       );
 
-      return res.json({
-        success: true,
-        data: jobs,
-        pagination,
-        searchTerm: searchTerm.trim(),
-        message: `Found ${
-          pagination.totalItems
-        } jobs matching "${searchTerm.trim()}"`,
-      });
+      return ApiResponse.success(
+        res,
+        {
+          data: jobs,
+          pagination,
+          searchTerm: searchTerm.trim(),
+        },
+        `Found ${pagination.totalItems} jobs matching "${searchTerm.trim()}"`
+      );
     } catch (error) {
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to search jobs',
-      });
+      return ApiResponse.error(res, 'Failed to search jobs', 500);
     }
   }
 
@@ -315,21 +294,10 @@ export class JobController {
   static async getJobById(req: IAuthenticatedRequest, res: Response) {
     try {
       const job = await JobService.getJobById(req.params.jobId);
-      if (!job)
-        return res.status(404).json({
-          success: false,
-          message: 'Job not found',
-        });
-      return res.json({
-        success: true,
-        data: job,
-        message: 'Job retrieved successfully',
-      });
+      if (!job) return ApiResponse.notFound(res, 'Job not found');
+      return ApiResponse.success(res, job, 'Job retrieved successfully');
     } catch (error) {
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to fetch job',
-      });
+      return ApiResponse.error(res, 'Failed to fetch job', 500);
     }
   }
 
@@ -337,22 +305,19 @@ export class JobController {
   static async updateJob(req: IAuthenticatedRequest, res: Response) {
     try {
       const clientId = req.user?.userId;
-      if (!clientId) return res.status(401).json({ message: 'Unauthorized' });
+      if (!clientId) return ApiResponse.unauthorized(res, 'Unauthorized');
       const job = await JobService.updateJob(
         req.params.jobId,
         new Types.ObjectId(clientId),
         req.body
       );
       if (!job)
-        return res
-          .status(404)
-          .json({ message: 'Job not found or not owned by user' });
-      return res.json({ data: job });
+        return ApiResponse.notFound(res, 'Job not found or not owned by user');
+      return ApiResponse.success(res, job, 'Job updated successfully');
     } catch (error) {
-      return res.status(400).json({
-        message:
-          error instanceof Error ? error.message : 'Failed to update job',
-      });
+      const message =
+        error instanceof Error ? error.message : 'Failed to update job';
+      return ApiResponse.badRequest(res, message);
     }
   }
 
@@ -360,18 +325,16 @@ export class JobController {
   static async deleteJob(req: IAuthenticatedRequest, res: Response) {
     try {
       const clientId = req.user?.userId;
-      if (!clientId) return res.status(401).json({ message: 'Unauthorized' });
+      if (!clientId) return ApiResponse.unauthorized(res, 'Unauthorized');
       const job = await JobService.deleteJob(
         req.params.jobId,
         new Types.ObjectId(clientId)
       );
       if (!job)
-        return res
-          .status(404)
-          .json({ message: 'Job not found or not owned by user' });
-      return res.json({ message: 'Job deleted' });
+        return ApiResponse.notFound(res, 'Job not found or not owned by user');
+      return ApiResponse.success(res, null, 'Job deleted successfully');
     } catch (error) {
-      return res.status(500).json({ message: 'Failed to delete job' });
+      return ApiResponse.error(res, 'Failed to delete job', 500);
     }
   }
 
@@ -381,15 +344,12 @@ export class JobController {
       const { jobId } = req.params;
       const { status } = req.body;
       const job = await JobService.updateJobStatus(jobId, status);
-      if (!job) return res.status(404).json({ message: 'Job not found' });
-      return res.json({ data: job });
+      if (!job) return ApiResponse.notFound(res, 'Job not found');
+      return ApiResponse.success(res, job, 'Job status updated successfully');
     } catch (error) {
-      return res.status(400).json({
-        message:
-          error instanceof Error
-            ? error.message
-            : 'Failed to update job status',
-      });
+      const message =
+        error instanceof Error ? error.message : 'Failed to update job status';
+      return ApiResponse.badRequest(res, message);
     }
   }
 }

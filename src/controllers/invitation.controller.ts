@@ -3,6 +3,7 @@ import { InvitationService } from '../services/invitation.service.js';
 import { IAuthenticatedRequest } from '../types/common.types.js';
 import { Types } from 'mongoose';
 import { PaginationHelper } from '../utils/paginationHelper.js';
+import { ApiResponse } from '../utils/apiResponse.js';
 
 export class InvitationController {
   // POST /api/jobs/:jobId/invite (Client only)
@@ -10,17 +11,22 @@ export class InvitationController {
     try {
       const { craftsmanId } = req.body;
       if (!craftsmanId)
-        return res.status(400).json({ message: 'craftsmanId is required' });
+        return ApiResponse.badRequest(res, 'craftsmanId is required');
       const invitation = await InvitationService.inviteCraftsman(
         req.params.jobId,
         new Types.ObjectId(craftsmanId)
       );
-      return res.status(201).json({ data: invitation });
+      return ApiResponse.success(
+        res,
+        invitation,
+        'Craftsman invited successfully',
+        201
+      );
     } catch (error) {
-      return res.status(400).json({
-        message:
-          error instanceof Error ? error.message : 'Failed to invite craftsman',
-      });
+      return ApiResponse.badRequest(
+        res,
+        error instanceof Error ? error.message : 'Failed to invite craftsman'
+      );
     }
   }
 
@@ -30,9 +36,13 @@ export class InvitationController {
       const invitations = await InvitationService.getInvitationsForJob(
         req.params.jobId
       );
-      return res.json({ data: invitations });
+      return ApiResponse.success(
+        res,
+        invitations,
+        'Invitations retrieved successfully'
+      );
     } catch (error) {
-      return res.status(500).json({ message: 'Failed to fetch invitations' });
+      return ApiResponse.error(res, 'Failed to fetch invitations', 500);
     }
   }
 
@@ -40,25 +50,28 @@ export class InvitationController {
   static async respondToInvitation(req: IAuthenticatedRequest, res: Response) {
     try {
       const craftsmanId = req.user?.userId;
-      if (!craftsmanId)
-        return res.status(401).json({ message: 'Unauthorized' });
+      if (!craftsmanId) return ApiResponse.unauthorized(res, 'Unauthorized');
       const { response } = req.body;
       if (!['Accepted', 'Rejected'].includes(response))
-        return res.status(400).json({ message: 'Invalid response' });
+        return ApiResponse.badRequest(res, 'Invalid response');
 
       const invitation = await InvitationService.respondToInvitation(
         req.params.jobId,
         new Types.ObjectId(craftsmanId),
         response
       );
-      return res.json({ data: invitation });
+      return ApiResponse.success(
+        res,
+        invitation,
+        'Invitation response recorded successfully'
+      );
     } catch (error) {
-      return res.status(400).json({
-        message:
-          error instanceof Error
-            ? error.message
-            : 'Failed to respond to invitation',
-      });
+      return ApiResponse.badRequest(
+        res,
+        error instanceof Error
+          ? error.message
+          : 'Failed to respond to invitation'
+      );
     }
   }
 
@@ -69,8 +82,7 @@ export class InvitationController {
   ) {
     try {
       const craftsmanId = req.user?.userId;
-      if (!craftsmanId)
-        return res.status(401).json({ message: 'Unauthorized' });
+      if (!craftsmanId) return ApiResponse.unauthorized(res, 'Unauthorized');
 
       const { page, limit } = PaginationHelper.parseParams(req.query);
       const { status } = req.query;
@@ -82,16 +94,17 @@ export class InvitationController {
         status as string | undefined
       );
 
-      return res.json({
-        success: true,
-        data: result.data,
-        pagination: result.pagination,
-      });
+      return ApiResponse.success(
+        res,
+        { data: result.data, pagination: result.pagination },
+        'Craftsman invitations retrieved successfully'
+      );
     } catch (error) {
-      return res.status(500).json({
-        message: 'Failed to fetch craftsman invitations',
-        success: false,
-      });
+      return ApiResponse.error(
+        res,
+        'Failed to fetch craftsman invitations',
+        500
+      );
     }
   }
 }

@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { ActionLogService } from '../services/actionLog.service.js';
 import { IAuthenticatedRequest } from '../types/common.types.js';
 import { AdminService } from '../services/admin.service.js';
+import { ApiResponse } from '../utils/apiResponse.js';
 
 export class AdminController {
   // GET /api/admin/users
@@ -22,7 +23,11 @@ export class AdminController {
         ipAddress: req.ip,
         success: true,
       });
-      res.json({ data: users, pagination });
+      return ApiResponse.success(
+        res,
+        { data: users, pagination },
+        'Users retrieved successfully'
+      );
     } catch (error) {
       await ActionLogService.logAction({
         userId: req.user?.userId,
@@ -34,7 +39,7 @@ export class AdminController {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
       });
-      res.status(500).json({ message: 'Failed to fetch users' });
+      return ApiResponse.error(res, 'Failed to fetch users', 500);
     }
   }
 
@@ -58,7 +63,7 @@ export class AdminController {
         ipAddress: req.ip,
         success: true,
       });
-      res.status(201).json({ message: 'Admin user created', user: newUser });
+      return ApiResponse.success(res, newUser, 'Admin user created', 201);
     } catch (error) {
       await ActionLogService.logAction({
         userId: req.user?.userId,
@@ -70,12 +75,9 @@ export class AdminController {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
       });
-      res.status(400).json({
-        message:
-          error instanceof Error
-            ? error.message
-            : 'Failed to create admin user',
-      });
+      const message =
+        error instanceof Error ? error.message : 'Failed to create admin user';
+      return ApiResponse.error(res, message, 400);
     }
   }
 
@@ -93,7 +95,7 @@ export class AdminController {
         ipAddress: req.ip,
         success: true,
       });
-      res.json({ message: 'User banned successfully' });
+      return ApiResponse.success(res, null, 'User banned successfully');
     } catch (error) {
       await ActionLogService.logAction({
         userId: req.user?.userId,
@@ -105,9 +107,9 @@ export class AdminController {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
       });
-      res.status(404).json({
-        message: error instanceof Error ? error.message : 'Failed to ban user',
-      });
+      const message =
+        error instanceof Error ? error.message : 'Failed to ban user';
+      return ApiResponse.error(res, message, 404);
     }
   }
 
@@ -125,7 +127,7 @@ export class AdminController {
         ipAddress: req.ip,
         success: true,
       });
-      res.json({ message: 'User unbanned successfully' });
+      return ApiResponse.success(res, null, 'User unbanned successfully');
     } catch (error) {
       await ActionLogService.logAction({
         userId: req.user?.userId,
@@ -137,10 +139,9 @@ export class AdminController {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
       });
-      res.status(404).json({
-        message:
-          error instanceof Error ? error.message : 'Failed to unban user',
-      });
+      const message =
+        error instanceof Error ? error.message : 'Failed to unban user';
+      return ApiResponse.error(res, message, 404);
     }
   }
 
@@ -160,7 +161,11 @@ export class AdminController {
         ipAddress: req.ip,
         success: true,
       });
-      res.json({ data: pending });
+      return ApiResponse.success(
+        res,
+        pending,
+        'Pending verifications retrieved successfully'
+      );
     } catch (error) {
       await ActionLogService.logAction({
         userId: req.user?.userId,
@@ -172,9 +177,11 @@ export class AdminController {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
       });
-      res
-        .status(500)
-        .json({ message: 'Failed to fetch pending verifications' });
+      return ApiResponse.error(
+        res,
+        'Failed to fetch pending verifications',
+        500
+      );
     }
   }
 
@@ -192,7 +199,7 @@ export class AdminController {
         ipAddress: req.ip,
         success: true,
       });
-      res.json({ message: 'Verification approved' });
+      return ApiResponse.success(res, null, 'Verification approved');
     } catch (error) {
       await ActionLogService.logAction({
         userId: req.user?.userId,
@@ -204,12 +211,11 @@ export class AdminController {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
       });
-      res.status(404).json({
-        message:
-          error instanceof Error
-            ? error.message
-            : 'Failed to approve verification',
-      });
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to approve verification';
+      return ApiResponse.error(res, message, 404);
     }
   }
 
@@ -227,7 +233,7 @@ export class AdminController {
         ipAddress: req.ip,
         success: true,
       });
-      res.json({ message: 'Verification rejected' });
+      return ApiResponse.success(res, null, 'Verification rejected');
     } catch (error) {
       await ActionLogService.logAction({
         userId: req.user?.userId,
@@ -239,12 +245,11 @@ export class AdminController {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
       });
-      res.status(404).json({
-        message:
-          error instanceof Error
-            ? error.message
-            : 'Failed to reject verification',
-      });
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to reject verification';
+      return ApiResponse.error(res, message, 404);
     }
   }
 }

@@ -2,13 +2,14 @@ import { Response } from 'express';
 import { NotificationService } from '../services/notification.service.js';
 import { IAuthenticatedRequest } from '../types/common.types.js';
 import { Types } from 'mongoose';
+import { ApiResponse } from '../utils/apiResponse.js';
 
 export class NotificationController {
   // GET /api/notifications
   static async getUserNotifications(req: IAuthenticatedRequest, res: Response) {
     try {
       const userId = req.user?.userId;
-      if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+      if (!userId) return ApiResponse.unauthorized(res, 'Unauthorized');
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 20;
       const { notifications, pagination } =
@@ -17,9 +18,13 @@ export class NotificationController {
           page,
           limit
         );
-      return res.json({ data: notifications, pagination });
+      return ApiResponse.success(
+        res,
+        { data: notifications, pagination },
+        'Notifications retrieved successfully'
+      );
     } catch (error) {
-      return res.status(500).json({ message: 'Failed to fetch notifications' });
+      return ApiResponse.error(res, 'Failed to fetch notifications', 500);
     }
   }
 
@@ -30,17 +35,22 @@ export class NotificationController {
   ) {
     try {
       const userId = req.user?.userId;
-      if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+      if (!userId) return ApiResponse.unauthorized(res, 'Unauthorized');
       const { notificationIds } = req.body;
       await NotificationService.markNotificationsRead(
         new Types.ObjectId(userId),
         notificationIds
       );
-      return res.json({ message: 'Notifications marked as read' });
+      return ApiResponse.success(
+        res,
+        null,
+        'Notifications marked as read successfully'
+      );
     } catch (error) {
-      return res
-        .status(400)
-        .json({ message: 'Failed to mark notifications as read' });
+      return ApiResponse.badRequest(
+        res,
+        'Failed to mark notifications as read'
+      );
     }
   }
 }

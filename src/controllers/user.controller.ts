@@ -316,17 +316,13 @@ export class UserController {
           limit
         );
 
-        return res.json({
-          success: true,
-          data: jobs,
-          pagination,
-          message: 'Jobs retrieved successfully',
-        });
+        return ApiResponse.success(
+          res,
+          { data: jobs, pagination },
+          'Jobs retrieved successfully'
+        );
       } catch (error) {
-        return res.status(500).json({
-          success: false,
-          message: 'Failed to retrieve jobs',
-        });
+        return ApiResponse.error(res, 'Failed to retrieve jobs', 500);
       }
     }
   );

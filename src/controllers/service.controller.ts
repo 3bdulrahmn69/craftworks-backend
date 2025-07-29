@@ -1,15 +1,20 @@
 import { Response } from 'express';
 import { ServiceService } from '../services/service.service.js';
 import { IAuthenticatedRequest } from '../types/common.types.js';
+import { ApiResponse } from '../utils/apiResponse.js';
 
 export class ServiceController {
   // GET /api/services
   static async getAllServices(_req: IAuthenticatedRequest, res: Response) {
     try {
       const services = await ServiceService.getAllServices();
-      return res.json({ data: services });
+      return ApiResponse.success(
+        res,
+        services,
+        'Services retrieved successfully'
+      );
     } catch (error) {
-      return res.status(500).json({ message: 'Failed to fetch services' });
+      return ApiResponse.error(res, 'Failed to fetch services', 500);
     }
   }
 
@@ -17,12 +22,17 @@ export class ServiceController {
   static async createService(_req: IAuthenticatedRequest, res: Response) {
     try {
       const service = await ServiceService.createService(_req.body);
-      return res.status(201).json({ data: service });
+      return ApiResponse.success(
+        res,
+        service,
+        'Service created successfully',
+        201
+      );
     } catch (error) {
-      return res.status(400).json({
-        message:
-          error instanceof Error ? error.message : 'Failed to create service',
-      });
+      return ApiResponse.badRequest(
+        res,
+        error instanceof Error ? error.message : 'Failed to create service'
+      );
     }
   }
 
@@ -33,14 +43,13 @@ export class ServiceController {
         _req.params.id,
         _req.body
       );
-      if (!service)
-        return res.status(404).json({ message: 'Service not found' });
-      return res.json({ data: service });
+      if (!service) return ApiResponse.notFound(res, 'Service not found');
+      return ApiResponse.success(res, service, 'Service updated successfully');
     } catch (error) {
-      return res.status(400).json({
-        message:
-          error instanceof Error ? error.message : 'Failed to update service',
-      });
+      return ApiResponse.badRequest(
+        res,
+        error instanceof Error ? error.message : 'Failed to update service'
+      );
     }
   }
 
@@ -48,11 +57,10 @@ export class ServiceController {
   static async deleteService(_req: IAuthenticatedRequest, res: Response) {
     try {
       const service = await ServiceService.deleteService(_req.params.id);
-      if (!service)
-        return res.status(404).json({ message: 'Service not found' });
-      return res.json({ message: 'Service deleted' });
+      if (!service) return ApiResponse.notFound(res, 'Service not found');
+      return ApiResponse.success(res, null, 'Service deleted successfully');
     } catch (error) {
-      return res.status(500).json({ message: 'Failed to delete service' });
+      return ApiResponse.error(res, 'Failed to delete service', 500);
     }
   }
 }

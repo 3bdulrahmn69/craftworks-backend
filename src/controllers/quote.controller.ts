@@ -3,14 +3,14 @@ import { QuoteService } from '../services/quote.service.js';
 import { IAuthenticatedRequest } from '../types/common.types.js';
 import { Types } from 'mongoose';
 import { PaginationHelper } from '../utils/paginationHelper.js';
+import { ApiResponse } from '../utils/apiResponse.js';
 
 export class QuoteController {
   // POST /api/jobs/:jobId/quotes (Craftsman only)
   static async submitQuote(req: IAuthenticatedRequest, res: Response) {
     try {
       const craftsmanId = req.user?.userId;
-      if (!craftsmanId)
-        return res.status(401).json({ message: 'Unauthorized' });
+      if (!craftsmanId) return ApiResponse.unauthorized(res, 'Unauthorized');
       const { price, notes } = req.body;
       const quote = await QuoteService.submitQuote(
         req.params.jobId,
@@ -18,12 +18,17 @@ export class QuoteController {
         price,
         notes
       );
-      return res.status(201).json({ data: quote });
+      return ApiResponse.success(
+        res,
+        quote,
+        'Quote submitted successfully',
+        201
+      );
     } catch (error) {
-      return res.status(400).json({
-        message:
-          error instanceof Error ? error.message : 'Failed to submit quote',
-      });
+      return ApiResponse.badRequest(
+        res,
+        error instanceof Error ? error.message : 'Failed to submit quote'
+      );
     }
   }
 
@@ -32,9 +37,9 @@ export class QuoteController {
     try {
       // Optionally, check if req.user is the job owner
       const quotes = await QuoteService.getQuotesForJob(req.params.jobId);
-      return res.json({ data: quotes });
+      return ApiResponse.success(res, quotes, 'Quotes retrieved successfully');
     } catch (error) {
-      return res.status(500).json({ message: 'Failed to fetch quotes' });
+      return ApiResponse.error(res, 'Failed to fetch quotes', 500);
     }
   }
 
@@ -42,22 +47,22 @@ export class QuoteController {
   static async acceptQuote(req: IAuthenticatedRequest, res: Response) {
     try {
       const clientId = req.user?.userId;
-      if (!clientId) return res.status(401).json({ message: 'Unauthorized' });
+      if (!clientId) return ApiResponse.unauthorized(res, 'Unauthorized');
       const { job, quote } = await QuoteService.acceptQuote(
         req.params.jobId,
         req.params.quoteId,
         new Types.ObjectId(clientId)
       );
-      return res.json({
-        message: 'Quote accepted and craftsman hired',
-        job,
-        quote,
-      });
+      return ApiResponse.success(
+        res,
+        { job, quote },
+        'Quote accepted and craftsman hired'
+      );
     } catch (error) {
-      return res.status(400).json({
-        message:
-          error instanceof Error ? error.message : 'Failed to accept quote',
-      });
+      return ApiResponse.badRequest(
+        res,
+        error instanceof Error ? error.message : 'Failed to accept quote'
+      );
     }
   }
 
@@ -65,8 +70,7 @@ export class QuoteController {
   static async getCraftsmanQuotes(req: IAuthenticatedRequest, res: Response) {
     try {
       const craftsmanId = req.user?.userId;
-      if (!craftsmanId)
-        return res.status(401).json({ message: 'Unauthorized' });
+      if (!craftsmanId) return ApiResponse.unauthorized(res, 'Unauthorized');
 
       const { page, limit } = PaginationHelper.parseParams(req.query);
       const { status } = req.query;
@@ -78,16 +82,13 @@ export class QuoteController {
         status as string | undefined
       );
 
-      return res.json({
-        success: true,
-        data: result.data,
-        pagination: result.pagination,
-      });
+      return ApiResponse.success(
+        res,
+        { data: result.data, pagination: result.pagination },
+        'Craftsman quotes retrieved successfully'
+      );
     } catch (error) {
-      return res.status(500).json({
-        message: 'Failed to fetch craftsman quotes',
-        success: false,
-      });
+      return ApiResponse.error(res, 'Failed to fetch craftsman quotes', 500);
     }
   }
 }

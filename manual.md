@@ -1,8 +1,10 @@
-# Craftworks Backend API Manual (v1.3.3)
+# Craftworks Backend API Manual (v1.4.0)
 
 This manual provides practical usage instructions, example requests, and example responses for all backend API endpoints. Use this as a guide for integrating with the Craftworks backend.
 
-**Latest Update (v1.3.3):** Enhanced coordinate parsing for job creation - robust handling of all coordinate formats including form-data edge cases, improved validation, and comprehensive error handling for location data.
+**Latest Update (v1.4.0):** Standardized API response format - ALL API responses now consistently include a `success` field (true/false) for uniform error handling and status checking across the entire application. Enhanced coordinate parsing for job creation with robust handling of all coordinate formats.
+
+**Previous Update (v1.3.3):** Enhanced coordinate parsing for job creation - robust handling of all coordinate formats including form-data edge cases, improved validation, and comprehensive error handling for location data.
 
 **Previous Update (v1.3.2):** Enhanced job creation with automatic image upload support - clients can now upload up to 5 images directly when creating jobs, with automatic Cloudinary integration, image optimization, and file validation.
 
@@ -10,22 +12,59 @@ This manual provides practical usage instructions, example requests, and example
 
 ## Table of Contents
 
-1. [Authentication](#authentication)
-2. [Business Rules](#business-rules)
-3. [Users](#users)
-4. [Jobs](#jobs)
-5. [Quotes](#quotes)
-6. [Invitations](#invitations)
-7. [Notifications](#notifications)
-8. [Services](#services)
-9. [Craftsman Dashboard](#craftsman-dashboard)
-10. [Client Dashboard](#client-dashboard)
-11. [Recommendations](#recommendations)
-12. [Admin](#admin)
-13. [Contact Email](#contact-email)
-14. [Enhanced Features](#-enhanced-features-v133)
-15. [Troubleshooting Guide](#-troubleshooting-guide)
-16. [Error Responses](#error-responses)
+1. [Response Format](#response-format)
+2. [Authentication](#authentication)
+3. [Business Rules](#business-rules)
+4. [Users](#users)
+5. [Jobs](#jobs)
+6. [Quotes](#quotes)
+7. [Invitations](#invitations)
+8. [Notifications](#notifications)
+9. [Services](#services)
+10. [Craftsman Dashboard](#craftsman-dashboard)
+11. [Client Dashboard](#client-dashboard)
+12. [Recommendations](#recommendations)
+13. [Admin](#admin)
+14. [Contact Email](#contact-email)
+15. [Enhanced Features](#-enhanced-features-v140)
+16. [Troubleshooting Guide](#-troubleshooting-guide)
+17. [Error Responses](#error-responses)
+
+---
+
+## Response Format
+
+**All API responses follow a standardized format with a consistent `success` field for easy status checking:**
+
+### Success Response Format
+
+```json
+{
+  "success": true,
+  "data": {
+    // Response data here
+  },
+  "message": "Operation completed successfully"
+}
+```
+
+### Error Response Format
+
+```json
+{
+  "success": false,
+  "message": "Error description here"
+}
+```
+
+### Common Response Types
+
+- **success**: `true` for successful operations, `false` for errors
+- **data**: Contains the response payload (present in success responses)
+- **message**: Descriptive message about the operation result
+- **pagination**: Added for paginated responses (e.g., job listings, user lists)
+
+**Note**: This standardized format applies to ALL endpoints across the API, making error handling and status checking consistent throughout your application.
 
 ---
 
@@ -1706,15 +1745,25 @@ See [requirements.md](./requirements.md) for the full list of admin endpoints an
 
 ```json
 {
+  "success": true,
   "message": "Email sent successfully."
 }
 ```
 
 ---
 
-## 🆕 Enhanced Features (v1.3.3)
+## 🆕 Enhanced Features (v1.4.0)
 
-### Latest Updates (v1.3.3)
+### Latest Updates (v1.4.0)
+
+#### **🎯 Standardized API Response Format**
+
+- **Consistent Success Field**: ALL API responses now include a `success` field (true/false) for uniform error handling
+- **Structured Error Handling**: Standardized error responses with consistent message formatting
+- **Frontend Integration**: Simplified status checking across the entire application
+- **Backward Compatibility**: All existing response data structures maintained, only adding the success field
+
+#### **Previous Updates (v1.3.3)**
 
 #### **🗺️ Robust Coordinate Parsing for Job Locations**
 

@@ -1,8 +1,8 @@
 {
   "info": {
     "name": "Craftworks Backend API",
-    "description": "Complete API collection for Craftworks backend with all endpoints including authentication, users, jobs (with enhanced search and filtering), quotes, invitations, notifications, services, and admin functions. v1.3.3 Updates: Robust coordinate parsing for form-data - handles all formats including '31.2,30.1', '[31.2,30.1]', '[ \"31.2,30.1\" ]' with enhanced error handling and validation. Previous v1.3.2: Enhanced job creation with automatic image upload support - direct file uploads via multipart/form-data, up to 5 images per job, automatic Cloudinary integration with image optimization, file validation, and backward compatibility with JSON requests. Previous v1.3.1: Added client dashboard endpoint and enhanced recommendations with ObjectId validation. Previous v1.3.0: Service objects populated in job responses, flexible service filtering, enhanced API usability.",
-    "version": "1.3.3",
+    "description": "Complete API collection for Craftworks backend with all endpoints including authentication, users, jobs (with enhanced search and filtering), quotes, invitations, notifications, services, and admin functions. v1.4.0 Updates: Standardized API response format - ALL endpoints now consistently include 'success' field (true/false) for uniform error handling and status checking across the entire application. Previous v1.3.3: Robust coordinate parsing for form-data - handles all formats including '31.2,30.1', '[31.2,30.1]', '[ \"31.2,30.1\" ]' with enhanced error handling and validation. Previous v1.3.2: Enhanced job creation with automatic image upload support - direct file uploads via multipart/form-data, up to 5 images per job, automatic Cloudinary integration with image optimization, file validation, and backward compatibility with JSON requests.",
+    "version": "1.4.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
