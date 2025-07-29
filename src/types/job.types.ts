@@ -1,13 +1,14 @@
 import { Document, Types } from 'mongoose';
+import { IAddress } from './user.types.js';
 
 export interface IJob extends Document {
   client: Types.ObjectId;
   craftsman?: Types.ObjectId | null;
   title: string;
   description: string;
-  category: string;
+  service: Types.ObjectId;
   photos: string[];
-  address?: string;
+  address?: IAddress;
   location?: {
     type: 'Point';
     coordinates: [number, number];

@@ -65,7 +65,7 @@ async function seed() {
     ]);
     console.log('Seeded services');
 
-    // Get service IDs for reference
+    // Get service IDs for reference - use dynamic lookup
     const plumbingService = services
       .find((s) => s.name === 'Plumbing')
       ?._id.toString();
@@ -78,6 +78,19 @@ async function seed() {
     const carpentryService = services
       .find((s) => s.name === 'Carpentry')
       ?._id.toString();
+    const hvacService = services.find((s) => s.name === 'HVAC')?._id.toString();
+    const masonryService = services
+      .find((s) => s.name === 'Masonry')
+      ?._id.toString();
+
+    console.log('Service IDs:', {
+      plumbingService,
+      electricalService,
+      paintingService,
+      carpentryService,
+      hvacService,
+      masonryService,
+    });
 
     // Create users
     const hashedPassword = await bcrypt.hash('123456!Aa', 10);
@@ -302,12 +315,17 @@ async function seed() {
         title: 'Fix kitchen sink leak',
         description:
           'There is a persistent leak under the kitchen sink that needs immediate attention. Water is pooling and causing damage.',
-        category: 'Plumbing',
+        service: plumbingService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/sink_leak1.jpg',
           'https://res.cloudinary.com/demo/image/upload/sink_leak2.jpg',
         ],
-        address: '123 Main Street, New Cairo',
+        address: {
+          country: 'Egypt',
+          state: 'Cairo',
+          city: 'New Cairo',
+          street: '123 Main Street',
+        },
         location: { type: 'Point', coordinates: [31.2, 30.1] },
         status: 'Posted',
         paymentType: 'Cash',
@@ -318,11 +336,16 @@ async function seed() {
         title: 'Electrical wiring for new room',
         description:
           'Need complete electrical wiring installation for a newly constructed room including outlets, switches, and lighting.',
-        category: 'Electrical',
+        service: electricalService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/electrical_room1.jpg',
         ],
-        address: '456 Alexandria Street, Alexandria',
+        address: {
+          country: 'Egypt',
+          state: 'Alexandria',
+          city: 'Alexandria',
+          street: '456 Alexandria Street',
+        },
         location: { type: 'Point', coordinates: [31.1, 29.9] },
         status: 'Posted',
         paymentType: 'Escrow',
@@ -333,12 +356,17 @@ async function seed() {
         title: 'House exterior painting',
         description:
           'Complete exterior house painting including prep work, primer, and two coats of high-quality paint.',
-        category: 'Painting',
+        service: paintingService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/house_exterior1.jpg',
           'https://res.cloudinary.com/demo/image/upload/house_exterior2.jpg',
         ],
-        address: '789 Pyramid Road, Giza',
+        address: {
+          country: 'Egypt',
+          state: 'Giza',
+          city: 'Giza',
+          street: '789 Pyramid Road',
+        },
         location: { type: 'Point', coordinates: [31.0, 29.8] },
         status: 'Posted',
         paymentType: 'Cash',
@@ -349,11 +377,16 @@ async function seed() {
         title: 'Custom kitchen cabinets',
         description:
           'Design and build custom kitchen cabinets with modern handles and soft-close hinges.',
-        category: 'Carpentry',
+        service: carpentryService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/kitchen_design1.jpg',
         ],
-        address: '123 Main Street, New Cairo',
+        address: {
+          country: 'Egypt',
+          state: 'Cairo',
+          city: 'New Cairo',
+          street: '123 Main Street',
+        },
         location: { type: 'Point', coordinates: [31.2, 30.1] },
         status: 'Posted',
         paymentType: 'CashProtected',
@@ -364,11 +397,16 @@ async function seed() {
         title: 'Bathroom tile repair',
         description:
           'Several tiles in the bathroom are cracked and need to be replaced. Looking for professional tiling work.',
-        category: 'Masonry',
+        service: masonryService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/tile_repair1.jpg',
         ],
-        address: '456 Alexandria Street, Alexandria',
+        address: {
+          country: 'Egypt',
+          state: 'Alexandria',
+          city: 'Alexandria',
+          street: '456 Alexandria Street',
+        },
         location: { type: 'Point', coordinates: [31.1, 29.9] },
         status: 'Posted',
         paymentType: 'Cash',
@@ -379,9 +417,14 @@ async function seed() {
         title: 'HVAC system maintenance',
         description:
           'Annual maintenance and cleaning of central air conditioning system including filter replacement.',
-        category: 'HVAC',
+        service: hvacService,
         photos: ['https://res.cloudinary.com/demo/image/upload/hvac1.jpg'],
-        address: '789 Pyramid Road, Giza',
+        address: {
+          country: 'Egypt',
+          state: 'Giza',
+          city: 'Giza',
+          street: '789 Pyramid Road',
+        },
         location: { type: 'Point', coordinates: [31.0, 29.8] },
         status: 'Posted',
         paymentType: 'Escrow',
@@ -392,11 +435,16 @@ async function seed() {
         title: 'Living room ceiling fan installation',
         description:
           'Install a new ceiling fan in the living room including electrical connections and mounting.',
-        category: 'Electrical',
+        service: electricalService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/ceiling_fan1.jpg',
         ],
-        address: '123 Main Street, New Cairo',
+        address: {
+          country: 'Egypt',
+          state: 'Cairo',
+          city: 'New Cairo',
+          street: '123 Main Street',
+        },
         location: { type: 'Point', coordinates: [31.2, 30.1] },
         status: 'Posted',
         paymentType: 'Cash',
@@ -407,12 +455,17 @@ async function seed() {
         title: 'Bedroom wall painting',
         description:
           'Paint two bedrooms with neutral colors. Need primer application and two coats of paint.',
-        category: 'Painting',
+        service: paintingService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/bedroom_paint1.jpg',
           'https://res.cloudinary.com/demo/image/upload/bedroom_paint2.jpg',
         ],
-        address: '456 Alexandria Street, Alexandria',
+        address: {
+          country: 'Egypt',
+          state: 'Alexandria',
+          city: 'Alexandria',
+          street: '456 Alexandria Street',
+        },
         location: { type: 'Point', coordinates: [31.1, 29.9] },
         status: 'Posted',
         paymentType: 'CashProtected',
@@ -423,11 +476,16 @@ async function seed() {
         title: 'Garden fence repair',
         description:
           'Wooden garden fence needs repair and reinforcement. Several panels are loose or damaged.',
-        category: 'Carpentry',
+        service: carpentryService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/fence_repair1.jpg',
         ],
-        address: '789 Pyramid Road, Giza',
+        address: {
+          country: 'Egypt',
+          state: 'Giza',
+          city: 'Giza',
+          street: '789 Pyramid Road',
+        },
         location: { type: 'Point', coordinates: [31.0, 29.8] },
         status: 'Posted',
         paymentType: 'Cash',
@@ -438,11 +496,16 @@ async function seed() {
         title: 'Toilet installation',
         description:
           'Replace old toilet with new one. Need professional plumbing work and proper installation.',
-        category: 'Plumbing',
+        service: plumbingService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/toilet_install1.jpg',
         ],
-        address: '123 Main Street, New Cairo',
+        address: {
+          country: 'Egypt',
+          state: 'Cairo',
+          city: 'New Cairo',
+          street: '123 Main Street',
+        },
         location: { type: 'Point', coordinates: [31.2, 30.1] },
         status: 'Posted',
         paymentType: 'Escrow',
@@ -453,11 +516,16 @@ async function seed() {
         title: 'Outdoor lighting installation',
         description:
           'Install garden and pathway lighting for security and aesthetics. Need electrical wiring.',
-        category: 'Electrical',
+        service: electricalService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/outdoor_lighting1.jpg',
         ],
-        address: '456 Alexandria Street, Alexandria',
+        address: {
+          country: 'Egypt',
+          state: 'Alexandria',
+          city: 'Alexandria',
+          street: '456 Alexandria Street',
+        },
         location: { type: 'Point', coordinates: [31.1, 29.9] },
         status: 'Posted',
         paymentType: 'Cash',
@@ -468,11 +536,16 @@ async function seed() {
         title: 'Balcony waterproofing',
         description:
           'Balcony has water leakage issues. Need professional waterproofing treatment.',
-        category: 'Masonry',
+        service: masonryService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/balcony_waterproof1.jpg',
         ],
-        address: '789 Pyramid Road, Giza',
+        address: {
+          country: 'Egypt',
+          state: 'Giza',
+          city: 'Giza',
+          street: '789 Pyramid Road',
+        },
         location: { type: 'Point', coordinates: [31.0, 29.8] },
         status: 'Posted',
         paymentType: 'CashProtected',
@@ -483,9 +556,14 @@ async function seed() {
         title: 'Air conditioning repair',
         description:
           'Central AC unit not cooling properly. Need diagnosis and repair of cooling system.',
-        category: 'HVAC',
+        service: hvacService,
         photos: ['https://res.cloudinary.com/demo/image/upload/ac_repair1.jpg'],
-        address: '123 Main Street, New Cairo',
+        address: {
+          country: 'Egypt',
+          state: 'Cairo',
+          city: 'New Cairo',
+          street: '123 Main Street',
+        },
         location: { type: 'Point', coordinates: [31.2, 30.1] },
         status: 'Posted',
         paymentType: 'Cash',
@@ -496,11 +574,16 @@ async function seed() {
         title: 'Kitchen backsplash installation',
         description:
           'Install ceramic tile backsplash in kitchen. Need professional tiling work with proper grouting.',
-        category: 'Masonry',
+        service: masonryService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/backsplash1.jpg',
         ],
-        address: '456 Alexandria Street, Alexandria',
+        address: {
+          country: 'Egypt',
+          state: 'Alexandria',
+          city: 'Alexandria',
+          street: '456 Alexandria Street',
+        },
         location: { type: 'Point', coordinates: [31.1, 29.9] },
         status: 'Posted',
         paymentType: 'Escrow',
@@ -511,9 +594,14 @@ async function seed() {
         title: 'Built-in wardrobe construction',
         description:
           'Design and build custom built-in wardrobe for master bedroom with sliding doors.',
-        category: 'Carpentry',
+        service: carpentryService,
         photos: ['https://res.cloudinary.com/demo/image/upload/wardrobe1.jpg'],
-        address: '789 Pyramid Road, Giza',
+        address: {
+          country: 'Egypt',
+          state: 'Giza',
+          city: 'Giza',
+          street: '789 Pyramid Road',
+        },
         location: { type: 'Point', coordinates: [31.0, 29.8] },
         status: 'Posted',
         paymentType: 'CashProtected',
@@ -524,11 +612,16 @@ async function seed() {
         title: 'Water heater installation',
         description:
           'Install new electric water heater in bathroom. Need plumbing and electrical connections.',
-        category: 'Plumbing',
+        service: plumbingService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/water_heater1.jpg',
         ],
-        address: '123 Main Street, New Cairo',
+        address: {
+          country: 'Egypt',
+          state: 'Cairo',
+          city: 'New Cairo',
+          street: '123 Main Street',
+        },
         location: { type: 'Point', coordinates: [31.2, 30.1] },
         status: 'Posted',
         paymentType: 'Cash',
@@ -539,11 +632,16 @@ async function seed() {
         title: 'Gate automation system',
         description:
           'Install automatic gate opener with remote control for main entrance gate.',
-        category: 'Electrical',
+        service: electricalService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/gate_automation1.jpg',
         ],
-        address: '456 Alexandria Street, Alexandria',
+        address: {
+          country: 'Egypt',
+          state: 'Alexandria',
+          city: 'Alexandria',
+          street: '456 Alexandria Street',
+        },
         location: { type: 'Point', coordinates: [31.1, 29.9] },
         status: 'Posted',
         paymentType: 'Escrow',
@@ -554,12 +652,17 @@ async function seed() {
         title: 'Roof waterproofing',
         description:
           'Complete roof waterproofing and insulation work. Prevent water leakage during rainy season.',
-        category: 'Masonry',
+        service: masonryService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/roof_waterproof1.jpg',
           'https://res.cloudinary.com/demo/image/upload/roof_waterproof2.jpg',
         ],
-        address: '789 Pyramid Road, Giza',
+        address: {
+          country: 'Egypt',
+          state: 'Giza',
+          city: 'Giza',
+          street: '789 Pyramid Road',
+        },
         location: { type: 'Point', coordinates: [31.0, 29.8] },
         status: 'Posted',
         paymentType: 'Cash',
@@ -570,11 +673,16 @@ async function seed() {
         title: 'Window frame painting',
         description:
           'Paint all window frames in the house. Need surface preparation and weather-resistant paint.',
-        category: 'Painting',
+        service: paintingService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/window_frames1.jpg',
         ],
-        address: '123 Main Street, New Cairo',
+        address: {
+          country: 'Egypt',
+          state: 'Cairo',
+          city: 'New Cairo',
+          street: '123 Main Street',
+        },
         location: { type: 'Point', coordinates: [31.2, 30.1] },
         status: 'Posted',
         paymentType: 'CashProtected',
@@ -585,11 +693,16 @@ async function seed() {
         title: 'Shower installation',
         description:
           'Install new walk-in shower with glass doors and modern fixtures. Need plumbing work.',
-        category: 'Plumbing',
+        service: plumbingService,
         photos: [
           'https://res.cloudinary.com/demo/image/upload/shower_install1.jpg',
         ],
-        address: '456 Alexandria Street, Alexandria',
+        address: {
+          country: 'Egypt',
+          state: 'Alexandria',
+          city: 'Alexandria',
+          street: '456 Alexandria Street',
+        },
         location: { type: 'Point', coordinates: [31.1, 29.9] },
         status: 'Posted',
         paymentType: 'Cash',

@@ -122,6 +122,36 @@ export class UserController {
   );
 
   /**
+   * Delete current user's profile picture
+   */
+  static deleteProfilePicture = asyncHandler(
+    async (
+      req: IAuthenticatedRequest,
+      res: Response
+    ): Promise<Response | void> => {
+      try {
+        const userId = req.user?.userId;
+        if (!userId) {
+          ApiResponse.unauthorized(res, 'Authentication required');
+          return;
+        }
+
+        const user = await UserService.deleteProfilePicture(userId, req.ip);
+
+        ApiResponse.success(res, user, 'Profile picture deleted successfully');
+      } catch (error) {
+        if (error instanceof UserServiceError)
+          if (error.statusCode === 404)
+            ApiResponse.notFound(res, error.message);
+          else if (error.statusCode === 403)
+            ApiResponse.forbidden(res, error.message);
+          else ApiResponse.badRequest(res, error.message);
+        else ApiResponse.internalError(res, 'Failed to delete profile picture');
+      }
+    }
+  );
+
+  /**
    * Get public profile of a specific user
    */
   static getPublicProfile = asyncHandler(

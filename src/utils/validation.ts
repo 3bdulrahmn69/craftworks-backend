@@ -137,6 +137,10 @@ export class ValidationHelper {
     )
       errors.push('Invalid image URL format');
 
+    // Validate serviceId if provided (for craftsmen)
+    if (data.serviceId && !/^[0-9a-fA-F]{24}$/.test(data.serviceId))
+      errors.push('Invalid service ID format');
+
     // Validate address if provided
     if (data.address)
       if (typeof data.address !== 'object')

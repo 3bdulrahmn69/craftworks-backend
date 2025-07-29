@@ -37,6 +37,9 @@ router.put(
   UserController.updateCurrentUser
 );
 
+// Delete current user's profile picture
+router.delete('/me/profile-picture', UserController.deleteProfilePicture);
+
 // Get public profile of a specific user
 router.get('/:userId', UserController.getPublicProfile);
 

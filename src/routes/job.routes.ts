@@ -18,6 +18,9 @@ router.post('/', authorizeRoles('client'), JobController.createJob);
 // GET /api/jobs (All authenticated users)
 router.get('/', JobController.getJobs);
 
+// GET /api/jobs/search (All authenticated users)
+router.get('/search', JobController.searchJobs);
+
 // GET /api/jobs/:jobId (All authenticated users)
 router.get('/:jobId', JobController.getJobById);
 

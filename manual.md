@@ -1,6 +1,8 @@
-# Craftworks Backend API Manual
+# Craftworks Backend API Manual (v1.3.0)
 
 This manual provides practical usage instructions, example requests, and example responses for all backend API endpoints. Use this as a guide for integrating with the Craftworks backend.
+
+**Latest Update (v1.3.0):** Enhanced service integration with populated service objects in job responses and flexible service filtering by both ID and name.
 
 ---
 
@@ -9,16 +11,17 @@ This manual provides practical usage instructions, example requests, and example
 1. [Authentication](#authentication)
 2. [Business Rules](#business-rules)
 3. [Users](#users)
-4. [Users](#users)
-5. [Jobs](#jobs)
-6. [Quotes](#quotes)
-7. [Invitations](#invitations)
-8. [Notifications](#notifications)
-9. [Services](#services)
+4. [Jobs](#jobs)
+5. [Quotes](#quotes)
+6. [Invitations](#invitations)
+7. [Notifications](#notifications)
+8. [Services](#services)
+9. [Craftsman Dashboard](#craftsman-dashboard)
 10. [Recommendations](#recommendations)
 11. [Admin](#admin)
 12. [Contact Email](#contact-email)
-13. [Error Responses](#error-responses)
+13. [Enhanced Features](#-enhanced-features-v120)
+14. [Error Responses](#error-responses)
 
 ---
 
@@ -282,6 +285,7 @@ The system implements role-based field access restrictions:
 - Only craftsmen have wallet functionality
 - Clients and admins cannot access wallet features
 - Wallet includes `balance` and `withdrawableBalance` fields
+- **Security Enhancement**: Wallet information is not included in profile responses (`/users/me`) for enhanced privacy
 
 ### Authentication Types
 
@@ -357,10 +361,6 @@ Authorization: Bearer <token>
     },
     "rating": 4.8,
     "ratingCount": 142,
-    "wallet": {
-      "balance": 12500,
-      "withdrawableBalance": 8000
-    },
     "createdAt": "2025-07-23T10:30:00.000Z"
   },
   "message": "User profile retrieved successfully"
@@ -392,15 +392,88 @@ Authorization: Bearer <token>
 
 ```
 Authorization: Bearer <token>
-Content-Type: multipart/form-data
+Content-Type: multipart/form-data or application/json
 ```
 
 **Request Example (JSON):**
 
 ```json
 {
-  "fullName": "Jane Smith"
+  "fullName": "Jane Smith",
+  "phone": "+201234567890",
+  "address": {
+    "country": "Egypt",
+    "state": "Cairo",
+    "city": "New Cairo",
+    "street": "456 New Street"
+  }
 }
+```
+
+**Request Example (Craftsman with Service Update):**
+
+```json
+{
+  "fullName": "Ahmed Craftsman",
+  "serviceId": "507f1f77bcf86cd799439020",
+  "address": {
+    "country": "Egypt",
+    "state": "Cairo",
+    "city": "Cairo",
+    "street": "321 Workshop Street"
+  }
+}
+```
+
+**Request Example (File Upload for Profile Picture):**
+
+```
+Form Data:
+- profilePicture: <image_file>
+- fullName: "Jane Smith"
+```
+
+**Supported Fields:**
+
+- `fullName`: User's full name
+- `email`: Email address (must be unique)
+- `phone`: Phone number (must be unique)
+- `profilePicture`: Profile image file (when using multipart/form-data)
+- `address`: Address object with country, state, city, street
+- `serviceId`: Service ID (craftsmen only) - updates the craftsman's primary service
+- `craftsmanInfo`: Craftsman information object (craftsmen only)
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "507f1f77bcf86cd799439011",
+    "fullName": "Jane Smith",
+    "email": "jane@example.com",
+    "phone": "+201234567890",
+    "role": "client",
+    "profilePicture": "https://res.cloudinary.com/demo/image/upload/profile.webp",
+    "address": {
+      "country": "Egypt",
+      "state": "Cairo",
+      "city": "New Cairo",
+      "street": "456 New Street"
+    }
+  },
+  "message": "Profile updated successfully"
+}
+```
+
+### Delete Profile Picture
+
+`DELETE /api/users/me/profile-picture`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
 ```
 
 **Response Example:**
@@ -409,10 +482,13 @@ Content-Type: multipart/form-data
 {
   "success": true,
   "data": {
-    "_id": "...",
-    "fullName": "Jane Smith"
+    "id": "507f1f77bcf86cd799439011",
+    "fullName": "Jane Smith",
+    "email": "jane@example.com",
+    "role": "client",
+    "profilePicture": null
   },
-  "message": "Profile updated successfully."
+  "message": "Profile picture deleted successfully"
 }
 ```
 
@@ -540,9 +616,14 @@ Content-Type: application/json
 {
   "title": "Fix kitchen sink leak",
   "description": "There is a leak under the kitchen sink.",
-  "category": "Plumbing",
+  "service": "60f1b5b5b5b5b5b5b5b5b5b1",
   "photos": ["<cloudinary_url>"],
-  "address": "123 Main St, Cairo",
+  "address": {
+    "country": "Egypt",
+    "state": "Cairo",
+    "city": "New Cairo",
+    "street": "123 Main Street"
+  },
   "location": { "type": "Point", "coordinates": [31.2, 30.1] },
   "paymentType": "Cash"
 }
@@ -575,10 +656,17 @@ Authorization: Bearer <token>
 
 **Query Params:**
 
-- `category` (optional)
-- `status` (optional)
-- `page` (optional)
-- `limit` (optional)
+- `service` (optional): Filter by service ID (ObjectId) or service name (string)
+- `status` (optional): Filter by job status
+- `paymentType` (optional): Filter by payment type (Escrow, Cash, CashProtected)
+- `state` (optional): Filter by address state
+- `city` (optional): Filter by address city
+- `page` (optional): Page number for pagination (default: 1)
+- `limit` (optional): Number of items per page (default: 10)
+
+**Example Request:**
+
+`GET /api/jobs?service=Plumbing&state=Cairo&city=New Cairo&page=1&limit=10`
 
 **Response Example:**
 
@@ -589,8 +677,30 @@ Authorization: Bearer <token>
     {
       "_id": "...",
       "title": "Fix kitchen sink leak",
-      "category": "Plumbing",
-      "status": "Posted"
+      "service": {
+        "_id": "60f1b5b5b5b5b5b5b5b5b5b1",
+        "name": "Plumbing",
+        "icon": "faucet-icon",
+        "description": "Water systems and pipe work"
+      },
+      "status": "Posted",
+      "address": {
+        "country": "Egypt",
+        "state": "Cairo",
+        "city": "New Cairo",
+        "street": "123 Main Street"
+      }
+    }
+  ],
+        "category": "Home Maintenance"
+      },
+      "status": "Posted",
+      "address": {
+        "country": "Egypt",
+        "state": "Cairo",
+        "city": "New Cairo",
+        "street": "123 Main Street"
+      }
     }
   ],
   "pagination": {
@@ -598,8 +708,108 @@ Authorization: Bearer <token>
     "limit": 10,
     "totalPages": 1,
     "totalItems": 1
-  }
+  },
+  "message": "Jobs retrieved successfully"
 }
+```
+
+### Search Jobs
+
+`GET /api/jobs/search`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Query Params:**
+
+- `q` (required): Search term to match against job title and description
+- `service` (optional): Filter by service ID (ObjectId) or service name (string)
+- `status` (optional): Filter by job status
+- `paymentType` (optional): Filter by payment type
+- `state` (optional): Filter by address state
+- `city` (optional): Filter by address city
+- `page` (optional): Page number for pagination (default: 1)
+- `limit` (optional): Number of items per page (default: 10)
+
+**Example Request:**
+
+`GET /api/jobs/search?q=kitchen leak&service=Plumbing&state=Cairo`
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "...",
+      "title": "Fix kitchen sink leak",
+      "description": "There is a leak under the kitchen sink that needs immediate attention.",
+      "service": {
+        "_id": "60f1b5b5b5b5b5b5b5b5b5b1",
+        "name": "Plumbing",
+        "icon": "faucet-icon",
+        "description": "Water systems and pipe work"
+      },
+      "status": "Posted",
+      "address": {
+        "country": "Egypt",
+        "state": "Cairo",
+        "city": "New Cairo",
+        "street": "123 Main Street"
+      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1,
+    "totalItems": 1
+  },
+  "searchTerm": "kitchen leak",
+  "message": "Found 1 jobs matching \"kitchen leak\""
+}
+```
+
+### Practical Job Search and Filtering Examples
+
+**Find plumbing jobs in Cairo:**
+
+```
+GET /api/jobs?service=Plumbing&state=Cairo
+```
+
+**Search for urgent repairs with cash payment:**
+
+```
+GET /api/jobs/search?q=urgent repair&paymentType=Cash
+```
+
+**Find electrical jobs in specific city:**
+
+```
+GET /api/jobs?service=Electrical&city=New Cairo&status=Posted
+```
+
+**Search for kitchen-related jobs in Alexandria:**
+
+```
+GET /api/jobs/search?q=kitchen&state=Alexandria
+```
+
+**Search for HVAC services by name:**
+
+```
+GET /api/jobs?service=HVAC&status=Posted
+```
+
+**Combine multiple filters for targeted search:**
+
+```
+GET /api/jobs?state=Cairo&city=New Cairo&paymentType=CashProtected&status=Posted&page=1&limit=20
 ```
 
 ### Get Job Details
@@ -621,11 +831,23 @@ Authorization: Bearer <token>
     "_id": "...",
     "title": "Fix kitchen sink leak",
     "description": "There is a leak under the kitchen sink.",
-    "category": "Plumbing",
+    "service": {
+      "_id": "60f1b5b5b5b5b5b5b5b5b5b1",
+      "name": "Plumbing",
+      "icon": "faucet-icon",
+      "description": "Water systems and pipe work"
+    },
     "status": "Posted",
+    "address": {
+      "country": "Egypt",
+      "state": "Cairo",
+      "city": "New Cairo",
+      "street": "123 Main Street"
+    },
     "client": "...",
     "createdAt": "2024-06-01T12:00:00Z"
-  }
+  },
+  "message": "Job retrieved successfully"
 }
 ```
 
@@ -645,7 +867,13 @@ Content-Type: application/json
 ```json
 {
   "title": "Fix kitchen sink leak (urgent)",
-  "description": "Updated description."
+  "description": "Updated description with more details about the urgency.",
+  "address": {
+    "country": "Egypt",
+    "state": "Cairo",
+    "city": "New Cairo",
+    "street": "123 Main Street, Apt 5B"
+  }
 }
 ```
 
@@ -1135,7 +1363,10 @@ Authorization: Bearer <token>
         "_id": "67891234567890123456789b",
         "title": "Fix kitchen sink leak",
         "description": "There is a persistent leak under the kitchen sink...",
-        "category": "Plumbing",
+        "service": {
+          "_id": "60f1b5b5b5b5b5b5b5b5b5b1",
+          "name": "Plumbing"
+        },
         "address": "123 Main Street, New Cairo",
         "status": "Posted",
         "client": {
@@ -1189,7 +1420,10 @@ Authorization: Bearer <token>
         "_id": "67891234567890123456789e",
         "title": "Custom kitchen cabinets",
         "description": "Design and build custom kitchen cabinets...",
-        "category": "Carpentry",
+        "service": {
+          "_id": "60f1b5b5b5b5b5b5b5b5b5b2",
+          "name": "Carpentry"
+        },
         "address": "123 Main Street, New Cairo",
         "status": "Posted",
         "paymentType": "CashProtected",
@@ -1287,6 +1521,81 @@ See [requirements.md](./requirements.md) for the full list of admin endpoints an
   "message": "Email sent successfully."
 }
 ```
+
+---
+
+## 🆕 Enhanced Features (v1.3.0)
+
+### Latest Updates (v1.3.0)
+
+#### **🔧 Enhanced Service Integration**
+
+- **Service Object Display**: Job responses now include complete service objects with `_id`, `name`, `icon`, and `description` instead of just service IDs
+- **Flexible Service Filtering**: Filter jobs by either service ID (ObjectId) or service name (string)
+  - Example: `/jobs?service=Plumbing` or `/jobs?service=6887b2a874c72b166a1cde0b`
+- **Improved API Usability**: Users can work with readable service names while maintaining ID-based efficiency
+- **Consistent Service Population**: All job endpoints (list, search, details, advanced filter) now return populated service objects
+
+#### **🔧 Service-Based Job Categorization (v1.2.0)**
+
+- **Breaking Change**: Jobs now use `service` field instead of `category`
+- Service field references Service model ObjectId instead of string category
+- All API endpoints updated to use `service` parameter instead of `category`
+- Enhanced data integrity with proper service relationships
+
+#### **🔒 Enhanced Security (v1.2.0)**
+
+- **Wallet Privacy**: Wallet information removed from craftsman profile responses (`/users/me`)
+- Improved data privacy for sensitive financial information
+
+### Previous Job Search Capabilities (v1.1.0)
+
+The job system includes powerful search and filtering capabilities:
+
+#### **🔍 Text Search**
+
+- Search jobs by keywords in title and description
+- Case-insensitive matching
+- Combined with other filters
+
+#### **📍 Location-Based Filtering**
+
+- Filter by address state
+- Filter by address city
+- Structured address format: `{ country, state, city, street }`
+
+#### **💳 Payment Type Filtering**
+
+- Filter by payment method: Cash, Escrow, CashProtected
+
+#### **🔗 Combined Filtering**
+
+All filters can be combined for precise job discovery:
+
+```
+GET /api/jobs/search?q=urgent repair&state=Cairo&city=New Cairo&service=Plumbing&paymentType=Cash
+```
+
+### Benefits for Users
+
+**For Craftsmen:**
+
+- Find jobs in their specific area (state/city)
+- Search for jobs matching their expertise keywords
+- Filter by preferred payment methods
+- Search by service name for easier job discovery
+
+**For Clients:**
+
+- Better job discovery through search
+- Enhanced location-based job posting
+- Improved service selection with readable service names
+- Complete service information in job responses
+- Improved job management with structured data
+
+### Backward Compatibility
+
+All new features are fully backward compatible with existing implementations. Existing API calls will continue to work without modification.
 
 ---
 

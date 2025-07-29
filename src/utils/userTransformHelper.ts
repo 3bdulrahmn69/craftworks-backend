@@ -28,27 +28,23 @@ export class UserTransformHelper {
       publicUser.ratingCount = user.ratingCount;
     }
 
-    if (user.role === 'craftsman') {
-      publicUser.wallet = user.wallet;
-
+    if (user.role === 'craftsman' && user.craftsmanInfo?.service)
       // Populate service data if craftsman has a service
-      if (user.craftsmanInfo?.service)
-        try {
-          const service = await Service.findById(user.craftsmanInfo.service);
-          if (service)
-            publicUser.service = {
-              _id: service._id.toString(),
-              name: service.name,
-              icon: service.icon,
-              description: service.description,
-              createdAt: service.createdAt,
-              updatedAt: service.updatedAt,
-            } as any;
-          else publicUser.service = user.craftsmanInfo.service; // Fallback to ID if service not found
-        } catch (error) {
-          publicUser.service = user.craftsmanInfo.service; // Fallback to ID on error
-        }
-    }
+      try {
+        const service = await Service.findById(user.craftsmanInfo.service);
+        if (service)
+          publicUser.service = {
+            _id: service._id.toString(),
+            name: service.name,
+            icon: service.icon,
+            description: service.description,
+            createdAt: service.createdAt,
+            updatedAt: service.updatedAt,
+          } as any;
+        else publicUser.service = user.craftsmanInfo.service; // Fallback to ID if service not found
+      } catch (error) {
+        publicUser.service = user.craftsmanInfo.service; // Fallback to ID on error
+      }
 
     return publicUser;
   }

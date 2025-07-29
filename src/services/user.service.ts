@@ -29,7 +29,7 @@ export class UserService {
    */
   static async updateCurrentUser(
     userId: string,
-    updateData: Partial<IUser>,
+    updateData: Partial<IUser> & { serviceId?: string },
     userIP?: string
   ): Promise<IUserPublic> {
     const user = await User.findById(userId);
@@ -69,6 +69,28 @@ export class UserService {
     for (const field of allowedFields)
       if (updateData[field as keyof IUser] !== undefined)
         (user as any)[field] = updateData[field as keyof IUser];
+
+    // Handle service update for craftsmen
+    if (updateData.serviceId && user.role === 'craftsman') {
+      // Validate service ID (basic ObjectId format validation)
+      if (!/^[0-9a-fA-F]{24}$/.test(updateData.serviceId))
+        throw new UserServiceError(
+          `Invalid service ID: ${updateData.serviceId}`,
+          400
+        );
+
+      // Update service in craftsmanInfo
+      if (!user.craftsmanInfo)
+        user.craftsmanInfo = {
+          skills: [],
+          service: updateData.serviceId,
+          bio: '',
+          portfolioImageUrls: [],
+          verificationStatus: 'pending',
+          verificationDocs: [],
+        };
+      else user.craftsmanInfo.service = updateData.serviceId;
+    }
 
     // Update user logs
     if (userIP) user.userLogs.lastIP = userIP;
@@ -237,18 +259,53 @@ export class UserService {
     return await this.sanitizeUserData(user);
   }
 
+  /**
+   * Delete user's profile picture
+   */
+  static async deleteProfilePicture(
+    userId: string,
+    userIP?: string
+  ): Promise<IUserPublic> {
+    const user = await User.findById(userId);
+    if (!user) throw new UserServiceError('User not found', 404);
+
+    if (user.isBanned) throw new UserServiceError('Account is banned', 403);
+
+    // Clear profile picture
+    user.profilePicture = undefined;
+
+    // Update user logs
+    if (userIP) user.userLogs.lastIP = userIP;
+
+    await user.save();
+
+    // Log the profile picture deletion
+    await ActionLogService.logAction({
+      userId,
+      action: 'profile_picture_deleted',
+      category: 'user_management',
+      details: {},
+      ipAddress: userIP,
+      success: true,
+    });
+
+    loggerHelpers.logUserAction('profile_picture_deleted', userId, {});
+
+    return await this.sanitizeUserData(user);
+  }
+
   static async getRecommendedCraftsmen(jobId: string) {
     // Get the job
     const { Job } = await import('../models/job.model.js');
-    const job = await Job.findById(jobId).lean();
+    const job = await Job.findById(jobId).populate('service', 'name').lean();
     if (!job) throw new Error('Job not found');
 
-    // Find craftsmen with matching skills/category
+    // Find craftsmen with matching skills/service
     const craftsmen = await (
       await import('../models/user.model.js')
     ).User.find({
       role: 'craftsman',
-      'craftsmanInfo.skills': job.category,
+      'craftsmanInfo.skills': (job.service as any)?.name,
       'craftsmanInfo.verificationStatus': 'verified',
       isBanned: false,
     })

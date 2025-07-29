@@ -7,9 +7,14 @@ const jobSchema = new Schema<IJob>(
     craftsman: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     title: { type: String, required: true },
     description: { type: String, required: true },
-    category: { type: String, required: true },
+    service: { type: Schema.Types.ObjectId, ref: 'Service', required: true },
     photos: [{ type: String }],
-    address: { type: String },
+    address: {
+      country: { type: String, trim: true },
+      state: { type: String, trim: true },
+      city: { type: String, trim: true },
+      street: { type: String, trim: true },
+    },
     location: {
       type: {
         type: String,
