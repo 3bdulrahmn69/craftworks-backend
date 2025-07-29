@@ -1,8 +1,10 @@
-# Craftworks Backend API Manual (v1.3.0)
+# Craftworks Backend API Manual (v1.3.3)
 
 This manual provides practical usage instructions, example requests, and example responses for all backend API endpoints. Use this as a guide for integrating with the Craftworks backend.
 
-**Latest Update (v1.3.0):** Enhanced service integration with populated service objects in job responses and flexible service filtering by both ID and name.
+**Latest Update (v1.3.3):** Enhanced coordinate parsing for job creation - robust handling of all coordinate formats including form-data edge cases, improved validation, and comprehensive error handling for location data.
+
+**Previous Update (v1.3.2):** Enhanced job creation with automatic image upload support - clients can now upload up to 5 images directly when creating jobs, with automatic Cloudinary integration, image optimization, and file validation.
 
 ---
 
@@ -21,8 +23,9 @@ This manual provides practical usage instructions, example requests, and example
 11. [Recommendations](#recommendations)
 12. [Admin](#admin)
 13. [Contact Email](#contact-email)
-14. [Enhanced Features](#-enhanced-features-v120)
-15. [Error Responses](#error-responses)
+14. [Enhanced Features](#-enhanced-features-v133)
+15. [Troubleshooting Guide](#-troubleshooting-guide)
+16. [Error Responses](#error-responses)
 
 ---
 
@@ -608,17 +611,46 @@ Authorization: Bearer <token>
 
 ```
 Authorization: Bearer <token>
-Content-Type: application/json
+Content-Type: multipart/form-data
 ```
 
-**Request Example:**
+**Request Example (Form Data):**
+
+```
+Form Data:
+- title: "Fix kitchen sink leak"
+- description: "There is a leak under the kitchen sink that needs immediate attention."
+- service: "60f1b5b5b5b5b5b5b5b5b5b1"
+- address[country]: "Egypt"
+- address[state]: "Cairo"
+- address[city]: "New Cairo"
+- address[street]: "123 Main Street"
+- location[type]: "Point"
+- location[coordinates]: "31.2,30.1" (longitude,latitude as comma-separated values)
+
+**Coordinate Format Support:**
+- **Recommended**: `"31.2,30.1"` (simple comma-separated string)
+- **Also Supported**: `"[31.2,30.1]"`, `"[ '31.2,30.1' ]"`, `"[31.2, 30.1]"`
+- **Format**: Always longitude first, then latitude
+- **Validation**: Must be exactly 2 valid numeric values
+- **Error Handling**: Comprehensive parsing with detailed error messages
+- paymentType: "Cash"
+- photos: <image_file_1>
+- photos: <image_file_2>
+- photos: <image_file_3>
+```
+
+**Alternative Request Example (JSON - without images):**
+
+```
+Content-Type: application/json
+```
 
 ```json
 {
   "title": "Fix kitchen sink leak",
   "description": "There is a leak under the kitchen sink.",
   "service": "60f1b5b5b5b5b5b5b5b5b5b1",
-  "photos": ["<cloudinary_url>"],
   "address": {
     "country": "Egypt",
     "state": "Cairo",
@@ -630,19 +662,80 @@ Content-Type: application/json
 }
 ```
 
+**Image Upload Specifications:**
+
+- **Field Name**: `photos` (can be used multiple times)
+- **Maximum Files**: 5 images per job
+- **File Size Limit**: 10MB per image
+- **Supported Formats**: JPEG, PNG, GIF, WebP
+- **Auto Processing**: Images are automatically optimized (800x600 limit, WebP format, quality optimization)
+- **Storage**: Automatically uploaded to Cloudinary and URLs stored in database
+
 **Response Example:**
 
 ```json
 {
   "success": true,
   "data": {
-    "_id": "...",
+    "_id": "6888bf8eede5a191977daf40",
     "title": "Fix kitchen sink leak",
+    "description": "There is a leak under the kitchen sink that needs immediate attention.",
+    "service": "60f1b5b5b5b5b5b5b5b5b5b1",
+    "photos": [
+      "https://res.cloudinary.com/demo/image/upload/v1234567890/job-images/job_1234567890_abc123def.webp",
+      "https://res.cloudinary.com/demo/image/upload/v1234567890/job-images/job_1234567890_xyz789uvw.webp"
+    ],
     "status": "Posted",
-    "createdAt": "2024-06-01T12:00:00Z"
+    "createdAt": "2025-07-29T12:33:18.731Z"
   },
-  "message": "Job created successfully."
+  "message": "Job created successfully"
 }
+```
+
+**Practical Usage Examples:**
+
+```bash
+# Example with curl (form-data with images)
+curl -X POST http://localhost:5000/api/jobs \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -F "title=Fix kitchen sink leak" \
+  -F "description=Urgent leak repair needed" \
+  -F "service=60f1b5b5b5b5b5b5b5b5b5b1" \
+  -F "address[country]=Egypt" \
+  -F "address[state]=Cairo" \
+  -F "address[city]=New Cairo" \
+  -F "address[street]=123 Main Street" \
+  -F "location[type]=Point" \
+  -F "location[coordinates]=31.2,30.1" \
+  -F "paymentType=Cash" \
+  -F "photos=@/path/to/leak_photo1.jpg" \
+  -F "photos=@/path/to/leak_photo2.jpg"
+
+# Alternative coordinate formats that also work:
+# -F "location[coordinates]=[31.2,30.1]"
+# -F "location[coordinates]=[ '31.2,30.1' ]"
+# -F "location[coordinates]=[31.2, 30.1]"
+
+# Example without images (JSON)
+curl -X POST http://localhost:5000/api/jobs \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Fix kitchen sink leak",
+    "description": "Urgent leak repair needed",
+    "service": "60f1b5b5b5b5b5b5b5b5b5b1",
+    "address": {
+      "country": "Egypt",
+      "state": "Cairo",
+      "city": "New Cairo",
+      "street": "123 Main Street"
+    },
+    "location": {
+      "type": "Point",
+      "coordinates": [31.2, 30.1]
+    },
+    "paymentType": "Cash"
+  }'
 ```
 
 ### List Jobs
@@ -1619,9 +1712,59 @@ See [requirements.md](./requirements.md) for the full list of admin endpoints an
 
 ---
 
-## 🆕 Enhanced Features (v1.3.0)
+## 🆕 Enhanced Features (v1.3.3)
 
-### Latest Updates (v1.3.0)
+### Latest Updates (v1.3.3)
+
+#### **🗺️ Robust Coordinate Parsing for Job Locations**
+
+- **Multiple Format Support**: Handles various coordinate input formats for maximum compatibility
+  - Simple comma-separated: `"31.2,30.1"` (recommended)
+  - Array formats: `"[31.2,30.1]"`, `"[31.2, 30.1]"`
+  - Quoted string arrays: `"[ '31.2,30.1' ]"` (handles form-data edge cases)
+  - Proper JSON arrays: `[31.2, 30.1]`
+- **Smart Parsing Logic**: Automatic detection and conversion of string formats to numeric arrays
+- **Comprehensive Validation**: Ensures exactly 2 valid numeric coordinates (longitude, latitude)
+- **Enhanced Error Messages**: Clear feedback on coordinate format issues with examples
+- **Form-Data Compatibility**: Seamless handling of multipart/form-data coordinate submissions
+- **Backward Compatibility**: All existing coordinate formats continue to work
+
+#### **🔧 Coordinate Processing Features**
+
+- **Automatic Cleanup**: Removes non-numeric characters while preserving valid coordinate data
+- **Type Safety**: Ensures coordinates are always stored as `[number, number]` arrays in database
+- **GeoJSON Compliance**: Proper GeoJSON Point format with longitude first, latitude second
+- **Debugging Support**: Comprehensive logging for troubleshooting coordinate parsing issues
+
+### Previous Updates (v1.3.2)
+
+#### **📸 Automatic Image Upload for Jobs**
+
+- **Direct File Upload**: Job creation now supports direct image file uploads via multipart/form-data
+- **Multiple Image Support**: Upload up to 5 images per job posting
+- **File Validation**: Automatic validation for image formats (JPEG, PNG, GIF, WebP) and file sizes (10MB max per image)
+- **Cloudinary Integration**: Automatic upload to Cloudinary cloud storage with optimized delivery
+- **Image Optimization**: Automatic image processing (800x600 limit, WebP format conversion, quality optimization)
+- **Seamless API**: Backward compatible - jobs can still be created with JSON without images
+- **Error Handling**: Comprehensive error handling for upload failures with clear error messages
+
+#### **📁 Image Processing Features**
+
+- **Smart Compression**: Automatic quality optimization for faster loading
+- **Format Standardization**: All images converted to WebP for optimal performance
+- **Size Optimization**: Images automatically resized to maximum 800x600 while maintaining aspect ratio
+- **Organized Storage**: Images stored in dedicated `job-images` folder with unique identifiers
+- **Secure URLs**: Direct HTTPS URLs returned for immediate use in applications
+
+### Previous Updates (v1.3.1)
+
+#### **🏗️ Enhanced Dashboard Functionality**
+
+- **Client Dashboard**: Added `GET /users/me/jobs` endpoint for clients to retrieve their posted jobs
+- **Enhanced Recommendations**: Improved recommendations endpoint with ObjectId validation and error handling
+- **Comprehensive Pagination**: Full pagination support for all dashboard endpoints
+
+### Previous Updates (v1.3.0)
 
 #### **🔧 Enhanced Service Integration**
 
@@ -1691,6 +1834,68 @@ GET /api/jobs/search?q=urgent repair&state=Cairo&city=New Cairo&service=Plumbing
 ### Backward Compatibility
 
 All new features are fully backward compatible with existing implementations. Existing API calls will continue to work without modification.
+
+---
+
+## 🛠️ Troubleshooting Guide
+
+### Coordinate Format Issues
+
+If you're having trouble with job creation due to coordinate validation errors, here are the supported formats and solutions:
+
+#### ✅ **Supported Coordinate Formats**
+
+**Form-Data (multipart/form-data):**
+
+```
+location[coordinates]: "31.2,30.1"          ✅ Recommended
+location[coordinates]: "[31.2,30.1]"        ✅ Works
+location[coordinates]: "[ '31.2,30.1' ]"    ✅ Edge case support
+location[coordinates]: "[31.2, 30.1]"       ✅ With spaces
+```
+
+**JSON (application/json):**
+
+```json
+{
+  "location": {
+    "type": "Point",
+    "coordinates": [31.2, 30.1]  ✅ Standard GeoJSON
+  }
+}
+```
+
+#### ❌ **Common Issues and Solutions**
+
+**Problem**: `"Cast to [Number] failed"`
+
+- **Cause**: Coordinates sent as string instead of array
+- **Solution**: Use one of the supported formats above
+
+**Problem**: `"Location coordinates must be two valid numbers"`
+
+- **Cause**: Invalid coordinate format or missing values
+- **Solution**: Ensure exactly 2 numeric values (longitude, latitude)
+
+**Problem**: Coordinates show as `"[ '31.2,30.1' ]"` in error
+
+- **Cause**: Form-data parsing edge case
+- **Solution**: API now handles this automatically (v1.3.3+)
+
+#### 🔍 **Debugging Tips**
+
+1. **Check Console Logs**: Server logs show coordinate parsing steps
+2. **Validate Input**: Ensure longitude and latitude are valid numbers
+3. **Format Check**: Use simple comma-separated format for form-data
+4. **GeoJSON Order**: Always longitude first, then latitude
+
+#### 📍 **Coordinate Guidelines**
+
+- **Longitude**: East-West position (-180 to +180)
+- **Latitude**: North-South position (-90 to +90)
+- **Egypt Examples**:
+  - Cairo: `[31.2357, 30.0444]` (longitude, latitude)
+  - Alexandria: `[29.9187, 31.2001]`
 
 ---
 

@@ -21,6 +21,26 @@ A modern, scalable backend API for the Egyptian local craftsmen service marketpl
 - **Testing Ready**: Jest configuration for unit and integration tests
 - **ES6 Modules**: Modern import/export syntax throughout
 
+## 📊 Latest Updates (v1.3.3)
+
+### 🗺️ Enhanced Coordinate Parsing for Job Creation
+
+- **Robust Form-Data Support**: Fixed all coordinate parsing issues for multipart/form-data requests
+- **Multiple Format Support**: Handles various coordinate input formats seamlessly:
+  - Simple comma-separated: `"31.2,30.1"` ✅ (recommended)
+  - Array formats: `"[31.2,30.1]"`, `"[31.2, 30.1]"` ✅
+  - Edge cases: `"[ '31.2,30.1' ]"` ✅ (automatic handling)
+- **Enhanced Validation**: Comprehensive coordinate validation with clear error messages
+- **Debugging Support**: Extensive logging for troubleshooting coordinate issues
+- **Backward Compatibility**: All existing formats continue to work without changes
+
+### 📁 Documentation Updates
+
+- **Enhanced API Manual**: Updated MANUAL.md with comprehensive coordinate format examples
+- **Troubleshooting Guide**: Added detailed troubleshooting section for coordinate issues
+- **API Collection**: Updated Postman collection with coordinate format test examples
+- **Format Guidelines**: Clear documentation of supported coordinate formats and best practices
+
 ## 📁 Project Structure
 
 ```

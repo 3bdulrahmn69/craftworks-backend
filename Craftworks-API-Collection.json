@@ -1,8 +1,8 @@
 {
   "info": {
     "name": "Craftworks Backend API",
-    "description": "Complete API collection for Craftworks backend with all endpoints including authentication, users, jobs (with enhanced search and filtering), quotes, invitations, notifications, services, and admin functions. v1.3.1 Updates: Added client dashboard endpoint (GET /users/me/jobs) for clients to retrieve their posted jobs, enhanced recommendations endpoint with improved error handling and ObjectId validation, comprehensive dashboard functionality for both clients and craftsmen with pagination support. Previous v1.3.0: Service objects populated in job responses, flexible service filtering by both ID and name, enhanced API usability with readable service names, wallet information excluded from craftsman profile responses for privacy.",
-    "version": "1.3.1",
+    "description": "Complete API collection for Craftworks backend with all endpoints including authentication, users, jobs (with enhanced search and filtering), quotes, invitations, notifications, services, and admin functions. v1.3.3 Updates: Robust coordinate parsing for form-data - handles all formats including '31.2,30.1', '[31.2,30.1]', '[ \"31.2,30.1\" ]' with enhanced error handling and validation. Previous v1.3.2: Enhanced job creation with automatic image upload support - direct file uploads via multipart/form-data, up to 5 images per job, automatic Cloudinary integration with image optimization, file validation, and backward compatibility with JSON requests. Previous v1.3.1: Added client dashboard endpoint and enhanced recommendations with ObjectId validation. Previous v1.3.0: Service objects populated in job responses, flexible service filtering, enhanced API usability.",
+    "version": "1.3.3",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -490,7 +490,100 @@
       "name": "Jobs",
       "item": [
         {
-          "name": "Create Job (Client Only)",
+          "name": "Create Job with Images (Client Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Fix kitchen sink leak",
+                  "type": "text",
+                  "description": "Job title"
+                },
+                {
+                  "key": "description",
+                  "value": "There is a persistent leak under the kitchen sink that needs immediate attention. Water is pooling and causing damage.",
+                  "type": "text",
+                  "description": "Detailed job description"
+                },
+                {
+                  "key": "service",
+                  "value": "60f1b5b5b5b5b5b5b5b5b5b1",
+                  "type": "text",
+                  "description": "Service ID or service name"
+                },
+                {
+                  "key": "address[country]",
+                  "value": "Egypt",
+                  "type": "text",
+                  "description": "Country"
+                },
+                {
+                  "key": "address[state]",
+                  "value": "Cairo",
+                  "type": "text",
+                  "description": "State/Province"
+                },
+                {
+                  "key": "address[city]",
+                  "value": "New Cairo",
+                  "type": "text",
+                  "description": "City"
+                },
+                {
+                  "key": "address[street]",
+                  "value": "123 Main Street",
+                  "type": "text",
+                  "description": "Street address"
+                },
+                {
+                  "key": "location[type]",
+                  "value": "Point",
+                  "type": "text",
+                  "description": "GeoJSON type"
+                },
+                {
+                  "key": "location[coordinates]",
+                  "value": "31.2,30.1",
+                  "type": "text",
+                  "description": "GeoJSON coordinates as comma-separated values: longitude,latitude. Supported formats: '31.2,30.1' (recommended), '[31.2,30.1]', or '[31.2, 30.1]'. Always longitude first, then latitude."
+                },
+                {
+                  "key": "paymentType",
+                  "value": "Cash",
+                  "type": "text",
+                  "description": "Payment method: Cash, Escrow, CashProtected"
+                },
+                {
+                  "key": "photos",
+                  "type": "file",
+                  "description": "Image file (up to 5 images, 10MB each, formats: jpg, png, gif, webp)"
+                },
+                {
+                  "key": "photos",
+                  "type": "file",
+                  "description": "Additional image file (optional)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/jobs",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Job (JSON - No Images)",
           "request": {
             "method": "POST",
             "header": [
@@ -505,7 +598,82 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Fix kitchen sink leak\",\n  \"description\": \"There is a persistent leak under the kitchen sink that needs immediate attention. Water is pooling and causing damage.\",\n  \"service\": \"60f1b5b5b5b5b5b5b5b5b5b1\",\n  \"photos\": [\n    \"https://res.cloudinary.com/demo/image/upload/sink_leak1.jpg\",\n    \"https://res.cloudinary.com/demo/image/upload/sink_leak2.jpg\"\n  ],\n  \"address\": {\n    \"country\": \"Egypt\",\n    \"state\": \"Cairo\",\n    \"city\": \"New Cairo\",\n    \"street\": \"123 Main Street\"\n  },\n  \"location\": {\n    \"type\": \"Point\",\n    \"coordinates\": [31.2, 30.1]\n  },\n  \"paymentType\": \"Cash\"\n}"
+              "raw": "{\n  \"title\": \"Fix kitchen sink leak\",\n  \"description\": \"There is a persistent leak under the kitchen sink that needs immediate attention. Water is pooling and causing damage.\",\n  \"service\": \"60f1b5b5b5b5b5b5b5b5b5b1\",\n  \"address\": {\n    \"country\": \"Egypt\",\n    \"state\": \"Cairo\",\n    \"city\": \"New Cairo\",\n    \"street\": \"123 Main Street\"\n  },\n  \"location\": {\n    \"type\": \"Point\",\n    \"coordinates\": [31.2, 30.1]\n  },\n  \"paymentType\": \"Cash\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/jobs",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Job - Coordinate Format Test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Test Coordinate Parsing",
+                  "type": "text",
+                  "description": "Testing various coordinate formats"
+                },
+                {
+                  "key": "description",
+                  "value": "This is a test job to verify coordinate parsing works with different formats",
+                  "type": "text"
+                },
+                {
+                  "key": "service",
+                  "value": "60f1b5b5b5b5b5b5b5b5b5b1",
+                  "type": "text"
+                },
+                {
+                  "key": "address[country]",
+                  "value": "Egypt",
+                  "type": "text"
+                },
+                {
+                  "key": "address[state]",
+                  "value": "Cairo",
+                  "type": "text"
+                },
+                {
+                  "key": "address[city]",
+                  "value": "New Cairo",
+                  "type": "text"
+                },
+                {
+                  "key": "address[street]",
+                  "value": "Test Street 123",
+                  "type": "text"
+                },
+                {
+                  "key": "location[type]",
+                  "value": "Point",
+                  "type": "text"
+                },
+                {
+                  "key": "location[coordinates]",
+                  "value": "31.2,30.1",
+                  "type": "text",
+                  "description": "✅ RECOMMENDED FORMAT: Simple comma-separated string. Also supported: '[31.2,30.1]', '[ \\'31.2,30.1\\' ]', '[31.2, 30.1]'"
+                },
+                {
+                  "key": "paymentType",
+                  "value": "Cash",
+                  "type": "text"
+                }
+              ]
             },
             "url": {
               "raw": "{{base_url}}/jobs",

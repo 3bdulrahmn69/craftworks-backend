@@ -6,14 +6,36 @@ import {
 } from '../middlewares/auth.middleware.js';
 import quoteRoutes from './quote.routes.js';
 import invitationRoutes from './invitation.routes.js';
+import multer from 'multer';
 
 const router = express.Router();
+
+// Multer setup for job image uploads (memory storage)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB per file
+    files: 5, // Maximum 5 files
+  },
+  fileFilter: (_req, file, cb) => {
+    if (!file.mimetype.match(/^image\/(jpeg|png|gif|webp)$/))
+      return cb(
+        new Error('Only image files are allowed (jpg, png, gif, webp)')
+      );
+    cb(null, true);
+  },
+});
 
 // All job routes require authentication
 router.use(authenticateJWT);
 
-// POST /api/jobs (Client only)
-router.post('/', authorizeRoles('client'), JobController.createJob);
+// POST /api/jobs (Client only) - with image upload support
+router.post(
+  '/',
+  authorizeRoles('client'),
+  upload.array('photos', 5),
+  JobController.createJob
+);
 
 // GET /api/jobs (All authenticated users)
 router.get('/', JobController.getJobs);
