@@ -1,8 +1,8 @@
 {
   "info": {
     "name": "Craftworks Backend API",
-    "description": "Complete API collection for Craftworks backend with all endpoints including authentication, users, jobs (with enhanced search and filtering), quotes, invitations, notifications, services, and admin functions. v1.3.0 Updates: Service objects now populated in job responses (showing _id, name, icon, description), flexible service filtering by both ID and name (e.g., ?service=Plumbing or ?service=ObjectId), enhanced API usability with readable service names, wallet information excluded from craftsman profile responses for privacy, comprehensive job search and filtering capabilities.",
-    "version": "1.3.0",
+    "description": "Complete API collection for Craftworks backend with all endpoints including authentication, users, jobs (with enhanced search and filtering), quotes, invitations, notifications, services, and admin functions. v1.3.1 Updates: Added client dashboard endpoint (GET /users/me/jobs) for clients to retrieve their posted jobs, enhanced recommendations endpoint with improved error handling and ObjectId validation, comprehensive dashboard functionality for both clients and craftsmen with pagination support. Previous v1.3.0: Service objects populated in job responses, flexible service filtering by both ID and name, enhanced API usability with readable service names, wallet information excluded from craftsman profile responses for privacy.",
+    "version": "1.3.1",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -376,7 +376,8 @@
               "query": [
                 {
                   "key": "jobId",
-                  "value": "JOB_ID_HERE"
+                  "value": "JOB_ID_HERE",
+                  "description": "Required: ObjectId of the job to get craftsman recommendations for"
                 }
               ]
             }
@@ -447,6 +448,36 @@
                   "key": "status",
                   "value": "Pending",
                   "description": "Filter by invitation status (Pending, Accepted, Rejected)"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Jobs (Client Only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/me/jobs?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["users", "me", "jobs"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of items per page (default: 10, max: 100)"
                 }
               ]
             }

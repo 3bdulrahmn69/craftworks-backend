@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { UserService, UserServiceError } from '../services/user.service.js';
+import { JobService } from '../services/job.service.js';
 import { ApiResponse, asyncHandler } from '../utils/apiResponse.js';
 import { ValidationHelper } from '../utils/validation.js';
 import { IAuthenticatedRequest } from '../types/common.types.js';
@@ -277,17 +278,56 @@ export class UserController {
     try {
       const { jobId } = req.query;
       if (!jobId || typeof jobId !== 'string')
-        return res.status(400).json({ message: 'jobId is required' });
+        return ApiResponse.badRequest(res, 'jobId is required');
 
       const craftsmen = await UserService.getRecommendedCraftsmen(jobId);
-      return res.json({ data: craftsmen });
+      return ApiResponse.success(res, craftsmen);
     } catch (error) {
-      return res.status(400).json({
-        message:
-          error instanceof Error
-            ? error.message
-            : 'Failed to get recommendations',
-      });
+      if (error instanceof Error && error.message === 'Job not found')
+        return ApiResponse.notFound(res, 'Resource not found (invalid ID)');
+
+      return ApiResponse.badRequest(
+        res,
+        error instanceof Error ? error.message : 'Failed to get recommendations'
+      );
     }
   }
+  /**
+   * Get client's posted jobs (Client only)
+   */
+  static getClientJobs = asyncHandler(
+    async (
+      req: IAuthenticatedRequest,
+      res: Response
+    ): Promise<Response | void> => {
+      try {
+        const userId = req.user?.userId;
+        if (!userId) {
+          ApiResponse.unauthorized(res, 'Authentication required');
+          return;
+        }
+
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+
+        const { data: jobs, pagination } = await JobService.getJobsByClient(
+          userId,
+          page,
+          limit
+        );
+
+        return res.json({
+          success: true,
+          data: jobs,
+          pagination,
+          message: 'Jobs retrieved successfully',
+        });
+      } catch (error) {
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to retrieve jobs',
+        });
+      }
+    }
+  );
 }

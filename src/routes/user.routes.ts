@@ -40,6 +40,13 @@ router.put(
 // Delete current user's profile picture
 router.delete('/me/profile-picture', UserController.deleteProfilePicture);
 
+// Get recommended craftsmen for a job (Client only)
+router.get(
+  '/recommendations',
+  authorizeRoles('client'),
+  UserController.getRecommendations
+);
+
 // Get public profile of a specific user
 router.get('/:userId', UserController.getPublicProfile);
 
@@ -57,12 +64,8 @@ router.put(
   UserController.updateCraftsmanService
 );
 
-// Get recommended craftsmen for a job (Client only)
-router.get(
-  '/recommendations',
-  authorizeRoles('client'),
-  UserController.getRecommendations
-);
+// Get client's posted jobs (Client only)
+router.get('/me/jobs', authorizeRoles('client'), UserController.getClientJobs);
 
 // Get craftsman's submitted quotes (Craftsman only)
 router.get(

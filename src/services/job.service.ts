@@ -186,4 +186,15 @@ export class JobService {
     }
     return job;
   }
+
+  static async getJobsByClient(clientId: string, page = 1, limit = 10) {
+    return PaginationHelper.paginate(
+      Job,
+      { client: clientId },
+      page,
+      limit,
+      { createdAt: -1 },
+      'service'
+    );
+  }
 }

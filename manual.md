@@ -17,11 +17,12 @@ This manual provides practical usage instructions, example requests, and example
 7. [Notifications](#notifications)
 8. [Services](#services)
 9. [Craftsman Dashboard](#craftsman-dashboard)
-10. [Recommendations](#recommendations)
-11. [Admin](#admin)
-12. [Contact Email](#contact-email)
-13. [Enhanced Features](#-enhanced-features-v120)
-14. [Error Responses](#error-responses)
+10. [Client Dashboard](#client-dashboard)
+11. [Recommendations](#recommendations)
+12. [Admin](#admin)
+13. [Contact Email](#contact-email)
+14. [Enhanced Features](#-enhanced-features-v120)
+15. [Error Responses](#error-responses)
 
 ---
 
@@ -1450,6 +1451,75 @@ Authorization: Bearer <token>
 
 ---
 
+## Client Dashboard
+
+### Get Client's Posted Jobs (Client Only)
+
+`GET /api/users/me/jobs`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+
+- `page` (optional): Page number for pagination (default: 1)
+- `limit` (optional): Number of items per page (default: 10, max: 100)
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "6888bf8eede5a191977daf40",
+      "client": "6888bf0881fdba0c83c2ecda",
+      "craftsman": null,
+      "title": "Fix kitchen sink leak",
+      "description": "There is a persistent leak under the kitchen sink that needs immediate attention.",
+      "service": {
+        "_id": "6887b2a874c72b166a1cde0b",
+        "name": "Plumbing",
+        "icon": "faucet-icon",
+        "description": "Water systems and pipe work"
+      },
+      "photos": ["https://res.cloudinary.com/demo/image/upload/sink_leak1.jpg"],
+      "address": {
+        "country": "Egypt",
+        "state": "Cairo",
+        "city": "New Cairo",
+        "street": "123 Test Street"
+      },
+      "location": {
+        "type": "Point",
+        "coordinates": [31.2, 30.1]
+      },
+      "status": "Posted",
+      "paymentType": "Cash",
+      "jobPrice": 0,
+      "platformFee": 0,
+      "appliedCraftsmen": [],
+      "createdAt": "2025-07-29T12:33:18.731Z",
+      "updatedAt": "2025-07-29T12:33:18.731Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1,
+    "totalItems": 1,
+    "hasNextPage": false,
+    "hasPrevPage": false
+  },
+  "message": "Jobs retrieved successfully"
+}
+```
+
+---
+
 ## Recommendations
 
 ### Get Recommended Craftsmen for a Job (Client Only)
@@ -1462,6 +1532,14 @@ Authorization: Bearer <token>
 Authorization: Bearer <token>
 ```
 
+**Query Parameters:**
+
+- `jobId` (required): The ObjectId of the job to get recommendations for
+
+**Example Request:**
+
+`GET /api/users/recommendations?jobId=6888bf8eede5a191977daf40`
+
 **Response Example:**
 
 ```json
@@ -1469,17 +1547,34 @@ Authorization: Bearer <token>
   "success": true,
   "data": [
     {
-      "_id": "...",
-      "fullName": "Craftsman Name",
-      "profilePicture": "...",
-      "rating": 4.8,
-      "ratingCount": 12,
+      "_id": "6887b2a974c72b166a1cde16",
+      "fullName": "Mahmoud Plumber",
+      "profilePicture": "https://res.cloudinary.com/demo/image/upload/d_avatar.png/craftsman1.png",
       "craftsmanInfo": {
-        "skills": ["Plumbing"],
-        "verificationStatus": "verified"
-      }
+        "skills": ["Plumbing", "HVAC"],
+        "service": "6887b2a874c72b166a1cde0b",
+        "bio": "Experienced plumber with 10+ years in residential and commercial plumbing. Specialized in emergency repairs and installations.",
+        "portfolioImageUrls": [
+          "https://res.cloudinary.com/demo/image/upload/plumbing1.jpg",
+          "https://res.cloudinary.com/demo/image/upload/plumbing2.jpg"
+        ],
+        "verificationStatus": "verified",
+        "verificationDocs": []
+      },
+      "rating": 4.8,
+      "ratingCount": 142
     }
   ]
+}
+```
+
+**Error Response for Invalid Job ID:**
+
+```json
+{
+  "success": false,
+  "message": "Resource not found (invalid ID)",
+  "statusCode": 404
 }
 ```
 

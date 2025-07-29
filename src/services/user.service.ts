@@ -295,6 +295,12 @@ export class UserService {
   }
 
   static async getRecommendedCraftsmen(jobId: string) {
+    // Import mongoose for ObjectId validation
+    const { Types } = await import('mongoose');
+
+    // Validate ObjectId format
+    if (!Types.ObjectId.isValid(jobId)) throw new Error('Job not found');
+
     // Get the job
     const { Job } = await import('../models/job.model.js');
     const job = await Job.findById(jobId).populate('service', 'name').lean();
@@ -313,7 +319,6 @@ export class UserService {
       .lean();
     return craftsmen;
   }
-
   /**
    * Sanitize user data for public response
    */
