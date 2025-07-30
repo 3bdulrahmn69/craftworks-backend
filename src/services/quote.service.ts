@@ -104,7 +104,7 @@ export class QuoteService {
     status?: string
   ) {
     const filter: any = { craftsman: craftsmanId };
-    if (status) filter.status = status;
+    if (status) filter.status = { $regex: new RegExp(`^${status}$`, 'i') };
 
     const skip = (page - 1) * limit;
     const sort = { createdAt: -1 as const }; // Most recent first
@@ -127,10 +127,16 @@ export class QuoteService {
       Quote.countDocuments(filter),
     ]);
 
+    // Normalize status to lowercase in the returned data
+    const normalizedQuotes = quotes.map((q: any) => ({
+      ...q,
+      status: typeof q.status === 'string' ? q.status.toLowerCase() : q.status,
+    }));
+
     const totalPages = Math.ceil(totalItems / limit);
 
     return {
-      data: quotes,
+      data: normalizedQuotes,
       pagination: {
         page,
         limit,
