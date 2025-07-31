@@ -58,13 +58,6 @@ router.patch('/:jobId/status', JobController.updateJobStatus);
 // Mount quote routes
 router.use('/:jobId/quotes', quoteRoutes);
 // Mount invitation routes
-router.use('/:jobId/invitations', invitationRoutes);
-// Mount /invite as a direct POST route
-router.post(
-  '/:jobId/invite',
-  authenticateJWT,
-  authorizeRoles('client'),
-  invitationRoutes
-);
+router.use('/:jobId', invitationRoutes);
 
 export default router;

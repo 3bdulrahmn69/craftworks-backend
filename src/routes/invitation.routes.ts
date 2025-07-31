@@ -12,7 +12,7 @@ router.use(authenticateJWT);
 
 // POST /api/jobs/:jobId/invite (Client only)
 router.post(
-  '/../invite',
+  '/invite',
   authorizeRoles('client'),
   InvitationController.inviteCraftsman
 );

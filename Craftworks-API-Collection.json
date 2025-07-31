@@ -1,8 +1,8 @@
 {
   "info": {
     "name": "Craftworks Backend API",
-    "description": "Complete API collection for Craftworks backend with all endpoints including authentication, users, jobs (with enhanced search and filtering), quotes, invitations, notifications, services, and admin functions. v1.4.0 Updates: Standardized API response format - ALL endpoints now consistently include 'success' field (true/false) for uniform error handling and status checking across the entire application. Previous v1.3.3: Robust coordinate parsing for form-data - handles all formats including '31.2,30.1', '[31.2,30.1]', '[ \"31.2,30.1\" ]' with enhanced error handling and validation. Previous v1.3.2: Enhanced job creation with automatic image upload support - direct file uploads via multipart/form-data, up to 5 images per job, automatic Cloudinary integration with image optimization, file validation, and backward compatibility with JSON requests.",
-    "version": "1.4.0",
+    "description": "Complete API collection for Craftworks backend with all endpoints including authentication, users, jobs (with enhanced search and filtering), quotes, invitations, notifications, services, and admin functions. v1.5.0 Updates: Fixed invitation routes and service population - invitation endpoints now working correctly, recommendations endpoint returns full service objects instead of IDs, fixed seed script deprecation warnings. Enhanced service population in craftsman recommendations with manual population for better data integrity. Previous v1.4.0: Standardized API response format - ALL endpoints now consistently include 'success' field (true/false) for uniform error handling and status checking across the entire application. Previous v1.3.3: Robust coordinate parsing for form-data - handles all formats including '31.2,30.1', '[31.2,30.1]', '[ \"31.2,30.1\" ]' with enhanced error handling and validation.",
+    "version": "1.5.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -377,7 +377,7 @@
                 {
                   "key": "jobId",
                   "value": "JOB_ID_HERE",
-                  "description": "Required: ObjectId of the job to get craftsman recommendations for"
+                  "description": "Required: ObjectId of the job to get craftsman recommendations for. Returns craftsmen with fully populated service objects including _id, name, icon, and description."
                 }
               ]
             }
@@ -1004,9 +1004,10 @@
     },
     {
       "name": "Invitations",
+      "description": "Job invitation management endpoints. v1.5.0 FIXES: All invitation routes now working correctly - fixed route mounting issues, no more 404 errors on POST /jobs/:jobId/invite.",
       "item": [
         {
-          "name": "Invite Craftsman to Job (Client Only)",
+          "name": "Invite Craftsman to Job (Client Only) - FIXED",
           "request": {
             "method": "POST",
             "header": [
@@ -1030,7 +1031,8 @@
               "variable": [
                 {
                   "key": "jobId",
-                  "value": "JOB_ID_HERE"
+                  "value": "JOB_ID_HERE",
+                  "description": "✅ Route now working correctly - fixed mounting issues in v1.5.0"
                 }
               ]
             }
@@ -1054,7 +1056,8 @@
               "variable": [
                 {
                   "key": "jobId",
-                  "value": "JOB_ID_HERE"
+                  "value": "JOB_ID_HERE",
+                  "description": "✅ Route working correctly - shows all invitations for a specific job"
                 }
               ]
             }
@@ -1086,7 +1089,8 @@
               "variable": [
                 {
                   "key": "jobId",
-                  "value": "JOB_ID_HERE"
+                  "value": "JOB_ID_HERE",
+                  "description": "✅ Route working correctly - craftsmen can accept/reject invitations"
                 }
               ]
             }
@@ -1182,6 +1186,7 @@
     },
     {
       "name": "Services",
+      "description": "Service management endpoints. v1.5.0: Enhanced service population in recommendations endpoint - now returns full service objects with _id, name, icon, description instead of just service IDs.",
       "item": [
         {
           "name": "List All Services (Public)",
