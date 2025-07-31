@@ -15,7 +15,7 @@ export interface IVerificationDoc {
 
 export interface ICraftsmanInfo {
   skills: string[];
-  service: string; // Single service ID that the craftsman provides
+  service?: string;
   bio?: string;
   portfolioImageUrls: string[];
   verificationStatus: 'pending' | 'verified' | 'rejected';

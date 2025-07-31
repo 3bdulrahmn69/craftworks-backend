@@ -303,7 +303,12 @@ export class UserService {
 
     // Get the job
     const { Job } = await import('../models/job.model.js');
-    const job = await Job.findById(jobId).populate('service', 'name').lean();
+    const job = await Job.findById(jobId)
+      .populate({
+        path: 'service',
+        select: 'name icon description', // Exclude createdAt and updatedAt
+      })
+      .lean();
     if (!job) throw new Error('Job not found');
 
     // Find craftsmen with matching skills/service
@@ -317,7 +322,32 @@ export class UserService {
     })
       .select('fullName profilePicture rating ratingCount craftsmanInfo')
       .lean();
-    return craftsmen;
+
+    // Manually populate service data for each craftsman
+    const { Service } = await import('../models/service.model.js');
+    const populatedCraftsmen = await Promise.all(
+      craftsmen.map(async (craftsman) => {
+        if (craftsman.craftsmanInfo?.service)
+          try {
+            const service = await Service.findById(
+              craftsman.craftsmanInfo.service
+            )
+              .select('name icon description')
+              .lean();
+
+            if (service) (craftsman.craftsmanInfo.service as any) = service;
+          } catch (error) {
+            // If service lookup fails, keep the original ID
+            console.error(
+              `Failed to populate service for craftsman ${craftsman._id}:`,
+              error
+            );
+          }
+        return craftsman;
+      })
+    );
+
+    return populatedCraftsmen;
   }
   /**
    * Sanitize user data for public response

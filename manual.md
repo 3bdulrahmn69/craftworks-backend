@@ -1,8 +1,10 @@
-# Craftworks Backend API Manual (v1.4.0)
+# Craftworks Backend API Manual (v1.5.0)
 
 This manual provides practical usage instructions, example requests, and example responses for all backend API endpoints. Use this as a guide for integrating with the Craftworks backend.
 
-**Latest Update (v1.4.0):** Standardized API response format - ALL API responses now consistently include a `success` field (true/false) for uniform error handling and status checking across the entire application. Enhanced coordinate parsing for job creation with robust handling of all coordinate formats.
+**Latest Update (v1.5.0):** Enhanced job scheduling and service data - Added `jobDate` field for job scheduling, enhanced service object population across all endpoints (recommendations, job listings, user profiles) with full service details (name, icon, description) while excluding timestamps for cleaner responses.
+
+**Previous Update (v1.4.0):** Standardized API response format - ALL API responses now consistently include a `success` field (true/false) for uniform error handling and status checking across the entire application. Enhanced coordinate parsing for job creation with robust handling of all coordinate formats.
 
 **Previous Update (v1.3.3):** Enhanced coordinate parsing for job creation - robust handling of all coordinate formats including form-data edge cases, improved validation, and comprehensive error handling for location data.
 
@@ -402,6 +404,12 @@ Authorization: Bearer <token>
       "city": "Cairo",
       "street": "321 Workshop Street"
     },
+    "service": {
+      "_id": "6887b2a874c72b166a1cde0b",
+      "name": "Plumbing",
+      "icon": "faucet-icon",
+      "description": "Water systems and pipe work"
+    },
     "rating": 4.8,
     "ratingCount": 142,
     "createdAt": "2025-07-23T10:30:00.000Z"
@@ -666,6 +674,7 @@ Form Data:
 - address[street]: "123 Main Street"
 - location[type]: "Point"
 - location[coordinates]: "31.2,30.1" (longitude,latitude as comma-separated values)
+- jobDate: "2024-12-20" (ISO date string - optional, date when the job should be performed)
 
 **Coordinate Format Support:**
 - **Recommended**: `"31.2,30.1"` (simple comma-separated string)
@@ -697,7 +706,8 @@ Content-Type: application/json
     "street": "123 Main Street"
   },
   "location": { "type": "Point", "coordinates": [31.2, 30.1] },
-  "paymentType": "Cash"
+  "paymentType": "Cash",
+  "jobDate": "2024-12-20"
 }
 ```
 
@@ -719,12 +729,18 @@ Content-Type: application/json
     "_id": "6888bf8eede5a191977daf40",
     "title": "Fix kitchen sink leak",
     "description": "There is a leak under the kitchen sink that needs immediate attention.",
-    "service": "60f1b5b5b5b5b5b5b5b5b5b1",
+    "service": {
+      "_id": "60f1b5b5b5b5b5b5b5b5b5b1",
+      "name": "Plumbing",
+      "icon": "faucet-icon",
+      "description": "Water systems and pipe work"
+    },
     "photos": [
       "https://res.cloudinary.com/demo/image/upload/v1234567890/job-images/job_1234567890_abc123def.webp",
       "https://res.cloudinary.com/demo/image/upload/v1234567890/job-images/job_1234567890_xyz789uvw.webp"
     ],
     "status": "Posted",
+    "jobDate": "2024-12-20T00:00:00.000Z",
     "createdAt": "2025-07-29T12:33:18.731Z"
   },
   "message": "Job created successfully"
@@ -747,6 +763,7 @@ curl -X POST http://localhost:5000/api/jobs \
   -F "location[type]=Point" \
   -F "location[coordinates]=31.2,30.1" \
   -F "paymentType=Cash" \
+  -F "jobDate=2024-12-20" \
   -F "photos=@/path/to/leak_photo1.jpg" \
   -F "photos=@/path/to/leak_photo2.jpg"
 
@@ -1684,7 +1701,12 @@ Authorization: Bearer <token>
       "profilePicture": "https://res.cloudinary.com/demo/image/upload/d_avatar.png/craftsman1.png",
       "craftsmanInfo": {
         "skills": ["Plumbing", "HVAC"],
-        "service": "6887b2a874c72b166a1cde0b",
+        "service": {
+          "_id": "6887b2a874c72b166a1cde0b",
+          "name": "Plumbing",
+          "icon": "faucet-icon",
+          "description": "Water systems and pipe work"
+        },
         "bio": "Experienced plumber with 10+ years in residential and commercial plumbing. Specialized in emergency repairs and installations.",
         "portfolioImageUrls": [
           "https://res.cloudinary.com/demo/image/upload/plumbing1.jpg",

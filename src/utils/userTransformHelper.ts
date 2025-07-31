@@ -38,8 +38,6 @@ export class UserTransformHelper {
             name: service.name,
             icon: service.icon,
             description: service.description,
-            createdAt: service.createdAt,
-            updatedAt: service.updatedAt,
           } as any;
         else publicUser.service = user.craftsmanInfo.service; // Fallback to ID if service not found
       } catch (error) {

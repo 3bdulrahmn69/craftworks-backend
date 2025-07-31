@@ -42,7 +42,7 @@ export class PaginationHelper {
     page: number = 1,
     limit: number = 10,
     sort: any = {},
-    populate?: string | string[]
+    populate?: string | string[] | any
   ): Promise<{
     data: T[];
     pagination: {

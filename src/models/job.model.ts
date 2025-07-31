@@ -46,6 +46,7 @@ const jobSchema = new Schema<IJob>(
     jobPrice: { type: Number, default: 0 },
     platformFee: { type: Number, default: 0 },
     appliedCraftsmen: [{ type: Schema.Types.ObjectId, ref: 'User' }], // Track applied craftsmen
+    jobDate: { type: Date }, // Date when the job should be performed
     hiredAt: { type: Date },
     completedAt: { type: Date },
   },

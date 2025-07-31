@@ -35,7 +35,10 @@ export class JobService {
       {
         createdAt: -1,
       },
-      'service'
+      {
+        path: 'service',
+        select: 'name icon description', // Exclude createdAt and updatedAt
+      }
     );
   }
 
@@ -83,7 +86,10 @@ export class JobService {
       {
         createdAt: -1,
       },
-      'service'
+      {
+        path: 'service',
+        select: 'name icon description', // Exclude createdAt and updatedAt
+      }
     );
   }
 
@@ -137,12 +143,20 @@ export class JobService {
       {
         createdAt: -1,
       },
-      'service'
+      {
+        path: 'service',
+        select: 'name icon description', // Exclude createdAt and updatedAt
+      }
     );
   }
 
   static async getJobById(jobId: string) {
-    return Job.findById(jobId).populate('service', 'name').lean();
+    return Job.findById(jobId)
+      .populate({
+        path: 'service',
+        select: 'name icon description', // Exclude createdAt and updatedAt
+      })
+      .lean();
   }
 
   static async updateJob(

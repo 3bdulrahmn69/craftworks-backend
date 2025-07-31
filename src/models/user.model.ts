@@ -240,7 +240,7 @@ userSchema.pre('save', function (next) {
   if (this.role === 'craftsman' && !this.craftsmanInfo)
     this.craftsmanInfo = {
       skills: [],
-      service: '',
+      service: undefined,
       bio: '',
       portfolioImageUrls: [],
       verificationStatus: 'pending',

@@ -25,6 +25,7 @@ export interface IJob extends Document {
   jobPrice: number;
   platformFee: number;
   appliedCraftsmen: Types.ObjectId[]; // Track who applied to prevent multiple applications
+  jobDate?: Date; // Date when the job should be performed
   hiredAt?: Date;
   completedAt?: Date;
   createdAt: Date;

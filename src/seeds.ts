@@ -329,6 +329,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.2, 30.1] },
         status: 'Posted',
         paymentType: 'Cash',
+        jobDate: new Date('2024-12-20'),
         appliedCraftsmen: [craftsman1._id],
       },
       {
@@ -349,6 +350,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.1, 29.9] },
         status: 'Posted',
         paymentType: 'Escrow',
+        jobDate: new Date('2024-12-22'),
         appliedCraftsmen: [craftsman2._id],
       },
       {
@@ -370,6 +372,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.0, 29.8] },
         status: 'Posted',
         paymentType: 'Cash',
+        jobDate: new Date('2024-12-25'),
         appliedCraftsmen: [craftsman3._id],
       },
       {
@@ -390,6 +393,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.2, 30.1] },
         status: 'Posted',
         paymentType: 'CashProtected',
+        jobDate: new Date('2024-12-28'),
         appliedCraftsmen: [],
       },
       {
@@ -410,6 +414,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.1, 29.9] },
         status: 'Posted',
         paymentType: 'Cash',
+        jobDate: new Date('2024-12-30'),
         appliedCraftsmen: [craftsman4._id],
       },
       {
@@ -428,6 +433,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.0, 29.8] },
         status: 'Posted',
         paymentType: 'Escrow',
+        jobDate: new Date('2025-01-02'),
         appliedCraftsmen: [craftsman1._id],
       },
       {
@@ -448,6 +454,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.2, 30.1] },
         status: 'Posted',
         paymentType: 'Cash',
+        jobDate: new Date('2025-01-05'),
         appliedCraftsmen: [craftsman2._id],
       },
       {
@@ -469,6 +476,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.1, 29.9] },
         status: 'Posted',
         paymentType: 'CashProtected',
+        jobDate: new Date('2025-01-08'),
         appliedCraftsmen: [craftsman3._id],
       },
       {
@@ -489,6 +497,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.0, 29.8] },
         status: 'Posted',
         paymentType: 'Cash',
+        jobDate: new Date('2025-01-10'),
         appliedCraftsmen: [craftsman4._id],
       },
       {
@@ -509,6 +518,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.2, 30.1] },
         status: 'Posted',
         paymentType: 'Escrow',
+        jobDate: new Date('2025-01-12'),
         appliedCraftsmen: [craftsman1._id],
       },
       {
@@ -529,6 +539,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.1, 29.9] },
         status: 'Posted',
         paymentType: 'Cash',
+        jobDate: new Date('2025-01-15'),
         appliedCraftsmen: [],
       },
       {
@@ -549,6 +560,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.0, 29.8] },
         status: 'Posted',
         paymentType: 'CashProtected',
+        jobDate: new Date('2025-01-18'),
         appliedCraftsmen: [craftsman4._id],
       },
       {
@@ -567,6 +579,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.2, 30.1] },
         status: 'Posted',
         paymentType: 'Cash',
+        jobDate: new Date('2025-01-20'),
         appliedCraftsmen: [craftsman1._id],
       },
       {
@@ -587,6 +600,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.1, 29.9] },
         status: 'Posted',
         paymentType: 'Escrow',
+        jobDate: new Date('2025-01-22'),
         appliedCraftsmen: [craftsman4._id],
       },
       {
@@ -605,6 +619,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.0, 29.8] },
         status: 'Posted',
         paymentType: 'CashProtected',
+        jobDate: new Date('2025-01-25'),
         appliedCraftsmen: [craftsman4._id],
       },
       {
@@ -625,6 +640,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.2, 30.1] },
         status: 'Posted',
         paymentType: 'Cash',
+        jobDate: new Date('2025-01-28'),
         appliedCraftsmen: [craftsman1._id, craftsman2._id],
       },
       {
@@ -645,6 +661,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.1, 29.9] },
         status: 'Posted',
         paymentType: 'Escrow',
+        jobDate: new Date('2025-01-30'),
         appliedCraftsmen: [craftsman2._id],
       },
       {
@@ -666,6 +683,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.0, 29.8] },
         status: 'Posted',
         paymentType: 'Cash',
+        jobDate: new Date('2025-02-02'),
         appliedCraftsmen: [craftsman4._id],
       },
       {
@@ -686,6 +704,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.2, 30.1] },
         status: 'Posted',
         paymentType: 'CashProtected',
+        jobDate: new Date('2025-02-05'),
         appliedCraftsmen: [craftsman3._id],
       },
       {
@@ -706,6 +725,7 @@ async function seed() {
         location: { type: 'Point', coordinates: [31.1, 29.9] },
         status: 'Posted',
         paymentType: 'Cash',
+        jobDate: new Date('2025-02-08'),
         appliedCraftsmen: [craftsman1._id],
       },
     ]);
