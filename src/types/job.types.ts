@@ -1,6 +1,15 @@
 import { Document, Types } from 'mongoose';
 import { IAddress } from './user.types.js';
 
+export type JobStatus =
+  | 'Posted'
+  | 'Quoted'
+  | 'Hired'
+  | 'On The Way'
+  | 'Completed'
+  | 'Disputed'
+  | 'Cancelled';
+
 export interface IJob extends Document {
   client: Types.ObjectId;
   craftsman?: Types.ObjectId | null;
@@ -13,14 +22,7 @@ export interface IJob extends Document {
     type: 'Point';
     coordinates: [number, number];
   };
-  status:
-    | 'Posted'
-    | 'Quoted'
-    | 'Hired'
-    | 'On The Way'
-    | 'Completed'
-    | 'Disputed'
-    | 'Cancelled';
+  status: JobStatus;
   paymentType: 'Escrow' | 'Cash' | 'CashProtected';
   jobPrice: number;
   platformFee: number;

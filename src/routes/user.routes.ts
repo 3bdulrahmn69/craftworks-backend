@@ -64,8 +64,12 @@ router.put(
   UserController.updateCraftsmanService
 );
 
-// Get client's posted jobs (Client only)
-router.get('/me/jobs', authorizeRoles('client'), UserController.getClientJobs);
+// Get user's jobs (Client: posted jobs, Craftsman: hired jobs)
+router.get(
+  '/me/jobs',
+  authorizeRoles('client', 'craftsman'),
+  UserController.getUserJobs
+);
 
 // Get craftsman's submitted quotes (Craftsman only)
 router.get(

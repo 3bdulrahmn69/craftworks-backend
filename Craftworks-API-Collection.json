@@ -455,7 +455,7 @@
           "response": []
         },
         {
-          "name": "Get My Jobs (Client Only)",
+          "name": "Get My Jobs (Client: Posted Jobs, Craftsman: Hired Jobs)",
           "request": {
             "method": "GET",
             "header": [
@@ -478,6 +478,11 @@
                   "key": "limit",
                   "value": "10",
                   "description": "Number of items per page (default: 10, max: 100)"
+                },
+                {
+                  "key": "status",
+                  "value": "Completed",
+                  "description": "Filter jobs by status (Posted, Quoted, Hired, On The Way, Completed, Disputed, Cancelled) - case insensitive"
                 }
               ]
             }

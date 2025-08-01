@@ -1600,9 +1600,9 @@ Authorization: Bearer <token>
 
 ---
 
-## Client Dashboard
+## User Dashboard
 
-### Get Client's Posted Jobs (Client Only)
+### Get User's Jobs (Client: Posted Jobs, Craftsman: Hired Jobs)
 
 `GET /api/users/me/jobs`
 
@@ -1612,12 +1612,37 @@ Authorization: Bearer <token>
 Authorization: Bearer <token>
 ```
 
+**Access Control:**
+
+- **Clients**: Get all jobs they have posted
+- **Craftsmen**: Get all jobs they have been hired for
+
+**Response Messages:**
+
+- Clients receive: "Posted jobs retrieved successfully"
+- Craftsmen receive: "Hired jobs retrieved successfully"
+
+**Enhanced Data Structure:**
+
+- **For Clients**: The `craftsman` field will be populated with `fullName` and `phone` when a craftsman is assigned
+- **For Craftsmen**: The `client` field will be populated with `fullName` and `phone` for easy contact
+
+**Example Requests:**
+
+- Get all jobs: `GET /api/users/me/jobs`
+- Get only completed jobs: `GET /api/users/me/jobs?status=Completed` (or `completed`)
+- Get only cancelled jobs: `GET /api/users/me/jobs?status=Cancelled` (or `cancelled`)
+- Get jobs with pagination: `GET /api/users/me/jobs?page=1&limit=5&status=Posted` (or `posted`)
+
 **Query Parameters:**
 
 - `page` (optional): Page number for pagination (default: 1)
 - `limit` (optional): Number of items per page (default: 10, max: 100)
+- `status` (optional): Filter jobs by status. Valid values: `Posted`, `Quoted`, `Hired`, `On The Way`, `Completed`, `Disputed`, `Cancelled` (case-insensitive)
 
-**Response Example:**
+**Response Examples:**
+
+**For Clients (Posted Jobs):**
 
 ```json
 {
@@ -1626,7 +1651,11 @@ Authorization: Bearer <token>
     {
       "_id": "6888bf8eede5a191977daf40",
       "client": "6888bf0881fdba0c83c2ecda",
-      "craftsman": null,
+      "craftsman": {
+        "_id": "6887b2a974c72b166a1cde16",
+        "fullName": "Mahmoud Plumber",
+        "phone": "+201234567890"
+      },
       "title": "Fix kitchen sink leak",
       "description": "There is a persistent leak under the kitchen sink that needs immediate attention.",
       "service": {

@@ -4,6 +4,7 @@ import { JobService } from '../services/job.service.js';
 import { ApiResponse, asyncHandler } from '../utils/apiResponse.js';
 import { ValidationHelper } from '../utils/validation.js';
 import { IAuthenticatedRequest } from '../types/common.types.js';
+import { JobStatus } from '../types/job.types.js';
 import cloudinary from '../utils/cloudinary.js';
 
 export class UserController {
@@ -293,15 +294,17 @@ export class UserController {
     }
   }
   /**
-   * Get client's posted jobs (Client only)
+   * Get user's jobs (Client: posted jobs, Craftsman: hired jobs)
    */
-  static getClientJobs = asyncHandler(
+  static getUserJobs = asyncHandler(
     async (
       req: IAuthenticatedRequest,
       res: Response
     ): Promise<Response | void> => {
       try {
         const userId = req.user?.userId;
+        const userRole = req.user?.role;
+
         if (!userId) {
           ApiResponse.unauthorized(res, 'Authentication required');
           return;
@@ -309,17 +312,65 @@ export class UserController {
 
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 10;
+        const statusInput = req.query.status as string | undefined;
 
-        const { data: jobs, pagination } = await JobService.getJobsByClient(
-          userId,
-          page,
-          limit
-        );
+        // Normalize and validate status if provided
+        let normalizedStatus: JobStatus | undefined;
+        if (statusInput) {
+          const validStatuses: JobStatus[] = [
+            'Posted',
+            'Quoted',
+            'Hired',
+            'On The Way',
+            'Completed',
+            'Disputed',
+            'Cancelled',
+          ];
+
+          // Case-insensitive matching
+          const matchedStatus = validStatuses.find(
+            (validStatus) =>
+              validStatus.toLowerCase() === statusInput.toLowerCase()
+          );
+
+          if (!matchedStatus) {
+            return ApiResponse.badRequest(
+              res,
+              `Invalid status. Must be one of: ${validStatuses.join(', ')}`
+            );
+          }
+
+          normalizedStatus = matchedStatus;
+        }
+
+        let result;
+        let message;
+
+        // Call appropriate service method based on user role
+        if (userRole === 'client') {
+          result = await JobService.getJobsByClient(
+            userId,
+            page,
+            limit,
+            normalizedStatus
+          );
+          message = 'Posted jobs retrieved successfully';
+        } else if (userRole === 'craftsman') {
+          result = await JobService.getJobsByCraftsman(
+            userId,
+            page,
+            limit,
+            normalizedStatus
+          );
+          message = 'Hired jobs retrieved successfully';
+        } else {
+          return ApiResponse.forbidden(res, 'Access denied');
+        }
 
         return ApiResponse.success(
           res,
-          { data: jobs, pagination },
-          'Jobs retrieved successfully'
+          { data: result.data, pagination: result.pagination },
+          message
         );
       } catch (error) {
         return ApiResponse.error(res, 'Failed to retrieve jobs', 500);

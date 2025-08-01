@@ -1,6 +1,6 @@
 import { Job } from '../models/job.model.js';
 import { Service } from '../models/service.model.js';
-import { IJob } from '../types/job.types.js';
+import { IJob, JobStatus } from '../types/job.types.js';
 import { Types } from 'mongoose';
 import { NotificationService } from './notification.service.js';
 import { PaginationHelper } from '../utils/paginationHelper.js';
@@ -201,14 +201,67 @@ export class JobService {
     return job;
   }
 
-  static async getJobsByClient(clientId: string, page = 1, limit = 10) {
+  static async getJobsByClient(
+    clientId: string,
+    page = 1,
+    limit = 10,
+    status?: JobStatus
+  ) {
+    const filter: any = { client: clientId };
+
+    // Add status filter if provided
+    if (status) {
+      filter.status = status;
+    }
+
     return PaginationHelper.paginate(
       Job,
-      { client: clientId },
+      filter,
       page,
       limit,
       { createdAt: -1 },
-      'service'
+      [
+        {
+          path: 'service',
+          select: 'name icon description',
+        },
+        {
+          path: 'craftsman',
+          select: 'fullName phone',
+        },
+      ]
+    );
+  }
+
+  static async getJobsByCraftsman(
+    craftsmanId: string,
+    page = 1,
+    limit = 10,
+    status?: JobStatus
+  ) {
+    const filter: any = { craftsman: craftsmanId };
+
+    // Add status filter if provided
+    if (status) {
+      filter.status = status;
+    }
+
+    return PaginationHelper.paginate(
+      Job,
+      filter,
+      page,
+      limit,
+      { createdAt: -1 },
+      [
+        {
+          path: 'service',
+          select: 'name icon description',
+        },
+        {
+          path: 'client',
+          select: 'fullName phone',
+        },
+      ]
     );
   }
 }
