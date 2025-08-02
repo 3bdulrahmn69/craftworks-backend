@@ -188,7 +188,7 @@ src/
 
 - `POST /api/jobs/:jobId/quotes` - Submit a quote (craftsman only, notifies client)
 - `GET /api/jobs/:jobId/quotes` - Get all quotes for a job (client only)
-- `POST /api/jobs/:jobId/quotes/:quoteId/accept` - Accept a quote and hire craftsman (client only, notifies craftsman)
+- `POST /api/jobs/:jobId/quotes/:quoteId/:status` - Accept or reject a quote (client only, notifies craftsman)
 
 #### Invitations (`/api/jobs/:jobId/invitations`)
 

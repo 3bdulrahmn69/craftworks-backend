@@ -1,8 +1,10 @@
-# Craftworks Backend API Manual (v1.5.0)
+# Craftworks Backend API Manual (v1.5.1)
 
 This manual provides practical usage instructions, example requests, and example responses for all backend API endpoints. Use this as a guide for integrating with the Craftworks backend.
 
-**Latest Update (v1.5.0):** Enhanced job scheduling and service data - Added `jobDate` field for job scheduling, enhanced service object population across all endpoints (recommendations, job listings, user profiles) with full service details (name, icon, description) while excluding timestamps for cleaner responses.
+**Latest Update (v1.5.1):** Enhanced quote management - Updated quote route from `/jobs/:jobId/quotes/:quoteId/accept` to `/jobs/:jobId/quotes/:quoteId/:status` where status can be 'accept' or 'reject'. Added ability to reject quotes with proper notifications to craftsmen. Enhanced business logic to handle both acceptance and rejection workflows.
+
+**Previous Update (v1.5.0):** Enhanced job scheduling and service data - Added `jobDate` field for job scheduling, enhanced service object population across all endpoints (recommendations, job listings, user profiles) with full service details (name, icon, description) while excluding timestamps for cleaner responses.
 
 **Previous Update (v1.4.0):** Standardized API response format - ALL API responses now consistently include a `success` field (true/false) for uniform error handling and status checking across the entire application. Enhanced coordinate parsing for job creation with robust handling of all coordinate formats.
 
@@ -1225,9 +1227,9 @@ Authorization: Bearer <token>
 }
 ````
 
-### Accept a Quote and Hire Craftsman (Client Only)
+### Update Quote Status - Accept or Reject (Client Only)
 
-`POST /api/jobs/:jobId/quotes/:quoteId/accept`
+`POST /api/jobs/:jobId/quotes/:quoteId/:status`
 
 **Headers:**
 
@@ -1235,7 +1237,21 @@ Authorization: Bearer <token>
 Authorization: Bearer <token>
 ```
 
-**Response Example:**
+**URL Parameters:**
+
+- `jobId` (required): The ObjectId of the job
+- `quoteId` (required): The ObjectId of the quote to update
+- `status` (required): The action to perform - either `accept` or `reject`
+
+**Example Requests:**
+
+Accept a quote:
+`POST /api/jobs/688d3eddeed54bd83df56b72/quotes/507f1f77bcf86cd799439020/accept`
+
+Reject a quote:
+`POST /api/jobs/688d3eddeed54bd83df56b72/quotes/507f1f77bcf86cd799439020/reject`
+
+**Response Example (Accept):**
 
 ```json
 {
@@ -1247,6 +1263,37 @@ Authorization: Bearer <token>
   }
 }
 ```
+
+**Response Example (Reject):**
+
+```json
+{
+  "success": true,
+  "message": "Quote rejected successfully",
+  "data": {
+    "job": { "_id": "...", "status": "Posted" },
+    "quote": { "_id": "...", "status": "Declined" }
+  }
+}
+```
+
+**Business Logic:**
+
+- **When accepting a quote:**
+
+  - The selected quote status becomes "Accepted"
+  - All other quotes for the same job are automatically set to "Declined"
+  - Job status changes to "Hired"
+  - The craftsman is assigned to the job
+  - Job price is set to the quote price
+  - Hired date is recorded
+  - Craftsman receives a notification about acceptance
+
+- **When rejecting a quote:**
+  - Only the selected quote status becomes "Declined"
+  - Job remains in "Posted" status
+  - Other quotes remain unaffected
+  - Craftsman receives a notification about rejection
 
 ---
 

@@ -1,8 +1,8 @@
 {
   "info": {
     "name": "Craftworks Backend API",
-    "description": "Complete API collection for Craftworks backend with all endpoints including authentication, users, jobs (with enhanced search and filtering), quotes, invitations, notifications, services, and admin functions. v1.5.0 Updates: Fixed invitation routes and service population - invitation endpoints now working correctly, recommendations endpoint returns full service objects instead of IDs, fixed seed script deprecation warnings. Enhanced service population in craftsman recommendations with manual population for better data integrity. Previous v1.4.0: Standardized API response format - ALL endpoints now consistently include 'success' field (true/false) for uniform error handling and status checking across the entire application. Previous v1.3.3: Robust coordinate parsing for form-data - handles all formats including '31.2,30.1', '[31.2,30.1]', '[ \"31.2,30.1\" ]' with enhanced error handling and validation.",
-    "version": "1.5.0",
+    "description": "Complete API collection for Craftworks backend with all endpoints including authentication, users, jobs (with enhanced search and filtering), quotes, invitations, notifications, services, and admin functions. v1.5.1 Updates: Enhanced quote management - updated quote acceptance route from '/jobs/:jobId/quotes/:quoteId/accept' to '/jobs/:jobId/quotes/:quoteId/:status' where status can be 'accept' or 'reject'. Added ability to reject quotes with proper notifications. Previous v1.5.0: Fixed invitation routes and service population - invitation endpoints now working correctly, recommendations endpoint returns full service objects instead of IDs, fixed seed script deprecation warnings. Enhanced service population in craftsman recommendations with manual population for better data integrity. Previous v1.4.0: Standardized API response format - ALL endpoints now consistently include 'success' field (true/false) for uniform error handling and status checking across the entire application. Previous v1.3.3: Robust coordinate parsing for form-data - handles all formats including '31.2,30.1', '[31.2,30.1]', '[ \"31.2,30.1\" ]' with enhanced error handling and validation.",
+    "version": "1.5.1",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -1017,6 +1017,34 @@
               "raw": "{{base_url}}/jobs/:jobId/quotes/:quoteId/accept",
               "host": ["{{base_url}}"],
               "path": ["jobs", ":jobId", "quotes", ":quoteId", "accept"],
+              "variable": [
+                {
+                  "key": "jobId",
+                  "value": "JOB_ID_HERE"
+                },
+                {
+                  "key": "quoteId",
+                  "value": "QUOTE_ID_HERE"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reject Quote (Client Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/jobs/:jobId/quotes/:quoteId/reject",
+              "host": ["{{base_url}}"],
+              "path": ["jobs", ":jobId", "quotes", ":quoteId", "reject"],
               "variable": [
                 {
                   "key": "jobId",

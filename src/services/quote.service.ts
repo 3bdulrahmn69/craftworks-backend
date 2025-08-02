@@ -57,9 +57,10 @@ export class QuoteService {
       .lean();
   }
 
-  static async acceptQuote(
+  static async updateQuoteStatus(
     jobId: string,
     quoteId: string,
+    status: 'accept' | 'reject',
     clientId: Types.ObjectId
   ) {
     // Find the quote and job
@@ -69,28 +70,47 @@ export class QuoteService {
     const job = await Job.findOne({ _id: jobId, client: clientId });
     if (!job) throw new Error('Job not found or not owned by user');
 
-    // Accept the quote
-    quote.status = 'Accepted';
-    await quote.save();
-    // Decline all other quotes for this job
-    await Quote.updateMany(
-      { job: jobId, _id: { $ne: quoteId } },
-      { status: 'Declined' }
-    );
-    // Update job status and assign craftsman
-    job.status = 'Hired';
-    job.craftsman = quote.craftsman;
-    job.jobPrice = quote.price;
-    job.hiredAt = new Date();
-    await job.save();
-    // Notify craftsman
-    await NotificationService.sendNotification({
-      user: quote.craftsman,
-      type: 'quote',
-      title: 'Your Quote Was Accepted',
-      message: `Your quote for the job '${job.title}' was accepted. You have been hired!`,
-      data: { jobId, quoteId, clientId },
-    });
+    if (status === 'accept') {
+      // Accept the quote
+      quote.status = 'Accepted';
+      await quote.save();
+
+      // Decline all other quotes for this job
+      await Quote.updateMany(
+        { job: jobId, _id: { $ne: quoteId } },
+        { status: 'Declined' }
+      );
+
+      // Update job status and assign craftsman
+      job.status = 'Hired';
+      job.craftsman = quote.craftsman;
+      job.jobPrice = quote.price;
+      job.hiredAt = new Date();
+      await job.save();
+
+      // Notify craftsman about acceptance
+      await NotificationService.sendNotification({
+        user: quote.craftsman,
+        type: 'quote',
+        title: 'Your Quote Was Accepted',
+        message: `Your quote for the job '${job.title}' was accepted. You have been hired!`,
+        data: { jobId, quoteId, clientId },
+      });
+    } else if (status === 'reject') {
+      // Reject the quote
+      quote.status = 'Declined';
+      await quote.save();
+
+      // Notify craftsman about rejection
+      await NotificationService.sendNotification({
+        user: quote.craftsman,
+        type: 'quote',
+        title: 'Your Quote Was Declined',
+        message: `Your quote for the job '${job.title}' was declined.`,
+        data: { jobId, quoteId, clientId },
+      });
+    }
+
     return { job, quote };
   }
 

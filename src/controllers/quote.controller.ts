@@ -43,25 +43,40 @@ export class QuoteController {
     }
   }
 
-  // POST /api/jobs/:jobId/quotes/:quoteId/accept (Client only)
-  static async acceptQuote(req: IAuthenticatedRequest, res: Response) {
+  // POST /api/jobs/:jobId/quotes/:quoteId/:status (Client only)
+  static async updateQuoteStatus(req: IAuthenticatedRequest, res: Response) {
     try {
       const clientId = req.user?.userId;
       if (!clientId) return ApiResponse.unauthorized(res, 'Unauthorized');
-      const { job, quote } = await QuoteService.acceptQuote(
+
+      const { status } = req.params;
+
+      // Validate status parameter
+      if (!['accept', 'reject'].includes(status.toLowerCase()))
+        return ApiResponse.badRequest(
+          res,
+          'Status must be either "accept" or "reject"'
+        );
+
+      const { job, quote } = await QuoteService.updateQuoteStatus(
         req.params.jobId,
         req.params.quoteId,
+        status.toLowerCase() as 'accept' | 'reject',
         new Types.ObjectId(clientId)
       );
-      return ApiResponse.success(
-        res,
-        { job, quote },
-        'Quote accepted and craftsman hired'
-      );
+
+      const message =
+        status.toLowerCase() === 'accept'
+          ? 'Quote accepted and craftsman hired'
+          : 'Quote rejected successfully';
+
+      return ApiResponse.success(res, { job, quote }, message);
     } catch (error) {
       return ApiResponse.badRequest(
         res,
-        error instanceof Error ? error.message : 'Failed to accept quote'
+        error instanceof Error
+          ? error.message
+          : `Failed to ${req.params.status} quote`
       );
     }
   }

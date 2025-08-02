@@ -16,11 +16,11 @@ router.post('/', authorizeRoles('craftsman'), QuoteController.submitQuote);
 // GET /api/jobs/:jobId/quotes (Client only)
 router.get('/', authorizeRoles('client'), QuoteController.getQuotesForJob);
 
-// POST /api/jobs/:jobId/quotes/:quoteId/accept (Client only)
+// POST /api/jobs/:jobId/quotes/:quoteId/:status (Client only)
 router.post(
-  '/:quoteId/accept',
+  '/:quoteId/:status',
   authorizeRoles('client'),
-  QuoteController.acceptQuote
+  QuoteController.updateQuoteStatus
 );
 
 export default router;

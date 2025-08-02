@@ -167,7 +167,7 @@ All endpoints should be prefixed with `/api`.
 
 - `POST /api/jobs/:jobId/quotes` - (Craftsman only) Submit a quote for a job.
 - `GET /api/jobs/:jobId/quotes` - (Client only) Get all quotes for a job.
-- `POST /api/jobs/:jobId/quotes/:quoteId/accept` - (Client only) Accept a quote and hire the craftsman.
+- `POST /api/jobs/:jobId/quotes/:quoteId/:status` - (Client only) Accept or reject a quote. Status can be `accept` or `reject`.
 
 ### 5.5. Invitations (`/jobs/:jobId/invitations`)
 
