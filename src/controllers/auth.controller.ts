@@ -176,4 +176,61 @@ export class AuthController {
       }
     }
   );
+
+  static changePassword = asyncHandler(
+    async (
+      req: IAuthenticatedRequest,
+      res: Response
+    ): Promise<Response | void> => {
+      const { currentPassword, newPassword } = req.body;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        ApiResponse.unauthorized(res, 'Authentication required');
+        return;
+      }
+
+      const validation = ValidationHelper.validateChangePassword({
+        currentPassword,
+        newPassword,
+      });
+      if (!validation.isValid) {
+        ApiResponse.badRequest(res, validation.errors.join(', '));
+        return;
+      }
+
+      try {
+        await AuthService.changePassword(userId, currentPassword, newPassword);
+
+        // Log successful password change
+        await ActionLogService.logAuthAction('password_change', userId, {
+          userRole: req.user?.role,
+          ipAddress: req.ip,
+          userAgent: req.get('User-Agent'),
+        });
+
+        ApiResponse.success(res, undefined, 'Password changed successfully');
+      } catch (error) {
+        // Log failed password change attempt
+        await ActionLogService.logAuthAction('password_change_failed', userId, {
+          userRole: req.user?.role,
+          ipAddress: req.ip,
+          userAgent: req.get('User-Agent'),
+          errorMessage:
+            error instanceof Error ? error.message : 'Unknown error',
+        });
+
+        if (error instanceof AuthenticationError) {
+          if (error.statusCode === 404)
+            ApiResponse.notFound(res, error.message);
+          else if (error.statusCode === 400)
+            ApiResponse.badRequest(res, error.message);
+          else
+            ApiResponse.unauthorized(res, error.message);
+        } else {
+          ApiResponse.internalError(res, 'Password change failed');
+        }
+      }
+    }
+  );
 }

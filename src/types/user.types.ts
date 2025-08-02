@@ -92,3 +92,13 @@ export interface IJWTPayload {
   iat?: number;
   exp?: number;
 }
+
+export interface ICraftsmanRecommendation {
+  _id: string;
+  fullName: string;
+  profilePicture?: string;
+  rating?: number;
+  ratingCount: number;
+  craftsmanInfo?: ICraftsmanInfo;
+  isInvited: boolean;
+}

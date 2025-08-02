@@ -294,6 +294,55 @@ Authorization: Bearer <token>
 }
 ```
 
+### Change Password
+
+`POST /api/auth/change-password`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Example:**
+
+```json
+{
+  "currentPassword": "OldPassword123!",
+  "newPassword": "NewPassword456!"
+}
+```
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "message": "Password changed successfully"
+}
+```
+
+**Error Response (Invalid Current Password):**
+
+```json
+{
+  "success": false,
+  "message": "Current password is incorrect",
+  "statusCode": 400
+}
+```
+
+**Error Response (Validation Error):**
+
+```json
+{
+  "success": false,
+  "message": "Password must be at least 8 characters long, Password must contain at least one uppercase letter",
+  "statusCode": 400
+}
+```
+
 ---
 
 ## Business Rules
@@ -638,7 +687,8 @@ Authorization: Bearer <token>
       "craftsmanInfo": {
         "skills": ["Plumbing"],
         "verificationStatus": "verified"
-      }
+      },
+      "isInvited": false
     }
   ]
 }
@@ -1714,6 +1764,10 @@ Authorization: Bearer <token>
 
 - `jobId` (required): The ObjectId of the job to get recommendations for
 
+**Response Fields:**
+
+- `isInvited` (boolean): Indicates whether this craftsman has already been invited to the specified job
+
 **Example Request:**
 
 `GET /api/users/recommendations?jobId=6888bf8eede5a191977daf40`
@@ -1745,7 +1799,8 @@ Authorization: Bearer <token>
         "verificationDocs": []
       },
       "rating": 4.8,
-      "ratingCount": 142
+      "ratingCount": 142,
+      "isInvited": false
     }
   ]
 }

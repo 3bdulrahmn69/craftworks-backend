@@ -163,6 +163,7 @@ src/
 - `POST /api/auth/register` - Register a new user
 - `POST /api/auth/login` - User login
 - `POST /api/auth/logout` - User logout (protected)
+- `POST /api/auth/change-password` - Change password (protected)
 - `POST /api/auth/forgot-password` - Request password reset
 - `POST /api/auth/reset-password` - Reset password with token
 

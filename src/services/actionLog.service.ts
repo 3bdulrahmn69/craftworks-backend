@@ -64,7 +64,9 @@ export class ActionLogService {
       | 'logout'
       | 'register'
       | 'login_failed'
-      | 'register_failed',
+      | 'register_failed'
+      | 'password_change'
+      | 'password_change_failed',
     userId?: string,
     details?: {
       email?: string;

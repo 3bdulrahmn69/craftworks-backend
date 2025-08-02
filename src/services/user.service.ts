@@ -1,5 +1,9 @@
 import { User } from '../models/user.model.js';
-import { IUser, IUserPublic } from '../types/user.types.js';
+import {
+  IUser,
+  IUserPublic,
+  ICraftsmanRecommendation,
+} from '../types/user.types.js';
 import { ActionLogService } from './actionLog.service.js';
 import { UserTransformHelper } from '../utils/userTransformHelper.js';
 import { loggerHelpers } from './logger.js';
@@ -294,7 +298,9 @@ export class UserService {
     return await this.sanitizeUserData(user);
   }
 
-  static async getRecommendedCraftsmen(jobId: string) {
+  static async getRecommendedCraftsmen(
+    jobId: string
+  ): Promise<ICraftsmanRecommendation[]> {
     // Import mongoose for ObjectId validation
     const { Types } = await import('mongoose');
 
@@ -323,10 +329,24 @@ export class UserService {
       .select('fullName profilePicture rating ratingCount craftsmanInfo')
       .lean();
 
-    // Manually populate service data for each craftsman
+    // Get all invitations for this job to check invitation status
+    const { Invitation } = await import('../models/invitation.model.js');
+    const invitations = await Invitation.find({ job: jobId })
+      .select('craftsman status')
+      .lean();
+
+    // Create a map of craftsman ID to invitation status for quick lookup
+    const invitationMap = new Map();
+    invitations.forEach((invitation) => {
+      invitationMap.set(invitation.craftsman.toString(), true);
+    });
+
+    // Manually populate service data and add isInvited field for each craftsman
     const { Service } = await import('../models/service.model.js');
     const populatedCraftsmen = await Promise.all(
       craftsmen.map(async (craftsman) => {
+        const isInvited = invitationMap.has(craftsman._id.toString());
+
         if (craftsman.craftsmanInfo?.service)
           try {
             const service = await Service.findById(
@@ -343,7 +363,12 @@ export class UserService {
               error
             );
           }
-        return craftsman;
+
+        // Return craftsman data with isInvited field
+        return {
+          ...craftsman,
+          isInvited,
+        };
       })
     );
 

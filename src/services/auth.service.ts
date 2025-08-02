@@ -236,6 +236,36 @@ export class AuthService {
   }
 
   /**
+   * Change password for authenticated user
+   */
+  static async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ): Promise<void> {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new AuthenticationError('User not found', 404);
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await user.comparePassword(currentPassword);
+    if (!isCurrentPasswordValid) {
+      loggerHelpers.logUserAction(
+        'password_change_failed_invalid_current',
+        userId
+      );
+      throw new AuthenticationError('Current password is incorrect', 400);
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    loggerHelpers.logUserAction('password_change_completed', userId);
+  }
+
+  /**
    * Generate JWT token
    */
   private static generateToken(userId: string, role: string): string {

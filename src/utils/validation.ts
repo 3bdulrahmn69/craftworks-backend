@@ -275,6 +275,33 @@ export class ValidationHelper {
     return { isValid: errors.length === 0, errors };
   }
 
+  static validateChangePassword(data: {
+    currentPassword?: string;
+    newPassword?: string;
+  }): ValidationResult {
+    const errors: string[] = [];
+
+    if (!data.currentPassword) errors.push('Current password is required');
+
+    if (!data.newPassword) errors.push('New password is required');
+    else {
+      const passwordValidation = this.validatePassword(data.newPassword);
+      if (!passwordValidation.isValid)
+        errors.push(...passwordValidation.errors);
+    }
+
+    // Ensure new password is different from current password
+    if (
+      data.currentPassword &&
+      data.newPassword &&
+      data.currentPassword === data.newPassword
+    ) {
+      errors.push('New password must be different from current password');
+    }
+
+    return { isValid: errors.length === 0, errors };
+  }
+
   static validateDateRange(start?: any, end?: any): ValidationResult {
     const errors: string[] = [];
     if (start && isNaN(new Date(start).getTime()))

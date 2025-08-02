@@ -19,14 +19,14 @@ router.post(
 
 // GET /api/jobs/:jobId/invitations (Client only)
 router.get(
-  '/',
+  '/invitations',
   authorizeRoles('client'),
   InvitationController.getInvitationsForJob
 );
 
 // POST /api/jobs/:jobId/invitations/respond (Craftsman only)
 router.post(
-  '/respond',
+  '/invitations/respond',
   authorizeRoles('craftsman'),
   InvitationController.respondToInvitation
 );

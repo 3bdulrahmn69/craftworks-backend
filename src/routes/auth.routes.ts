@@ -12,5 +12,6 @@ router.post('/reset-password', AuthController.resetPassword);
 
 // Protected routes
 router.post('/logout', authenticateJWT, AuthController.logout);
+router.post('/change-password', authenticateJWT, AuthController.changePassword);
 
 export default router;
