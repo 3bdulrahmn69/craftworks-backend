@@ -4,6 +4,7 @@ import {
   authenticateJWT,
   authorizeRoles,
 } from '../middlewares/auth.middleware.js';
+import upload from '../config/multer.js';
 
 const router = Router();
 
@@ -16,6 +17,11 @@ router.get('/chats', MessageController.getUserChats);
 router.get('/chats/:chatId', MessageController.getChatDetails);
 router.get('/chats/:chatId/messages', MessageController.getChatMessages);
 router.post('/chats/:chatId/messages', MessageController.sendMessage);
+router.post(
+  '/chats/:chatId/upload-image',
+  upload.single('image'),
+  MessageController.uploadImageMessage
+);
 router.patch('/chats/:chatId/read', MessageController.markMessagesAsRead);
 router.delete('/messages/:messageId', MessageController.deleteMessage);
 

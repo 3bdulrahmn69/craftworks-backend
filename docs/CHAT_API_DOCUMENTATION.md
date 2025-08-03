@@ -249,7 +249,80 @@ interface IJWTPayload {
 
 ---
 
-### **5. Send Message (HTTP Backup)**
+### **5. Upload Image Message**
+
+`POST /chats/:chatId/upload-image`
+
+**Authorization**: Chat participant only
+
+**Content-Type**: `multipart/form-data`
+
+**Request Body**:
+
+```typescript
+// Form data with file upload
+{
+  "image": File    // Required: Image file (JPEG, PNG, WebP, etc.)
+}
+```
+
+**File Requirements**:
+
+- **Max file size**: 5MB
+- **Supported formats**: JPEG, PNG, WebP, GIF, BMP
+- **Auto-optimization**: Images are converted to WebP format for better performance
+
+**Success Response** (201):
+
+```typescript
+{
+  "success": true,
+  "data": {
+    "_id": "674d8e9a123456789abcdef4",
+    "chatId": "674d8e9a123456789abcdef0",
+    "senderId": {
+      "_id": "674d8e9a123456789abcdef1",
+      "fullName": "John Doe",
+      "role": "client",
+      "profilePicture": "https://example.com/profile.jpg"
+    },
+    "messageType": "image",
+    "content": "https://res.cloudinary.com/craftworks/image/upload/v1234567890/craftworks/chat-images/chat-1725384234567-photo.webp",
+    "timestamp": "2025-08-03T17:30:00.000Z",
+    "isRead": false,
+    "createdAt": "2025-08-03T17:30:00.000Z"
+  },
+  "message": "Image message sent successfully"
+}
+```
+
+**Error Responses**:
+
+- `400 Bad Request`: No image file provided or invalid file format
+- `403 Forbidden`: User not participant in chat
+- `413 Payload Too Large`: File size exceeds 5MB limit
+- `500 Internal Server Error`: Image upload failed
+
+**Example Usage**:
+
+```javascript
+// Using FormData for image upload
+const formData = new FormData();
+formData.append('image', imageFile);
+
+const response = await fetch('/api/messages/chats/CHAT_ID/upload-image', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${authToken}`
+    // Don't set Content-Type - let browser set it with boundary
+  },
+  body: formData
+});
+```
+
+---
+
+### **6. Send Message (HTTP Backup)**
 
 `POST /chats/:chatId/messages`
 
@@ -290,7 +363,7 @@ interface IJWTPayload {
 
 ---
 
-### **6. Mark Messages as Read**
+### **7. Mark Messages as Read**
 
 `PUT /chats/:chatId/messages/read`
 
@@ -364,10 +437,18 @@ socket.on('chat-joined', (data) => {
 #### **2. Send Message (Primary Method)**
 
 ```javascript
+// Text message
 socket.emit('send-message', {
   chatId: 'chat_id',
-  messageType: 'text', // or 'image'
+  messageType: 'text',
   content: 'Hello there!'
+});
+
+// Image message (with URL from previous upload)
+socket.emit('send-message', {
+  chatId: 'chat_id',
+  messageType: 'image',
+  content: 'https://res.cloudinary.com/craftworks/image/upload/v1234567890/craftworks/chat-images/chat-image.webp'
 });
 
 // Confirmation
@@ -381,6 +462,8 @@ socket.on('message-sent', (data) => {
   // }
 });
 ```
+
+**Note**: For file uploads, use the HTTP endpoint `/chats/:chatId/upload-image` to upload the image to Cloudinary first, then optionally use Socket.IO to send the resulting URL.
 
 #### **3. Leave Chat Room**
 
@@ -717,7 +800,51 @@ socket.on('error', (error) => {
 });
 ```
 
-### **3. Test Authorization**
+### **3. Test Image Upload**
+
+```bash
+# Upload image file to chat
+curl -X POST http://localhost:5000/api/messages/chats/CHAT_ID/upload-image \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -F "image=@/path/to/your/image.jpg"
+```
+
+```javascript
+// Frontend image upload example
+async function uploadImageMessage(chatId, imageFile) {
+  const formData = new FormData();
+  formData.append('image', imageFile);
+
+  try {
+    const response = await fetch(`/api/messages/chats/${chatId}/upload-image`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: formData
+    });
+
+    const result = await response.json();
+    console.log('Image uploaded:', result);
+    return result;
+  } catch (error) {
+    console.error('Upload failed:', error);
+  }
+}
+
+// React/HTML file input example
+const handleImageUpload = async (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    await uploadImageMessage(currentChatId, file);
+  }
+};
+
+// HTML
+// <input type="file" accept="image/*" onChange={handleImageUpload} />
+```
+
+### **4. Test Authorization**
 
 ```bash
 # Test with invalid token (Should fail with 401)

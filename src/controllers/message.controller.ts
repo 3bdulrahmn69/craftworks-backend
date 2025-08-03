@@ -9,6 +9,7 @@ import {
 import logger from '../services/logger.js';
 import { PaginationHelper } from '../utils/paginationHelper.js';
 import { ApiResponse } from '../utils/apiResponse.js';
+import { uploadImageToCloudinary } from '../utils/cloudinary.js';
 
 export class MessageController {
   /**
@@ -214,6 +215,106 @@ export class MessageController {
         userId: req.user?.userId,
       });
       ApiResponse.error(res, 'Failed to send message', 500);
+    }
+  }
+
+  /**
+   * Upload image and send as message
+   */
+  static async uploadImageMessage(
+    req: IAuthenticatedRequest,
+    res: Response
+  ): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const { chatId } = req.params;
+      const file = req.file;
+
+      if (!file) {
+        ApiResponse.badRequest(res, 'No image file provided');
+        return;
+      }
+
+      if (!chatId) {
+        ApiResponse.badRequest(res, 'Chat ID is required');
+        return;
+      }
+
+      // Verify user is participant in this chat
+      const chat = await MessageService.getChatWithDetails(chatId);
+      const isParticipant = chat.participants.some(
+        (p) => (p._id?.toString() || p.toString()) === userId
+      );
+
+      if (!isParticipant) {
+        ApiResponse.forbidden(res, 'Access denied');
+        return;
+      }
+
+      logger.info('Uploading image to Cloudinary', {
+        userId,
+        chatId,
+        fileName: file.originalname,
+        fileSize: file.size,
+        mimeType: file.mimetype,
+      });
+
+      // Upload image to Cloudinary
+      const imageUrl = await uploadImageToCloudinary(
+        file.buffer,
+        file.originalname
+      );
+
+      logger.info('Image uploaded successfully', {
+        userId,
+        chatId,
+        imageUrl,
+      });
+
+      // Send message with image URL
+      const messageData: ISendMessageRequest = {
+        chatId,
+        messageType: 'image',
+        content: imageUrl,
+      };
+
+      const message = await MessageService.sendMessage(userId, messageData);
+
+      // Notify via socket
+      const socketService = getSocketService();
+      const updatedChat = await MessageService.getChatWithDetails(chatId);
+
+      // Emit to socket users
+      socketService
+        .getSocketInstance()
+        .to(`chat:${chatId}`)
+        .emit('new-message', message);
+
+      // Update chat for participants
+      updatedChat.participants.forEach((participant) => {
+        const participantId =
+          participant._id?.toString() || participant.toString();
+        socketService
+          .getSocketInstance()
+          .to(`user:${participantId}`)
+          .emit('chat-updated', updatedChat);
+      });
+
+      logger.info('Image message sent successfully', {
+        messageId: message._id,
+        chatId,
+        userId,
+        imageUrl,
+      });
+
+      ApiResponse.success(res, message, 'Image message sent successfully', 201);
+    } catch (error) {
+      logger.error('Error in uploadImageMessage controller', {
+        error,
+        userId: req.user?.userId,
+        chatId: req.params.chatId,
+      });
+      ApiResponse.error(res, 'Failed to upload image message', 500);
     }
   }
 
