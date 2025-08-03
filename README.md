@@ -9,6 +9,7 @@ A modern, scalable backend API for the Egyptian local craftsmen service marketpl
 - **MongoDB with Mongoose**: Robust document database with elegant ODM
 - **JWT Authentication**: Secure token-based authentication
 - **Role-based Authorization**: Support for client, craftsman, admin, and moderator roles
+- **Real-time Messaging**: Socket.IO powered real-time chat system between clients and craftsmen
 - **Rate Limiting**: Protection against API abuse
 - **Request Validation**: Comprehensive input validation
 - **Error Handling**: Centralized error handling with proper logging
@@ -21,9 +22,33 @@ A modern, scalable backend API for the Egyptian local craftsmen service marketpl
 - **Testing Ready**: Jest configuration for unit and integration tests
 - **ES6 Modules**: Modern import/export syntax throughout
 
-## 📊 Latest Updates (v1.3.3)
+## 📊 Latest Updates (v1.6.0)
 
-### 🗺️ Enhanced Coordinate Parsing for Job Creation
+**Role-Based Real-time Chat System**
+
+- **Client-Initiated Chats**: Only clients can create chats with craftsmen (enforced business rule)
+- **Instant Availability**: Both participants immediately have access to the chat (no action required from craftsman)
+- **Real-time Messaging**: Socket.IO powered instant message delivery with `new-message` events
+- **Chat List Updates**: Automatic chat list updates with `chat-updated` events for last message and unread counts
+- **Auto-Join System**: Users automatically join all their chats when connecting (seamless experience)
+- **Message Types**: Support for text and image messages
+- **Typing Indicators**: Real-time typing status updates
+- **Read Receipts**: Message read status tracking
+- **Comprehensive Logging**: Detailed event tracking for debugging and monitoring
+
+### � Real-time Messaging System
+
+- **Socket.IO Integration**: Full real-time communication between clients and craftsmen
+- **Message Types**: Support for text and image messages
+- **Real-time Features**: Typing indicators, read receipts, user presence tracking
+- **Job-based Chat Initiation**: Automatic chat creation when client hires craftsman
+- **Admin Moderation**: Admin access to all conversations for monitoring
+- **Comprehensive API**: Both Socket.IO events and HTTP REST endpoints for flexibility
+- **Frontend Ready**: Complete documentation and examples for frontend integration
+
+### Previous Updates (v1.5.1)
+
+### 📝 Enhanced Quote Management
 
 - **Robust Form-Data Support**: Fixed all coordinate parsing issues for multipart/form-data requests
 - **Multiple Format Support**: Handles various coordinate input formats seamlessly:
@@ -56,6 +81,29 @@ src/
 ├── logs/            # Log files
 └── index.ts         # Main application entry point
 ```
+
+## 📚 Documentation
+
+Comprehensive documentation is available in the [`docs/`](./docs/) folder:
+
+### **🔥 Primary Docs**
+
+- **[📡 Chat API Documentation](./docs/CHAT_API_DOCUMENTATION.md)** - Complete API reference with request/response examples
+- **[💬 Chat System Guide](./docs/CHAT_SYSTEM_COMPLETE_GUIDE.md)** - User-friendly implementation guide
+- **[⚡ Socket.IO Technical Guide](./docs/SOCKET_IO_TECHNICAL_GUIDE.md)** - Real-time messaging technical details
+
+### **📋 System Docs**
+
+- **[📖 Manual](./docs/manual.md)** - System setup and operational procedures
+- **[📝 Requirements](./docs/requirements.md)** - Project requirements and specifications
+- **[📊 Logging](./docs/LOGGING.md)** - Logging system documentation
+
+### **📚 Development History**
+
+- **[🔄 Refactoring Summary](./docs/REFACTORING_COMPLETE_SUMMARY.md)** - Chat system evolution
+- **[🧹 Cleanup Complete](./docs/CLEANUP_COMPLETE.md)** - Latest optimizations
+
+**👉 Start with the [docs README](./docs/README.md) for a complete overview!**
 
 ## 🛠️ Technology Stack
 
@@ -304,13 +352,10 @@ npm run test:coverage
 
 ## 📚 API Documentation
 
-For detailed API documentation, see [requirements.md](./requirements.md) which contains:
+For detailed API documentation, see:
 
-- Complete endpoint specifications
-- Request/response schemas
-- Authentication requirements
-- Database schemas
-- Business logic requirements
+- [requirements.md](./requirements.md) - Complete endpoint specifications, schemas, and business logic
+- [MESSAGING.md](./MESSAGING.md) - Real-time messaging system documentation with Socket.IO integration guide
 
 ## 🔍 Code Quality
 

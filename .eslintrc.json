@@ -15,7 +15,7 @@
     "no-unused-vars": "off",
     "prefer-const": "error",
     "eqeqeq": ["error", "always"],
-    "curly": ["error", "multi"],
+    "curly": ["error", "always"],
     "quotes": ["error", "single", { "avoidEscape": true }],
     "semi": ["error", "always"]
   },

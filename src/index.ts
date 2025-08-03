@@ -1,4 +1,5 @@
 import express, { Application, Request, Response } from 'express';
+import { createServer, Server as HttpServer } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -7,6 +8,7 @@ import rateLimit from 'express-rate-limit';
 import { serverConfig, rateLimitConfig } from './config/environment.js';
 import { connectDatabase } from './config/database.js';
 import logger, { morganStream } from './services/logger.js';
+import { initializeSocket } from './services/socket.service.js';
 import { requestLogger } from './middlewares/logging.middleware.js';
 import {
   notFoundHandler,
@@ -22,17 +24,21 @@ import adminRoutes from './routes/admin.routes.js';
 import jobRoutes from './routes/job.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import serviceRoutes from './routes/service.routes.js';
+import messageRoutes from './routes/message.routes.js';
 
 class CraftworksServer {
   private app: Application;
+  private server: HttpServer;
   private port: number;
 
   constructor() {
     this.app = express();
+    this.server = createServer(this.app);
     this.port = serverConfig.port;
     this.initializeMiddlewares();
     this.initializeRoutes();
     this.initializeErrorHandling();
+    this.initializeSocket();
   }
 
   private initializeMiddlewares(): void {
@@ -78,6 +84,7 @@ class CraftworksServer {
     this.app.use('/api/jobs', jobRoutes);
     this.app.use('/api/notifications', notificationRoutes);
     this.app.use('/api/services', serviceRoutes);
+    this.app.use('/api/messages', messageRoutes);
 
     // 404 handler for /api/* routes
     this.app.use('/api/*', notFoundHandler);
@@ -88,6 +95,12 @@ class CraftworksServer {
     this.app.use(globalErrorHandler);
   }
 
+  private initializeSocket(): void {
+    // Initialize Socket.IO
+    initializeSocket(this.server);
+    logger.info('Socket.IO initialized');
+  }
+
   public async start(): Promise<void> {
     try {
       // Connect to database
@@ -95,7 +108,7 @@ class CraftworksServer {
       logger.info('Database connection established');
 
       // Start server
-      this.app.listen(this.port, () => {
+      this.server.listen(this.port, () => {
         logger.info(`Server is running on port ${this.port}`, {
           environment: serverConfig.nodeEnv,
           port: this.port,

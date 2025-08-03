@@ -1,8 +1,10 @@
-# Craftworks Backend API Manual (v1.5.1)
+# Craftworks Backend API Manual (v1.6.0)
 
 This manual provides practical usage instructions, example requests, and example responses for all backend API endpoints. Use this as a guide for integrating with the Craftworks backend.
 
-**Latest Update (v1.5.1):** Enhanced quote management - Updated quote route from `/jobs/:jobId/quotes/:quoteId/accept` to `/jobs/:jobId/quotes/:quoteId/:status` where status can be 'accept' or 'reject'. Added ability to reject quotes with proper notifications to craftsmen. Enhanced business logic to handle both acceptance and rejection workflows.
+**Latest Update (v1.6.0):** Added comprehensive real-time messaging system with Socket.IO integration - clients and craftsmen can now communicate in real-time with text and image messages, typing indicators, read receipts, and admin moderation capabilities. Complete chat management with job-based initiation and user presence tracking.
+
+**Previous Update (v1.5.1):** Enhanced quote management - Updated quote route from `/jobs/:jobId/quotes/:quoteId/accept` to `/jobs/:jobId/quotes/:quoteId/:status` where status can be 'accept' or 'reject'. Added ability to reject quotes with proper notifications to craftsmen. Enhanced business logic to handle both acceptance and rejection workflows.
 
 **Previous Update (v1.5.0):** Enhanced job scheduling and service data - Added `jobDate` field for job scheduling, enhanced service object population across all endpoints (recommendations, job listings, user profiles) with full service details (name, icon, description) while excluding timestamps for cleaner responses.
 
@@ -25,14 +27,15 @@ This manual provides practical usage instructions, example requests, and example
 7. [Invitations](#invitations)
 8. [Notifications](#notifications)
 9. [Services](#services)
-10. [Craftsman Dashboard](#craftsman-dashboard)
-11. [Client Dashboard](#client-dashboard)
-12. [Recommendations](#recommendations)
-13. [Admin](#admin)
-14. [Contact Email](#contact-email)
-15. [Enhanced Features](#-enhanced-features-v140)
-16. [Troubleshooting Guide](#-troubleshooting-guide)
-17. [Error Responses](#error-responses)
+10. [Real-time Messaging](#real-time-messaging)
+11. [Craftsman Dashboard](#craftsman-dashboard)
+12. [Client Dashboard](#client-dashboard)
+13. [Recommendations](#recommendations)
+14. [Admin](#admin)
+15. [Contact Email](#contact-email)
+16. [Enhanced Features](#-enhanced-features-v140)
+17. [Troubleshooting Guide](#-troubleshooting-guide)
+18. [Error Responses](#error-responses)
 
 ---
 
@@ -1571,6 +1574,644 @@ Authorization: Bearer <token>
 {
   "success": true,
   "message": "Service deleted"
+}
+```
+
+---
+
+## Real-time Messaging
+
+The messaging system allows real-time communication between clients and craftsmen using both HTTP REST endpoints and Socket.IO WebSocket connections.
+
+### Authentication for Messaging
+
+All messaging endpoints require JWT authentication. For Socket.IO connections, pass the token in the `auth` object:
+
+```javascript
+const socket = io('http://localhost:5000', {
+  auth: {
+    token: 'your-jwt-token-here'
+  }
+});
+```
+
+### Create Chat
+
+`POST /api/messages/chats`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+
+```json
+{
+  "participantId": "participant_user_id",
+  "jobId": "job_id_optional"
+}
+```
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "chat_id",
+    "participants": [
+      {
+        "_id": "user1_id",
+        "fullName": "John Doe",
+        "profilePicture": "https://...",
+        "role": "client"
+      },
+      {
+        "_id": "user2_id",
+        "fullName": "Ahmed Ali",
+        "profilePicture": "https://...",
+        "role": "craftsman"
+      }
+    ],
+    "jobId": {
+      "_id": "job_id",
+      "title": "Fix Kitchen Plumbing"
+    },
+    "isActive": true,
+    "unreadCount": {
+      "user1_id": 0,
+      "user2_id": 0
+    },
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  "message": "Chat created successfully"
+}
+```
+
+### Get User's Chats
+
+`GET /api/messages/chats?page=1&limit=20`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 20)
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "chats": [
+      {
+        "_id": "chat_id",
+        "participants": [
+          {
+            "_id": "user1_id",
+            "fullName": "John Doe",
+            "profilePicture": "https://...",
+            "role": "client"
+          },
+          {
+            "_id": "user2_id",
+            "fullName": "Ahmed Ali",
+            "profilePicture": "https://...",
+            "role": "craftsman"
+          }
+        ],
+        "lastMessage": "Hello, when can you start?",
+        "lastMessageAt": "2024-01-01T12:00:00.000Z",
+        "lastMessageSenderId": "user1_id",
+        "unreadCount": {
+          "user1_id": 0,
+          "user2_id": 2
+        },
+        "isActive": true,
+        "createdAt": "2024-01-01T00:00:00.000Z"
+      }
+    ],
+    "totalCount": 5,
+    "totalPages": 1,
+    "currentPage": 1
+  }
+}
+```
+
+### Get Chat Details
+
+`GET /api/messages/chats/:chatId`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "chat_id",
+    "participants": [
+      {
+        "_id": "user1_id",
+        "fullName": "John Doe",
+        "profilePicture": "https://...",
+        "role": "client"
+      },
+      {
+        "_id": "user2_id",
+        "fullName": "Ahmed Ali",
+        "profilePicture": "https://...",
+        "role": "craftsman"
+      }
+    ],
+    "jobId": {
+      "_id": "job_id",
+      "title": "Fix Kitchen Plumbing"
+    },
+    "lastMessage": "I can start tomorrow morning",
+    "lastMessageAt": "2024-01-01T14:00:00.000Z",
+    "lastMessageSenderId": "user2_id",
+    "unreadCount": {
+      "user1_id": 1,
+      "user2_id": 0
+    },
+    "isActive": true,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T14:00:00.000Z"
+  }
+}
+```
+
+### Get Chat Messages
+
+`GET /api/messages/chats/:chatId/messages?page=1&limit=50`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 50)
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "messages": [
+      {
+        "_id": "message_id",
+        "chatId": "chat_id",
+        "senderId": {
+          "_id": "user1_id",
+          "fullName": "John Doe",
+          "profilePicture": "https://...",
+          "role": "client"
+        },
+        "messageType": "text",
+        "content": "Hello, when can you start?",
+        "timestamp": "2024-01-01T12:00:00.000Z",
+        "isRead": true,
+        "readAt": "2024-01-01T12:05:00.000Z",
+        "isEdited": false,
+        "isDeleted": false
+      },
+      {
+        "_id": "message_id_2",
+        "chatId": "chat_id",
+        "senderId": {
+          "_id": "user2_id",
+          "fullName": "Ahmed Ali",
+          "profilePicture": "https://...",
+          "role": "craftsman"
+        },
+        "messageType": "text",
+        "content": "I can start tomorrow morning",
+        "timestamp": "2024-01-01T14:00:00.000Z",
+        "isRead": false,
+        "isEdited": false,
+        "isDeleted": false
+      }
+    ],
+    "totalCount": 15,
+    "totalPages": 1,
+    "currentPage": 1
+  }
+}
+```
+
+### Send Message (HTTP Fallback)
+
+`POST /api/messages/chats/:chatId/messages`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+
+```json
+{
+  "messageType": "text",
+  "content": "Hello, when can you start the work?"
+}
+```
+
+**For Image Messages:**
+
+```json
+{
+  "messageType": "image",
+  "content": "https://cloudinary.com/image-url"
+}
+```
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "message_id",
+    "chatId": "chat_id",
+    "senderId": {
+      "_id": "user1_id",
+      "fullName": "John Doe",
+      "profilePicture": "https://...",
+      "role": "client"
+    },
+    "messageType": "text",
+    "content": "Hello, when can you start the work?",
+    "timestamp": "2024-01-01T12:00:00.000Z",
+    "isRead": false,
+    "isEdited": false,
+    "isDeleted": false
+  },
+  "message": "Message sent successfully"
+}
+```
+
+### Mark Messages as Read
+
+`PATCH /api/messages/chats/:chatId/read`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "updatedCount": 3
+  },
+  "message": "Messages marked as read"
+}
+```
+
+### Delete Message
+
+`DELETE /api/messages/messages/:messageId`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": null,
+  "message": "Message deleted successfully"
+}
+```
+
+### Socket.IO Real-time Events
+
+#### Connect to Socket.IO
+
+```javascript
+const socket = io('http://localhost:5000', {
+  auth: {
+    token: 'your-jwt-token-here'
+  }
+});
+
+socket.on('connect', () => {
+  console.log('Connected to chat server');
+});
+```
+
+#### Join Chat Room
+
+```javascript
+socket.emit('join-chat', 'chat_id');
+```
+
+#### Leave Chat Room
+
+```javascript
+socket.emit('leave-chat', 'chat_id');
+```
+
+#### Send Message via Socket
+
+```javascript
+socket.emit('send-message', {
+  chatId: 'chat_id',
+  messageType: 'text',
+  content: 'Hello via socket!'
+});
+```
+
+#### Listen for New Messages
+
+```javascript
+socket.on('new-message', (message) => {
+  console.log('New message received:', message);
+  // Update UI with new message
+});
+```
+
+#### Typing Indicators
+
+```javascript
+// Start typing
+socket.emit('typing-start', 'chat_id');
+
+// Stop typing
+socket.emit('typing-stop', 'chat_id');
+
+// Listen for typing events
+socket.on('user-typing', (data) => {
+  console.log(`User ${data.userId} is typing: ${data.isTyping}`);
+});
+```
+
+#### Mark Messages as Read via Socket
+
+```javascript
+socket.emit('mark-messages-read', 'chat_id');
+
+// Listen for read receipts
+socket.on('message-read', (data) => {
+  console.log(`Messages read by: ${data.readBy}`);
+});
+```
+
+#### Listen for Chat Updates
+
+```javascript
+socket.on('chat-updated', (chat) => {
+  console.log('Chat updated:', chat);
+  // Update chat list or current chat
+});
+```
+
+#### Error Handling
+
+```javascript
+socket.on('error', (error) => {
+  console.error('Socket error:', error.message);
+});
+```
+
+### Admin Messaging Endpoints
+
+#### Get All Chats (Admin Only)
+
+`GET /api/messages/admin/chats?page=1&limit=20`
+
+**Headers:**
+
+```
+Authorization: Bearer <admin-token>
+```
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "chats": [
+      {
+        "_id": "chat_id",
+        "participants": [
+          {
+            "_id": "user1_id",
+            "fullName": "John Doe",
+            "profilePicture": "https://...",
+            "role": "client",
+            "email": "john@example.com"
+          },
+          {
+            "_id": "user2_id",
+            "fullName": "Ahmed Ali",
+            "profilePicture": "https://...",
+            "role": "craftsman",
+            "email": "ahmed@example.com"
+          }
+        ],
+        "jobId": {
+          "_id": "job_id",
+          "title": "Fix Kitchen Plumbing"
+        },
+        "lastMessage": "Work completed successfully",
+        "lastMessageAt": "2024-01-01T16:00:00.000Z",
+        "lastMessageSenderId": "user2_id",
+        "isActive": true,
+        "createdAt": "2024-01-01T00:00:00.000Z"
+      }
+    ],
+    "totalCount": 150,
+    "totalPages": 8,
+    "currentPage": 1
+  }
+}
+```
+
+#### Get Chat Messages (Admin Only)
+
+`GET /api/messages/admin/chats/:chatId/messages?page=1&limit=50`
+
+**Headers:**
+
+```
+Authorization: Bearer <admin-token>
+```
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "messages": [
+      {
+        "_id": "message_id",
+        "chatId": "chat_id",
+        "senderId": {
+          "_id": "user1_id",
+          "fullName": "John Doe",
+          "profilePicture": "https://...",
+          "role": "client",
+          "email": "john@example.com"
+        },
+        "messageType": "text",
+        "content": "Hello, when can you start?",
+        "timestamp": "2024-01-01T12:00:00.000Z",
+        "isRead": true,
+        "readAt": "2024-01-01T12:05:00.000Z",
+        "isEdited": false,
+        "isDeleted": false
+      }
+    ],
+    "totalCount": 25,
+    "totalPages": 1,
+    "currentPage": 1,
+    "chat": {
+      "_id": "chat_id",
+      "participants": [
+        {
+          "_id": "user1_id",
+          "fullName": "John Doe",
+          "profilePicture": "https://...",
+          "role": "client"
+        },
+        {
+          "_id": "user2_id",
+          "fullName": "Ahmed Ali",
+          "profilePicture": "https://...",
+          "role": "craftsman"
+        }
+      ],
+      "jobId": {
+        "_id": "job_id",
+        "title": "Fix Kitchen Plumbing"
+      },
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    }
+  }
+}
+```
+
+### Integration Workflow
+
+#### 1. Chat Initiation Flow
+
+```
+1. Client posts a job
+2. Craftsman submits a quote
+3. Client accepts the quote
+4. Both users get access to create/join a chat
+5. Either user creates a chat (linked to the job)
+```
+
+#### 2. Frontend Implementation Example
+
+```javascript
+// After client accepts quote
+async function startChatWithCraftsman(craftsmanId, jobId) {
+  try {
+    const response = await fetch('/api/messages/chats', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        participantId: craftsmanId,
+        jobId: jobId
+      })
+    });
+
+    const { data: chat } = await response.json();
+
+    // Navigate to chat page or open chat modal
+    openChatInterface(chat._id);
+  } catch (error) {
+    console.error('Error creating chat:', error);
+  }
+}
+```
+
+#### 3. Real-time Chat Component
+
+```javascript
+function ChatComponent({ chatId, currentUserId }) {
+  const [messages, setMessages] = useState([]);
+  const [socket, setSocket] = useState(null);
+
+  useEffect(() => {
+    // Initialize socket connection
+    const newSocket = io('http://localhost:5000', {
+      auth: { token: localStorage.getItem('token') }
+    });
+
+    // Join chat room
+    newSocket.emit('join-chat', chatId);
+
+    // Listen for new messages
+    newSocket.on('new-message', (message) => {
+      setMessages(prev => [...prev, message]);
+    });
+
+    // Listen for typing indicators
+    newSocket.on('user-typing', (data) => {
+      // Show/hide typing indicator
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.emit('leave-chat', chatId);
+      newSocket.disconnect();
+    };
+  }, [chatId]);
+
+  const sendMessage = (content) => {
+    socket.emit('send-message', {
+      chatId,
+      messageType: 'text',
+      content
+    });
+  };
+
+  return (
+    // Chat UI components
+  );
 }
 ```
 
