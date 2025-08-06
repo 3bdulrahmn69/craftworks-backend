@@ -14,9 +14,12 @@ export class JobService {
     // Check if it's a valid ObjectId
     if (Types.ObjectId.isValid(service)) return service;
 
-    // If not, search by name
+    // If not, search by name in both languages
     const serviceDoc = await Service.findOne({
-      name: { $regex: service, $options: 'i' },
+      $or: [
+        { 'name.en': { $regex: service, $options: 'i' } },
+        { 'name.ar': { $regex: service, $options: 'i' } },
+      ],
     });
     return serviceDoc?._id.toString() || null;
   }

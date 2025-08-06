@@ -311,12 +311,16 @@ export class UserService {
       .lean();
     if (!job) throw new Error('Job not found');
 
+    // Extract the English service name for skills matching
+    const serviceName = (job.service as any)?.name?.en;
+    if (!serviceName) throw new Error('Service name not found');
+
     // Find craftsmen with matching skills/service
     const craftsmen = await (
       await import('../models/user.model.js')
     ).User.find({
       role: 'craftsman',
-      'craftsmanInfo.skills': (job.service as any)?.name,
+      'craftsmanInfo.skills': serviceName,
       'craftsmanInfo.verificationStatus': 'verified',
       isBanned: false,
     })
