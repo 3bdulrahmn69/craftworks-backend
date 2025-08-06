@@ -188,20 +188,6 @@ export class ValidationHelper {
   static validateVerificationSubmission(data: any): ValidationResult {
     const errors: string[] = [];
 
-    // Validate skills
-    if (!data.skills || !Array.isArray(data.skills) || data.skills.length === 0)
-      errors.push('At least one skill is required');
-    else
-      for (const skill of data.skills)
-        if (typeof skill !== 'string' || skill.trim().length === 0) {
-          errors.push('All skills must be non-empty strings');
-          break;
-        }
-
-    // Validate bio if provided
-    if (data.bio !== undefined && typeof data.bio !== 'string')
-      errors.push('Bio must be a string');
-
     // Validate portfolioImageUrls if provided
     if (data.portfolioImageUrls)
       if (!Array.isArray(data.portfolioImageUrls))
@@ -216,36 +202,29 @@ export class ValidationHelper {
             break;
           }
 
-    // Validate verificationDocs
-    if (
-      !data.verificationDocs ||
-      !Array.isArray(data.verificationDocs) ||
-      data.verificationDocs.length === 0
-    )
-      errors.push('At least one verification document is required');
-    else
-      for (const doc of data.verificationDocs) {
-        if (typeof doc !== 'object' || !doc.docType || !doc.docUrl) {
-          errors.push(
-            'Each verification document must have docType and docUrl'
-          );
-          break;
-        }
-        if (
-          typeof doc.docType !== 'string' ||
-          doc.docType.trim().length === 0
-        ) {
-          errors.push('Document type must be a non-empty string');
-          break;
-        }
-        if (
-          typeof doc.docUrl !== 'string' ||
-          !/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|pdf)$/i.test(doc.docUrl)
-        ) {
-          errors.push('Invalid document URL format');
-          break;
-        }
-      }
+    // Validate document names if provided
+    if (data.docNames) {
+      if (!Array.isArray(data.docNames))
+        errors.push('Document names must be an array');
+      else
+        for (const name of data.docNames)
+          if (typeof name !== 'string' || name.trim().length === 0) {
+            errors.push('All document names must be non-empty strings');
+            break;
+          }
+    }
+
+    // Validate document types if provided
+    if (data.docTypes) {
+      if (!Array.isArray(data.docTypes))
+        errors.push('Document types must be an array');
+      else
+        for (const type of data.docTypes)
+          if (typeof type !== 'string' || type.trim().length === 0) {
+            errors.push('All document types must be non-empty strings');
+            break;
+          }
+    }
 
     return {
       isValid: errors.length === 0,

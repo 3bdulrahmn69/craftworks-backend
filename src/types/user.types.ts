@@ -11,6 +11,7 @@ export interface IAddress {
 export interface IVerificationDoc {
   docType: string;
   docUrl: string;
+  docName?: string; // Custom name for the document
 }
 
 export interface ICraftsmanInfo {
@@ -18,7 +19,7 @@ export interface ICraftsmanInfo {
   service?: string;
   bio?: string;
   portfolioImageUrls: string[];
-  verificationStatus: 'pending' | 'verified' | 'rejected';
+  verificationStatus: 'pending' | 'verified' | 'rejected' | 'none';
   verificationDocs: IVerificationDoc[];
 }
 
@@ -69,6 +70,7 @@ export interface IUserPublic {
   ratingCount?: number; // Only for craftsmen
   wallet?: IWallet; // Only for craftsmen
   service?: string | IService; // Only for craftsmen - service ID or full service object
+  verificationStatus?: 'pending' | 'verified' | 'rejected' | 'none'; // Only for craftsmen
   createdAt?: Date;
 }
 

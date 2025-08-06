@@ -51,20 +51,36 @@ export class InvitationController {
     try {
       const craftsmanId = req.user?.userId;
       if (!craftsmanId) return ApiResponse.unauthorized(res, 'Unauthorized');
-      const { response } = req.body;
+
+      const { response, price, notes } = req.body;
+
       if (!['Accepted', 'Rejected'].includes(response))
         return ApiResponse.badRequest(res, 'Invalid response');
 
-      const invitation = await InvitationService.respondToInvitation(
+      // Validate price if accepting
+      if (response === 'Accepted') {
+        if (!price || price <= 0) {
+          return ApiResponse.badRequest(
+            res,
+            'Price is required and must be greater than 0 when accepting an invitation'
+          );
+        }
+      }
+
+      const result = await InvitationService.respondToInvitation(
         req.params.jobId,
         new Types.ObjectId(craftsmanId),
-        response
+        response,
+        price,
+        notes
       );
-      return ApiResponse.success(
-        res,
-        invitation,
-        'Invitation response recorded successfully'
-      );
+
+      const message =
+        response === 'Accepted'
+          ? 'Invitation accepted and quote submitted successfully'
+          : 'Invitation rejected successfully';
+
+      return ApiResponse.success(res, result, message);
     } catch (error) {
       return ApiResponse.badRequest(
         res,

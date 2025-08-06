@@ -1,8 +1,8 @@
 {
   "info": {
     "name": "Craftworks Backend API",
-    "description": "Complete API collection for Craftworks backend with all endpoints including authentication, users, jobs (with enhanced search and filtering), quotes, invitations, notifications, services, real-time messaging, and admin functions. v1.6.0 Updates: Added comprehensive real-time messaging system with Socket.IO integration - clients and craftsmen can now communicate in real-time with text and image messages, typing indicators, read receipts, and admin moderation capabilities. Previous v1.5.1: Enhanced quote management - updated quote acceptance route from '/jobs/:jobId/quotes/:quoteId/accept' to '/jobs/:jobId/quotes/:quoteId/:status' where status can be 'accept' or 'reject'. Added ability to reject quotes with proper notifications. Previous v1.5.0: Fixed invitation routes and service population - invitation endpoints now working correctly, recommendations endpoint returns full service objects instead of IDs, fixed seed script deprecation warnings. Enhanced service population in craftsman recommendations with manual population for better data integrity. Previous v1.4.0: Standardized API response format - ALL endpoints now consistently include 'success' field (true/false) for uniform error handling and status checking across the entire application. Previous v1.3.3: Robust coordinate parsing for form-data - handles all formats including '31.2,30.1', '[31.2,30.1]', '[ \"31.2,30.1\" ]' with enhanced error handling and validation.",
-    "version": "1.6.0",
+    "description": "Complete API collection for Craftworks backend with all endpoints including authentication, users, jobs (with enhanced search and filtering), quotes, invitations, notifications, services, real-time messaging, and admin functions. v1.7.0 Updates: Enhanced verification system with file upload support - craftsmen can now upload verification documents directly with custom names and types, automatic Cloudinary integration, and user profiles now include verification status. Previous v1.6.0: Added comprehensive real-time messaging system with Socket.IO integration - clients and craftsmen can now communicate in real-time with text and image messages, typing indicators, read receipts, and admin moderation capabilities. Previous v1.5.1: Enhanced quote management - updated quote acceptance route from '/jobs/:jobId/quotes/:quoteId/accept' to '/jobs/:jobId/quotes/:quoteId/:status' where status can be 'accept' or 'reject'. Added ability to reject quotes with proper notifications. Previous v1.5.0: Fixed invitation routes and service population - invitation endpoints now working correctly, recommendations endpoint returns full service objects instead of IDs, fixed seed script deprecation warnings. Enhanced service population in craftsman recommendations with manual population for better data integrity. Previous v1.4.0: Standardized API response format - ALL endpoints now consistently include 'success' field (true/false) for uniform error handling and status checking across the entire application. Previous v1.3.3: Robust coordinate parsing for form-data - handles all formats including '31.2,30.1', '[31.2,30.1]', '[ \"31.2,30.1\" ]' with enhanced error handling and validation.",
+    "version": "1.7.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -355,12 +355,212 @@
                   "value": "USER_ID_HERE"
                 }
               ]
-            }
+            },
+            "description": "Get public profile of any user. For craftsmen, response now includes 'isVerified' field indicating verification status (true if verified, false if pending/rejected)."
           },
-          "response": []
+          "response": [
+            {
+              "name": "Verified Craftsman Profile",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/64a7b8f5e1234567890abcde",
+                  "host": ["{{base_url}}"],
+                  "path": ["users", "64a7b8f5e1234567890abcde"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"64a7b8f5e1234567890abcde\",\n    \"email\": \"ahmed.hassan@example.com\",\n    \"fullName\": \"Ahmed Hassan\",\n    \"role\": \"craftsman\",\n    \"profilePicture\": \"https://res.cloudinary.com/your-cloud/image/upload/v1691234567/profile-images/ahmed.webp\",\n    \"rating\": 4.8,\n    \"ratingCount\": 25,\n    \"isVerified\": true,\n    \"service\": {\n      \"_id\": \"64a7b8f5e1234567890abcdf\",\n      \"name\": \"Plumbing Services\",\n      \"icon\": \"plumbing-icon.svg\",\n      \"description\": \"Professional plumbing services\"\n    },\n    \"createdAt\": \"2023-07-07T10:30:00.000Z\"\n  },\n  \"message\": \"User profile retrieved successfully\"\n}"
+            },
+            {
+              "name": "Client Profile (No Verification Status)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/64a7b8f5e1234567890abcdf",
+                  "host": ["{{base_url}}"],
+                  "path": ["users", "64a7b8f5e1234567890abcdf"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"64a7b8f5e1234567890abcdf\",\n    \"email\": \"sara.ahmed@example.com\",\n    \"fullName\": \"Sara Ahmed\",\n    \"role\": \"client\",\n    \"profilePicture\": \"https://res.cloudinary.com/your-cloud/image/upload/v1691234567/profile-images/sara.webp\",\n    \"createdAt\": \"2023-07-07T10:30:00.000Z\"\n  },\n  \"message\": \"User profile retrieved successfully\"\n}"
+            }
+          ]
         },
         {
-          "name": "Submit Verification (Craftsman Only)",
+          "name": "Submit Verification with File Upload (Craftsman Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "verificationDocs",
+                  "type": "file",
+                  "src": "/path/to/id-card-front.jpg",
+                  "description": "ID Card Front Image"
+                },
+                {
+                  "key": "verificationDocs",
+                  "type": "file",
+                  "src": "/path/to/id-card-back.jpg",
+                  "description": "ID Card Back Image"
+                },
+                {
+                  "key": "verificationDocs",
+                  "type": "file",
+                  "src": "/path/to/license.pdf",
+                  "description": "Professional License PDF"
+                },
+                {
+                  "key": "docNames[]",
+                  "value": "National ID Card - Front",
+                  "type": "text",
+                  "description": "Custom name for first document"
+                },
+                {
+                  "key": "docNames[]",
+                  "value": "National ID Card - Back",
+                  "type": "text",
+                  "description": "Custom name for second document"
+                },
+                {
+                  "key": "docNames[]",
+                  "value": "Professional License",
+                  "type": "text",
+                  "description": "Custom name for third document"
+                },
+                {
+                  "key": "docTypes[]",
+                  "value": "ID-Card",
+                  "type": "text",
+                  "description": "Document type classification"
+                },
+                {
+                  "key": "docTypes[]",
+                  "value": "ID-Card",
+                  "type": "text",
+                  "description": "Document type classification"
+                },
+                {
+                  "key": "docTypes[]",
+                  "value": "Professional-License",
+                  "type": "text",
+                  "description": "Document type classification"
+                },
+                {
+                  "key": "service",
+                  "value": "SERVICE_ID_HERE",
+                  "type": "text",
+                  "description": "Service ID (optional)"
+                },
+                {
+                  "key": "portfolioImageUrls[]",
+                  "value": "https://res.cloudinary.com/demo/image/upload/portfolio1.jpg",
+                  "type": "text",
+                  "description": "Portfolio image URL (optional)"
+                },
+                {
+                  "key": "portfolioImageUrls[]",
+                  "value": "https://res.cloudinary.com/demo/image/upload/portfolio2.jpg",
+                  "type": "text",
+                  "description": "Portfolio image URL (optional)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/users/craftsman/verification",
+              "host": ["{{base_url}}"],
+              "path": ["users", "craftsman", "verification"]
+            },
+            "description": "Simplified verification endpoint that supports file uploads with custom names and types. Only requires document images - no skills or bio needed. Files are automatically uploaded to Cloudinary. Supports up to 10 files (10MB each) including images and PDFs."
+          },
+          "response": [
+            {
+              "name": "Successful Verification Submission",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "verificationDocs",
+                      "type": "file",
+                      "src": "/path/to/id-card-front.jpg"
+                    },
+                    {
+                      "key": "docNames[]",
+                      "value": "National ID Card - Front",
+                      "type": "text"
+                    },
+                    {
+                      "key": "docTypes[]",
+                      "value": "ID-Card",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/users/craftsman/verification",
+                  "host": ["{{base_url}}"],
+                  "path": ["users", "craftsman", "verification"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"64a7b8f5e1234567890abcde\",\n    \"email\": \"craftsman@example.com\",\n    \"fullName\": \"Ahmed Hassan\",\n    \"role\": \"craftsman\",\n    \"isVerified\": false\n  },\n  \"message\": \"Verification documents submitted successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Submit Verification (Legacy JSON Format)",
           "request": {
             "method": "POST",
             "header": [
@@ -375,7 +575,8 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"skills\": [\"Plumbing\", \"Electrical\"],\n  \"bio\": \"Experienced plumber and electrician with 10+ years experience.\",\n  \"portfolioImageUrls\": [\n    \"https://res.cloudinary.com/demo/image/upload/portfolio1.jpg\",\n    \"https://res.cloudinary.com/demo/image/upload/portfolio2.jpg\"\n  ],\n  \"verificationDocs\": [\n    {\n      \"docType\": \"National ID\",\n      \"docUrl\": \"https://res.cloudinary.com/demo/image/upload/national_id.jpg\"\n    },\n    {\n      \"docType\": \"Trade License\",\n      \"docUrl\": \"https://res.cloudinary.com/demo/image/upload/trade_license.jpg\"\n    }\n  ]\n}"
+              "raw": "{\n  \"portfolioImageUrls\": [\n    \"https://res.cloudinary.com/demo/image/upload/portfolio1.jpg\",\n    \"https://res.cloudinary.com/demo/image/upload/portfolio2.jpg\"\n  ],\n  \"verificationDocs\": [\n    {\n      \"docType\": \"National ID\",\n      \"docUrl\": \"https://res.cloudinary.com/demo/image/upload/national_id.jpg\",\n      \"docName\": \"National ID Card\"\n    },\n    {\n      \"docType\": \"Trade License\",\n      \"docUrl\": \"https://res.cloudinary.com/demo/image/upload/trade_license.jpg\",\n      \"docName\": \"Professional License\"\n    }\n  ]\n}",
+              "description": "Legacy format for verification submission with pre-uploaded document URLs"
             },
             "url": {
               "raw": "{{base_url}}/users/craftsman/verification",
@@ -629,7 +830,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Fix kitchen sink leak\",\n  \"description\": \"There is a persistent leak under the kitchen sink that needs immediate attention. Water is pooling and causing damage.\",\n  \"service\": \"60f1b5b5b5b5b5b5b5b5b5b1\",\n  \"address\": {\n    \"country\": \"Egypt\",\n    \"state\": \"Cairo\",\n    \"city\": \"New Cairo\",\n    \"street\": \"123 Main Street\"\n  },\n  \"location\": {\n    \"type\": \"Point\",\n    \"coordinates\": [31.2, 30.1]\n  },\n  \"paymentType\": \"Cash\"\n}"
+              "raw": "{\n  \"title\": \"Fix kitchen sink leak\",\n  \"description\": \"There is a persistent leak under the kitchen sink that needs immediate attention. Water is pooling and causing damage.\",\n  \"service\": \"60f1b5b5b5b5b5b5b5b5b5b1\",\n  \"address\": {\n    \"country\": \"Egypt\",\n    \"state\": \"Cairo\",\n    \"city\": \"New Cairo\",\n    \"street\": \"123 Main Street\"\n  },\n  \"location\": {\n    \"type\": \"Point\",\n    \"coordinates\": [31.2, 30.1]\n  },\n  \"paymentType\": \"cash\",\n  \"jobDate\": \"2024-02-15T10:00:00.000Z\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/jobs",
@@ -1139,7 +1340,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"response\": \"Accepted\"\n}"
+              "raw": "{\n  \"response\": \"Accepted\",\n  \"price\": 150.00,\n  \"notes\": \"I can complete this job within 2 days with high quality materials and provide warranty\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/jobs/:jobId/invitations/respond",
@@ -1253,9 +1454,16 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/services",
+              "raw": "{{base_url}}/services?lang=en",
               "host": ["{{base_url}}"],
-              "path": ["services"]
+              "path": ["services"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "en",
+                  "description": "Language preference: 'en' for English, 'ar' for Arabic, or omit for full multilingual data"
+                }
+              ]
             }
           },
           "response": []
@@ -1268,15 +1476,37 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{auth_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Landscaping\",\n  \"icon\": \"tree-icon\",\n  \"description\": \"Garden and landscape design and maintenance\"\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "nameEn",
+                  "value": "Landscaping",
+                  "type": "text"
+                },
+                {
+                  "key": "nameAr",
+                  "value": "تنسيق الحدائق",
+                  "type": "text"
+                },
+                {
+                  "key": "descriptionEn",
+                  "value": "Professional garden and landscape design and maintenance services",
+                  "type": "text"
+                },
+                {
+                  "key": "descriptionAr",
+                  "value": "خدمات تصميم وصيانة الحدائق والمناظر الطبيعية المهنية",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
             },
             "url": {
               "raw": "{{base_url}}/services",
@@ -1294,15 +1524,42 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{auth_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Landscaping & Gardening\",\n  \"description\": \"Complete garden design, landscaping, and maintenance services\"\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "nameEn",
+                  "value": "Landscaping & Gardening",
+                  "type": "text"
+                },
+                {
+                  "key": "nameAr",
+                  "value": "تنسيق الحدائق والبستنة",
+                  "type": "text"
+                },
+                {
+                  "key": "descriptionEn",
+                  "value": "Complete garden design, landscaping, and maintenance services with expert consultation",
+                  "type": "text"
+                },
+                {
+                  "key": "descriptionAr",
+                  "value": "خدمات تصميم الحدائق والتنسيق والصيانة الشاملة مع استشارة خبراء",
+                  "type": "text"
+                },
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
             },
             "url": {
               "raw": "{{base_url}}/services/:serviceId",

@@ -35,8 +35,8 @@ const craftsmanInfoSchema = new Schema<ICraftsmanInfo>(
     },
     verificationStatus: {
       type: String,
-      enum: ['pending', 'verified', 'rejected'],
-      default: 'pending',
+      enum: ['pending', 'verified', 'rejected', 'none'],
+      default: 'none',
     },
     verificationDocs: [
       {
@@ -47,6 +47,10 @@ const craftsmanInfoSchema = new Schema<ICraftsmanInfo>(
         docUrl: {
           type: String,
           required: true,
+        },
+        docName: {
+          type: String,
+          required: false,
         },
       },
     ],
@@ -243,7 +247,7 @@ userSchema.pre('save', function (next) {
       service: undefined,
       bio: '',
       portfolioImageUrls: [],
-      verificationStatus: 'pending',
+      verificationStatus: 'none',
       verificationDocs: [],
     };
 

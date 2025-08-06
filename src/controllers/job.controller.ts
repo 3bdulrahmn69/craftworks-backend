@@ -12,7 +12,9 @@ export class JobController {
       const clientId = req.user?.userId;
       if (!clientId) return ApiResponse.unauthorized(res, 'Unauthorized');
 
-      const jobData = { ...req.body, client: new Types.ObjectId(clientId) };
+      // Remove jobPrice from input - only craftsmen can set prices via quotes
+      const { jobPrice, ...inputData } = req.body;
+      const jobData = { ...inputData, client: new Types.ObjectId(clientId) };
 
       // Process form data if it comes from multipart/form-data
       if (req.headers['content-type']?.includes('multipart/form-data')) {

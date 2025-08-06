@@ -22,7 +22,104 @@ A modern, scalable backend API for the Egyptian local craftsmen service marketpl
 - **Testing Ready**: Jest configuration for unit and integration tests
 - **ES6 Modules**: Modern import/export syntax throughout
 
-## 📊 Latest Updates (v1.6.0)
+## 📊 Latest Updates (v1.9.0)
+
+**Enhanced Invitation System & Multilingual Services**
+
+- **Invitation-to-Quote Integration**:
+
+  - Craftsmen now submit price and notes when accepting invitations
+  - Automatic quote creation upon invitation acceptance
+  - Enhanced notification system with quote details
+  - Streamlined craftsman response workflow
+
+- **Multilingual Service System**:
+
+  - Complete service model restructure with English/Arabic support
+  - Service names and descriptions in both languages
+  - Language-specific API queries (GET `/services?lang=en|ar`)
+  - Image upload support replacing icons with Cloudinary integration
+  - Soft delete system with `isActive` flag
+
+- **Enhanced Service Management**:
+
+  - File upload support for service images
+  - Admin interfaces with multilingual form support
+  - Automatic image optimization and standardization
+  - Better service organization and categorization
+
+- **Improved User Experience**:
+  - Better invitation response flow with price validation
+  - Language preference support for service listings
+  - Enhanced error handling and validation messages
+  - Consistent multilingual data structure
+
+### Key Technical Enhancements:
+
+- **Database Schema**: Complete service model restructure with translation objects
+- **File Upload**: Multer + Cloudinary integration for service images
+- **API Flexibility**: Language-specific responses and full multilingual support
+- **Validation**: Enhanced multilingual validation and price requirement checks
+
+## 📊 Previous Updates (v1.8.0)
+
+**Major Job and Payment System Overhaul**
+
+- **Job Creation Changes**:
+
+  - All job fields now required except photos (title, description, service, address, location, jobDate, paymentType)
+  - Removed jobPrice from job creation - only craftsmen set prices via quotes
+  - Required jobDate field for scheduling
+  - Enhanced address validation with all fields required
+
+- **Payment System Updates**:
+
+  - Restricted payment methods to only 'cash' and 'visa' (removed 'Escrow' and 'CashProtected')
+  - Visa payments automatically credit craftsman wallet when job completed
+  - Integrated wallet system with platform fee calculation (10% default)
+  - Automatic payment processing on job completion
+
+- **Verification Status Enhancement**:
+
+  - Changed from `isVerified: boolean` to `verificationStatus: 'pending' | 'verified' | 'rejected' | 'none'`
+  - Default verification status is now 'none' for new craftsmen
+  - Updated all user transformation helpers and API responses
+
+- **Wallet Integration**:
+  - New wallet API endpoints: GET `/wallet/balance`, POST `/wallet/withdraw`
+  - Automatic wallet crediting for visa payments on job completion
+  - Platform fee deduction with detailed logging
+  - Withdrawal request system (ready for payment processor integration)
+
+### Key Technical Changes:
+
+- **Job Model**: Required fields enforcement, updated payment type enum
+- **User Model**: Enhanced verification status system with default 'none'
+- **Payment Processing**: Automatic wallet crediting with notification system
+- **API Consistency**: All endpoints updated to use new verificationStatus structure
+
+## 📊 Previous Updates (v1.7.0)
+
+**Enhanced Verification System with File Upload Support**
+
+- **Verification Status in User Profiles**: GET `/users/:id` now includes `verificationStatus` field for craftsmen
+- **Advanced File Upload**: Enhanced verification endpoint supports multiple file uploads with custom names
+- **Document Organization**: Each uploaded document can have custom name and type classification
+- **Cloudinary Integration**: Automatic file upload to Cloudinary with organized folder structure
+- **Multiple File Types**: Support for images (jpg, jpeg, png, gif, webp) and PDF documents
+- **Enhanced Security**: File type validation, size limits (10MB per file, 10 files max)
+- **Flexible Document Types**: Send any verification document (ID cards, licenses, certificates) with custom names
+- **Backward Compatibility**: All existing verification features continue to work
+
+### Key Verification Enhancements:
+
+- **File Upload API**: POST `/users/craftsman/verification` now accepts `multipart/form-data`
+- **Custom Document Names**: Each file can have a descriptive name (e.g., "National ID Card - Front")
+- **Document Type Classification**: Organize documents by type (e.g., "ID-Card", "Professional-License")
+- **Automatic Cloudinary Upload**: Files stored securely with proper naming convention
+- **Enhanced Validation**: Ensures file count matches names and types arrays
+
+## 📊 Previous Updates (v1.6.0)
 
 **Role-Based Real-time Chat System**
 
@@ -204,7 +301,36 @@ Comprehensive documentation is available in the [`docs/`](./docs/) folder:
 - `npm run check` - Run type check and linting
 - `npm run init-logs` - Initialize logging system with sample data
 
-## 📡 API Endpoints
+## � API Collection
+
+The project includes a comprehensive Postman collection (`Craftworks-API-Collection.json`) with all endpoints for testing and development.
+
+### Key Features:
+
+- **Complete Coverage**: All endpoints with examples and descriptions
+- **Environment Variables**: `{{base_url}}` and `{{auth_token}}` for easy configuration
+- **Auto-Authentication**: Login endpoints automatically set the auth token
+- **Request Examples**: Both successful and error response examples
+- **File Upload Examples**: Enhanced verification endpoint with multipart/form-data examples
+- **Detailed Descriptions**: Each endpoint includes usage notes and requirements
+
+### Import Instructions:
+
+1. Open Postman
+2. Click "Import" → "Upload Files"
+3. Select `Craftworks-API-Collection.json`
+4. Set environment variables:
+   - `base_url`: `http://localhost:5000/api`
+   - `auth_token`: (automatically set after login)
+
+### Latest Updates (v1.7.0):
+
+- **Enhanced Verification**: New file upload endpoint with examples
+- **Verification Status**: Updated user profile responses with `isVerified` field
+- **Response Examples**: Added example responses for key endpoints
+- **Legacy Support**: Maintained backward compatibility with JSON verification format
+
+## �📡 API Endpoints
 
 ### Authentication (`/api/auth`)
 
@@ -248,14 +374,61 @@ Comprehensive documentation is available in the [`docs/`](./docs/) folder:
 
 - `GET /api/users/me` - Get current user profile
 - `PUT /api/users/me` - Update current user profile
-- `GET /api/users/:userId` - Get public profile of a user
-- `POST /api/users/craftsman/verification` - Submit verification documents (craftsman only)
+- `GET /api/users/:userId` - Get public profile of a user (now includes `isVerified` field for craftsmen)
+- `POST /api/users/craftsman/verification` - Submit verification documents with file upload (craftsman only)
 - `GET /api/users/recommendations` - Get recommended craftsmen for a job (client only)
 
 #### Craftsman Dashboard
 
 - `GET /api/users/me/quotes` - Get all quotes submitted by craftsman (craftsman only, paginated)
 - `GET /api/users/me/invitations` - Get all invitations received by craftsman (craftsman only, paginated)
+
+## 📋 Enhanced Verification System
+
+The verification system allows craftsmen to upload documents with custom names and types for admin review.
+
+### Key Features
+
+- **Multiple File Upload**: Support for up to 10 files (10MB each)
+- **Custom Document Names**: Each file can have a descriptive name
+- **Document Type Classification**: Organize by type (ID-Card, Professional-License, etc.)
+- **File Type Support**: Images (jpg, jpeg, png, gif, webp) and PDF documents
+- **Cloudinary Integration**: Automatic secure file storage
+- **Verification Status**: User profiles show `isVerified: true/false` for craftsmen
+- **Simple Process**: Only document images required - no additional fields needed
+- **Verification Status**: User profiles show `isVerified: true/false` for craftsmen
+
+### Usage Example
+
+```javascript
+const formData = new FormData();
+
+// Add files
+formData.append('verificationDocs', idCardFrontFile);
+formData.append('verificationDocs', licenseFile);
+
+// Add metadata
+formData.append('docNames[]', 'National ID Card - Front');
+formData.append('docNames[]', 'Professional License');
+formData.append('docTypes[]', 'ID-Card');
+formData.append('docTypes[]', 'Professional-License');
+
+// Optional: Add portfolio images
+formData.append('portfolioImageUrls[]', 'https://example.com/portfolio1.jpg');
+
+// Submit
+fetch('/api/users/craftsman/verification', {
+  method: 'POST',
+  headers: { 'Authorization': 'Bearer token' },
+  body: formData
+});
+```
+
+### Admin Verification Management
+
+- `GET /api/admin/verifications/pending` - Get pending verifications
+- `POST /api/admin/verifications/:id/approve` - Approve verification
+- `POST /api/admin/verifications/:id/reject` - Reject verification
 
 ### Notifications (`/api/notifications`)
 

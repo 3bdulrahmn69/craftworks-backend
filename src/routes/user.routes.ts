@@ -7,6 +7,7 @@ import {
   authorizeRoles,
 } from '../middlewares/auth.middleware.js';
 import multer from 'multer';
+import uploadVerification from '../config/multerVerification.js';
 
 const router = express.Router();
 
@@ -54,6 +55,7 @@ router.get('/:userId', UserController.getPublicProfile);
 router.post(
   '/craftsman/verification',
   authorizeRoles('craftsman'),
+  uploadVerification.fields([{ name: 'verificationDocs', maxCount: 10 }]),
   UserController.submitVerification
 );
 

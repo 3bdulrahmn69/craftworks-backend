@@ -5,25 +5,32 @@ const jobSchema = new Schema<IJob>(
   {
     client: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     craftsman: { type: Schema.Types.ObjectId, ref: 'User', default: null },
-    title: { type: String, required: true },
-    description: { type: String, required: true },
+    title: { type: String, required: true, trim: true },
+    description: { type: String, required: true, trim: true },
     service: { type: Schema.Types.ObjectId, ref: 'Service', required: true },
-    photos: [{ type: String }],
+    photos: [{ type: String }], // Not required
     address: {
-      country: { type: String, trim: true },
-      state: { type: String, trim: true },
-      city: { type: String, trim: true },
-      street: { type: String, trim: true },
+      country: { type: String, trim: true, required: true },
+      state: { type: String, trim: true, required: true },
+      city: { type: String, trim: true, required: true },
+      street: { type: String, trim: true, required: true },
     },
     location: {
       type: {
         type: String,
         enum: ['Point'],
-        default: 'Point',
+        required: true,
       },
       coordinates: {
         type: [Number],
-        default: undefined,
+        required: true,
+        validate: {
+          validator: function (coordinates: number[]) {
+            return coordinates && coordinates.length === 2;
+          },
+          message:
+            'Location coordinates must be an array of [longitude, latitude]',
+        },
       },
     },
     status: {
@@ -41,12 +48,13 @@ const jobSchema = new Schema<IJob>(
     },
     paymentType: {
       type: String,
-      enum: ['Escrow', 'Cash', 'CashProtected'],
+      enum: ['cash', 'visa'], // Updated payment methods
+      required: true,
     },
-    jobPrice: { type: Number, default: 0 },
+    jobPrice: { type: Number, default: 0 }, // Set by craftsman via quotes
     platformFee: { type: Number, default: 0 },
     appliedCraftsmen: [{ type: Schema.Types.ObjectId, ref: 'User' }], // Track applied craftsmen
-    jobDate: { type: Date }, // Date when the job should be performed
+    jobDate: { type: Date, required: true }, // Required: Date when the job should be performed
     hiredAt: { type: Date },
     completedAt: { type: Date },
   },

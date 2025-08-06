@@ -36,13 +36,18 @@ export class UserTransformHelper {
           publicUser.service = {
             _id: service._id.toString(),
             name: service.name,
-            icon: service.icon,
+            image: service.image,
             description: service.description,
           } as any;
         else publicUser.service = user.craftsmanInfo.service; // Fallback to ID if service not found
       } catch (error) {
         publicUser.service = user.craftsmanInfo.service; // Fallback to ID on error
       }
+
+    // Add verification status for craftsmen
+    if (user.role === 'craftsman' && user.craftsmanInfo) {
+      publicUser.verificationStatus = user.craftsmanInfo.verificationStatus;
+    }
 
     return publicUser;
   }

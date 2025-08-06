@@ -17,17 +17,17 @@ export interface IJob extends Document {
   description: string;
   service: Types.ObjectId;
   photos: string[];
-  address?: IAddress;
-  location?: {
+  address: IAddress; // Required now
+  location: {
     type: 'Point';
     coordinates: [number, number];
-  };
+  }; // Required now
   status: JobStatus;
-  paymentType: 'Escrow' | 'Cash' | 'CashProtected';
+  paymentType: 'cash' | 'visa'; // Updated payment methods
   jobPrice: number;
   platformFee: number;
   appliedCraftsmen: Types.ObjectId[]; // Track who applied to prevent multiple applications
-  jobDate?: Date; // Date when the job should be performed
+  jobDate: Date; // Required now
   hiredAt?: Date;
   completedAt?: Date;
   createdAt: Date;

@@ -189,7 +189,7 @@ export class UserController {
    */
   static submitVerification = asyncHandler(
     async (
-      req: IAuthenticatedRequest,
+      req: IAuthenticatedRequest & { files?: any },
       res: Response
     ): Promise<Response | void> => {
       try {
@@ -200,6 +200,16 @@ export class UserController {
         }
 
         const verificationData = req.body;
+        const files = req.files?.verificationDocs || [];
+
+        // Validate that files are uploaded
+        if (!files || files.length === 0) {
+          ApiResponse.badRequest(
+            res,
+            'At least one verification document file is required'
+          );
+          return;
+        }
 
         // Validate input
         const validation =
@@ -208,6 +218,93 @@ export class UserController {
           ApiResponse.badRequest(res, validation.errors.join(', '));
           return;
         }
+
+        // Parse document names and types from form data
+        const docNames = verificationData.docNames
+          ? Array.isArray(verificationData.docNames)
+            ? verificationData.docNames
+            : [verificationData.docNames]
+          : [];
+        const docTypes = verificationData.docTypes
+          ? Array.isArray(verificationData.docTypes)
+            ? verificationData.docTypes
+            : [verificationData.docTypes]
+          : [];
+
+        // Validate that we have the same number of files, names, and types
+        if (
+          docNames.length !== files.length ||
+          docTypes.length !== files.length
+        ) {
+          ApiResponse.badRequest(
+            res,
+            'Number of files, document names, and document types must match'
+          );
+          return;
+        }
+
+        // Upload files to Cloudinary and prepare verification docs
+        const verificationDocs = [];
+
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const docName = docNames[i] || `Document ${i + 1}`;
+          const docType = docTypes[i] || 'General';
+
+          try {
+            // Import streamifier only if needed
+            const streamifier = await import('streamifier');
+
+            // Wrap upload_stream in a Promise
+            const uploadToCloudinary = (fileBuffer: Buffer) =>
+              new Promise<{ secure_url: string }>((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                  {
+                    // Cloudinary upload options
+                    folder: 'verification-documents',
+                    public_id: `${userId}_${docType}_${Date.now()}`,
+                    resource_type: 'auto', // auto-detect file type
+                    format:
+                      file.mimetype === 'application/pdf' ? 'pdf' : 'webp',
+                    overwrite: true,
+                    transformation: file.mimetype.startsWith('image/')
+                      ? [
+                          {
+                            width: 1200,
+                            height: 1200,
+                            crop: 'limit',
+                            gravity: 'auto',
+                          },
+                          { quality: 'auto' },
+                        ]
+                      : undefined,
+                  },
+                  (error, result) => {
+                    if (error || !result)
+                      return reject(
+                        error || new Error('No result from Cloudinary')
+                      );
+                    resolve(result as { secure_url: string });
+                  }
+                );
+                streamifier.default.createReadStream(fileBuffer).pipe(stream);
+              });
+
+            const result = await uploadToCloudinary(file.buffer);
+
+            verificationDocs.push({
+              docType: docType,
+              docUrl: result.secure_url,
+              docName: docName,
+            });
+          } catch (err) {
+            ApiResponse.internalError(res, `Failed to upload ${docName}`);
+            return;
+          }
+        }
+
+        // Add uploaded docs to verification data
+        verificationData.verificationDocs = verificationDocs;
 
         const user = await UserService.submitVerification(
           userId,

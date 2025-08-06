@@ -4,6 +4,7 @@ import {
   authenticateJWT,
   authorizeRoles,
 } from '../middlewares/auth.middleware.js';
+import upload from '../config/multer.js';
 
 const router = express.Router();
 
@@ -13,11 +14,11 @@ router.get('/', ServiceController.getAllServices);
 // All below require authentication and admin/moderator role
 router.use(authenticateJWT, authorizeRoles('admin', 'moderator'));
 
-// POST /api/services
-router.post('/', ServiceController.createService);
+// POST /api/services (with optional image upload)
+router.post('/', upload.single('image'), ServiceController.createService);
 
-// PUT /api/services/:id
-router.put('/:id', ServiceController.updateService);
+// PUT /api/services/:id (with optional image upload)
+router.put('/:id', upload.single('image'), ServiceController.updateService);
 
 // DELETE /api/services/:id
 router.delete('/:id', ServiceController.deleteService);

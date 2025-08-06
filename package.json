@@ -1,7 +1,7 @@
 {
   "name": "craftworks-backend-typescript",
-  "version": "1.0.0",
-  "description": "Backend for Egyptian local craftsmen service marketplace (TypeScript, Express, MongoDB)",
+  "version": "1.9.0",
+  "description": "Backend for Egyptian local craftsmen service marketplace (TypeScript, Express, MongoDB) - Enhanced invitation system with quote integration and multilingual service support",
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",

@@ -1,5 +1,6 @@
 import { Invitation } from '../models/invitation.model.js';
 import { Job } from '../models/job.model.js';
+import { Quote } from '../models/quote.model.js';
 import { Types } from 'mongoose';
 import { NotificationService } from './notification.service.js';
 
@@ -37,7 +38,9 @@ export class InvitationService {
   static async respondToInvitation(
     jobId: string,
     craftsmanId: Types.ObjectId,
-    response: 'Accepted' | 'Rejected'
+    response: 'Accepted' | 'Rejected',
+    price?: number,
+    notes?: string
   ) {
     const invitation = await Invitation.findOne({
       job: jobId,
@@ -48,23 +51,71 @@ export class InvitationService {
     if (invitation.status !== 'Pending')
       throw new Error('Invitation already responded to');
 
+    // If accepting invitation, price is required
+    if (response === 'Accepted' && (!price || price <= 0)) {
+      throw new Error('Price is required when accepting an invitation');
+    }
+
     invitation.status = response;
     invitation.respondedAt = new Date();
     await invitation.save();
-    // Notify client
-    const job = await Job.findById(jobId).lean();
-    if (job && job.client)
-      await NotificationService.sendNotification({
-        user: job.client,
-        type: 'invitation',
-        title: 'Invitation Response',
-        message: `A craftsman has ${response.toLowerCase()} your invitation for the job: ${
-          job.title
-        }`,
-        data: { jobId, invitationId: invitation._id, craftsmanId, response },
+
+    let quote = null;
+
+    // If accepting, create a quote automatically
+    if (response === 'Accepted') {
+      // Check if quote already exists
+      const existingQuote = await Quote.findOne({
+        job: jobId,
+        craftsman: craftsmanId,
       });
 
-    return invitation;
+      if (existingQuote) {
+        // Update existing quote
+        existingQuote.price = price!;
+        if (notes) existingQuote.notes = notes;
+        existingQuote.status = 'Submitted';
+        quote = await existingQuote.save();
+      } else {
+        // Create new quote
+        quote = new Quote({
+          job: jobId,
+          craftsman: craftsmanId,
+          price: price!,
+          notes: notes || '',
+          status: 'Submitted',
+        });
+        await quote.save();
+      }
+    }
+
+    // Notify client
+    const job = await Job.findById(jobId).lean();
+    if (job && job.client) {
+      const message =
+        response === 'Accepted'
+          ? `A craftsman has accepted your invitation and submitted a quote of $${price} for the job: ${job.title}`
+          : `A craftsman has rejected your invitation for the job: ${job.title}`;
+
+      await NotificationService.sendNotification({
+        user: job.client,
+        type: response === 'Accepted' ? 'quote' : 'invitation',
+        title:
+          response === 'Accepted'
+            ? 'New Quote from Invitation'
+            : 'Invitation Rejected',
+        message,
+        data: {
+          jobId,
+          invitationId: invitation._id,
+          craftsmanId,
+          response,
+          ...(quote && { quoteId: quote._id, price }),
+        },
+      });
+    }
+
+    return { invitation, quote };
   }
 
   /**

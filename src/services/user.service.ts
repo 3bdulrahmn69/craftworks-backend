@@ -138,13 +138,12 @@ export class UserService {
   static async submitVerification(
     userId: string,
     verificationData: {
-      skills: string[];
       service?: string;
-      bio?: string;
       portfolioImageUrls?: string[];
       verificationDocs: Array<{
         docType: string;
         docUrl: string;
+        docName?: string;
       }>;
     },
     userIP?: string
@@ -157,10 +156,6 @@ export class UserService {
     if (user.role !== 'craftsman')
       throw new UserServiceError('Only craftsmen can submit verification', 403);
 
-    // Validate skills
-    if (!verificationData.skills || verificationData.skills.length === 0)
-      throw new UserServiceError('At least one skill is required', 400);
-
     // Validate verification documents
     if (
       !verificationData.verificationDocs ||
@@ -171,11 +166,12 @@ export class UserService {
         400
       );
 
-    // Update craftsman info
+    // Update craftsman info - preserve existing skills and bio
+    const existingCraftsmanInfo = user.craftsmanInfo;
     user.craftsmanInfo = {
-      skills: verificationData.skills,
-      service: verificationData.service || '',
-      bio: verificationData.bio || '',
+      skills: existingCraftsmanInfo?.skills || [], // Preserve existing skills
+      service: verificationData.service || existingCraftsmanInfo?.service || '',
+      bio: existingCraftsmanInfo?.bio || '', // Preserve existing bio
       portfolioImageUrls: verificationData.portfolioImageUrls || [],
       verificationStatus: 'pending',
       verificationDocs: verificationData.verificationDocs,
@@ -192,7 +188,6 @@ export class UserService {
       action: 'verification_submitted',
       category: 'user_management',
       details: {
-        skillsCount: verificationData.skills.length,
         docsCount: verificationData.verificationDocs.length,
       },
       ipAddress: userIP,
@@ -200,7 +195,6 @@ export class UserService {
     });
 
     loggerHelpers.logUserAction('verification_submitted', userId, {
-      skillsCount: verificationData.skills.length,
       docsCount: verificationData.verificationDocs.length,
     });
 

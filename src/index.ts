@@ -25,6 +25,7 @@ import jobRoutes from './routes/job.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import serviceRoutes from './routes/service.routes.js';
 import messageRoutes from './routes/message.routes.js';
+import { walletRoutes } from './routes/wallet.routes.js';
 
 class CraftworksServer {
   private app: Application;
@@ -85,6 +86,7 @@ class CraftworksServer {
     this.app.use('/api/notifications', notificationRoutes);
     this.app.use('/api/services', serviceRoutes);
     this.app.use('/api/messages', messageRoutes);
+    this.app.use('/api/wallet', walletRoutes);
 
     // 404 handler for /api/* routes
     this.app.use('/api/*', notFoundHandler);

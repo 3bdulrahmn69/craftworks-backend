@@ -4,6 +4,7 @@ import { IJob, JobStatus } from '../types/job.types.js';
 import { Types } from 'mongoose';
 import { NotificationService } from './notification.service.js';
 import { PaginationHelper } from '../utils/paginationHelper.js';
+import { WalletService } from './wallet.service.js';
 
 export class JobService {
   // Helper method to resolve service by name or ID
@@ -178,8 +179,37 @@ export class JobService {
   }
 
   static async updateJobStatus(jobId: string, status: IJob['status']) {
-    const job = await Job.findByIdAndUpdate(jobId, { status }, { new: true });
+    const job = await Job.findByIdAndUpdate(
+      jobId,
+      {
+        status,
+        ...(status === 'Completed' && { completedAt: new Date() }),
+      },
+      { new: true }
+    ).populate('craftsman', '_id role wallet');
+
     if (job) {
+      // Handle payment when job is completed and payment type is visa
+      if (
+        status === 'Completed' &&
+        job.paymentType === 'visa' &&
+        job.craftsman &&
+        job.jobPrice > 0
+      ) {
+        try {
+          await WalletService.creditWallet(
+            job.craftsman._id,
+            job.jobPrice,
+            jobId,
+            `Payment for completed job: ${job.title}`
+          );
+        } catch (paymentError) {
+          console.error('Failed to process payment:', paymentError);
+          // Continue with status update even if payment fails
+          // This ensures job completion is recorded
+        }
+      }
+
       // Notify client
       await NotificationService.sendNotification({
         user: job.client,
@@ -188,10 +218,11 @@ export class JobService {
         message: `The status of job '${job.title}' has changed to ${status}.`,
         data: { jobId, status },
       });
+
       // Notify craftsman if assigned
       if (job.craftsman)
         await NotificationService.sendNotification({
-          user: job.craftsman,
+          user: job.craftsman._id,
           type: 'status',
           title: 'Job Status Updated',
           message: `The status of job '${job.title}' has changed to ${status}.`,

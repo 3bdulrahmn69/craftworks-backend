@@ -1,9 +1,14 @@
 import { Document } from 'mongoose';
 
+export interface IServiceTranslation {
+  en: string;
+  ar: string;
+}
+
 export interface IService extends Document {
-  name: string;
-  icon?: string;
-  description?: string;
+  name: IServiceTranslation;
+  description: IServiceTranslation;
+  image?: string; // Cloudinary URL for service image
   createdAt: Date;
   updatedAt: Date;
 }
