@@ -717,6 +717,363 @@ Authorization: Bearer <token>
 }
 ```
 
+## Reviews & Disputes
+
+### Create a Review
+
+`POST /api/reviews`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Requirements:**
+
+- Job must be completed
+- User must be either the client or craftsman of the job
+- User can only review once per job
+
+**Request Example:**
+
+```json
+{
+  "jobId": "507f1f77bcf86cd799439012",
+  "rating": 5,
+  "comment": "Excellent work! Very professional and completed on time."
+}
+```
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "507f1f77bcf86cd799439013",
+    "job": "507f1f77bcf86cd799439012",
+    "reviewer": {
+      "id": "507f1f77bcf86cd799439014",
+      "fullName": "John Client",
+      "profilePicture": "https://...",
+      "role": "client"
+    },
+    "reviewee": {
+      "id": "507f1f77bcf86cd799439015",
+      "fullName": "Ahmed Craftsman",
+      "profilePicture": "https://...",
+      "role": "craftsman"
+    },
+    "rating": 5,
+    "comment": "Excellent work! Very professional and completed on time.",
+    "createdAt": "2025-08-07T10:30:00.000Z"
+  },
+  "message": "Review created successfully"
+}
+```
+
+### Get User Reviews
+
+`GET /api/reviews/user/:userId?page=1&limit=10`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+
+- `page`: Page number (default: 1)
+- `limit`: Number of reviews per page (default: 10, max: 50)
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "reviews": [
+      {
+        "id": "507f1f77bcf86cd799439013",
+        "reviewer": {
+          "id": "507f1f77bcf86cd799439014",
+          "fullName": "John Client",
+          "role": "client"
+        },
+        "rating": 5,
+        "comment": "Great work!",
+        "createdAt": "2025-08-07T10:30:00.000Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "totalPages": 1,
+      "totalItems": 1
+    }
+  },
+  "message": "Reviews retrieved successfully"
+}
+```
+
+### Get Job Reviews
+
+`GET /api/reviews/job/:jobId`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Requirements:**
+
+- User must be either the client or craftsman of the job
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "507f1f77bcf86cd799439013",
+      "reviewer": {
+        "id": "507f1f77bcf86cd799439014",
+        "fullName": "John Client",
+        "role": "client"
+      },
+      "reviewee": {
+        "id": "507f1f77bcf86cd799439015",
+        "fullName": "Ahmed Craftsman",
+        "role": "craftsman"
+      },
+      "rating": 5,
+      "comment": "Excellent work!",
+      "createdAt": "2025-08-07T10:30:00.000Z"
+    }
+  ],
+  "message": "Job reviews retrieved successfully"
+}
+```
+
+### Check Review Eligibility
+
+`GET /api/reviews/job/:jobId/can-review`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "canReview": true
+  },
+  "message": "Review eligibility checked successfully"
+}
+```
+
+### Create a Dispute
+
+`POST /api/disputes`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+```
+
+**Requirements:**
+
+- Job must be hired (craftsman assigned)
+- User must be either the client or craftsman of the job
+- Only one dispute per job allowed
+
+**Form Data:**
+
+- `jobId`: Job ID (required)
+- `reason`: Dispute reason (required) - one of: poor_quality, no_show, payment_issue, behavior_issue, other
+- `description`: Detailed description (required, 10-2000 characters)
+- `evidence`: JSON string with additional text evidence (optional)
+- `evidence[]`: File uploads (optional, max 5 files, 10MB each)
+
+**Request Example:**
+
+```
+Form Data:
+- jobId: "507f1f77bcf86cd799439012"
+- reason: "poor_quality"
+- description: "The work was not completed as agreed. Several issues remain unfixed."
+- evidence: {"text": "Additional details about the poor quality work"}
+- evidence[]: <file1.jpg>
+- evidence[]: <file2.pdf>
+```
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "507f1f77bcf86cd799439016",
+    "job": {
+      "id": "507f1f77bcf86cd799439012",
+      "title": "Fix Kitchen Sink",
+      "status": "Disputed"
+    },
+    "initiator": {
+      "id": "507f1f77bcf86cd799439014",
+      "fullName": "John Client",
+      "role": "client"
+    },
+    "respondent": {
+      "id": "507f1f77bcf86cd799439015",
+      "fullName": "Ahmed Craftsman",
+      "role": "craftsman"
+    },
+    "reason": "poor_quality",
+    "description": "The work was not completed as agreed.",
+    "status": "open",
+    "priority": "medium",
+    "evidence": [
+      {
+        "text": "Additional details",
+        "images": ["https://cloudinary.com/evidence1.jpg"],
+        "attachments": []
+      }
+    ],
+    "createdAt": "2025-08-07T11:00:00.000Z"
+  },
+  "message": "Dispute created successfully"
+}
+```
+
+### Get Dispute Details
+
+`GET /api/disputes/:disputeId`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Requirements:**
+
+- User must be involved in the dispute OR be an admin/moderator
+
+### Add Evidence to Dispute
+
+`POST /api/disputes/:disputeId/evidence`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+```
+
+**Requirements:**
+
+- User must be involved in the dispute
+- Dispute must not be resolved or closed
+
+**Form Data:**
+
+- `text`: Text evidence (optional, max 1000 characters)
+- `evidence[]`: File uploads (optional, max 5 files, 10MB each)
+
+### Get User's Disputes
+
+`GET /api/disputes?page=1&limit=10&status=open`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+
+- `page`: Page number (default: 1)
+- `limit`: Number of disputes per page (default: 10, max: 50)
+- `status`: Filter by status (optional) - open, under_review, resolved, closed
+
+### Get All Disputes (Admin)
+
+`GET /api/disputes/admin/all?page=1&limit=20&status=open&priority=high`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Requirements:**
+
+- User must be admin or moderator
+
+**Query Parameters:**
+
+- `page`: Page number (default: 1)
+- `limit`: Number of disputes per page (default: 20, max: 100)
+- `status`: Filter by status (optional)
+- `priority`: Filter by priority (optional) - low, medium, high
+
+### Resolve Dispute (Admin)
+
+`PUT /api/disputes/:disputeId/resolve`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Requirements:**
+
+- User must be admin or moderator
+- Dispute must not be already resolved or closed
+
+**Request Example:**
+
+```json
+{
+  "decision": "After reviewing the evidence, the craftsman will redo the work at no extra cost.",
+  "refundAmount": 0,
+  "penaltyToUser": "507f1f77bcf86cd799439015"
+}
+```
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "507f1f77bcf86cd799439016",
+    "status": "resolved",
+    "resolution": {
+      "decision": "After reviewing the evidence, the craftsman will redo the work at no extra cost.",
+      "refundAmount": 0,
+      "resolvedAt": "2025-08-07T12:00:00.000Z"
+    }
+  },
+  "message": "Dispute resolved successfully"
+}
+```
+
 ### Submit Verification Documents (Craftsman Only)
 
 `POST /api/users/craftsman/verification`

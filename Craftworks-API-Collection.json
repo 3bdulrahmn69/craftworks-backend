@@ -1,8 +1,8 @@
 {
   "info": {
     "name": "Craftworks Backend API",
-    "description": "Complete API collection for Craftworks backend with all endpoints including authentication, users, jobs (with enhanced search and filtering), quotes, invitations, notifications, services, real-time messaging, and admin functions. v1.7.0 Updates: Enhanced verification system with file upload support - craftsmen can now upload verification documents directly with custom names and types, automatic Cloudinary integration, and user profiles now include verification status. Previous v1.6.0: Added comprehensive real-time messaging system with Socket.IO integration - clients and craftsmen can now communicate in real-time with text and image messages, typing indicators, read receipts, and admin moderation capabilities. Previous v1.5.1: Enhanced quote management - updated quote acceptance route from '/jobs/:jobId/quotes/:quoteId/accept' to '/jobs/:jobId/quotes/:quoteId/:status' where status can be 'accept' or 'reject'. Added ability to reject quotes with proper notifications. Previous v1.5.0: Fixed invitation routes and service population - invitation endpoints now working correctly, recommendations endpoint returns full service objects instead of IDs, fixed seed script deprecation warnings. Enhanced service population in craftsman recommendations with manual population for better data integrity. Previous v1.4.0: Standardized API response format - ALL endpoints now consistently include 'success' field (true/false) for uniform error handling and status checking across the entire application. Previous v1.3.3: Robust coordinate parsing for form-data - handles all formats including '31.2,30.1', '[31.2,30.1]', '[ \"31.2,30.1\" ]' with enhanced error handling and validation.",
-    "version": "1.7.0",
+    "description": "Complete API collection for Craftworks backend with all endpoints including authentication, users, jobs (with enhanced search and filtering), quotes, invitations, notifications, services, real-time messaging, reviews & disputes, and admin functions. v1.8.0 Updates: Added comprehensive Reviews & Disputes system - clients and craftsmen can review each other after job completion (double-blind system), create disputes with evidence uploads for job-related issues, and admins can resolve disputes with proper workflow management. Previous v1.7.0: Enhanced verification system with file upload support - craftsmen can now upload verification documents directly with custom names and types, automatic Cloudinary integration, and user profiles now include verification status. Previous v1.6.0: Added comprehensive real-time messaging system with Socket.IO integration - clients and craftsmen can now communicate in real-time with text and image messages, typing indicators, read receipts, and admin moderation capabilities. Previous v1.5.1: Enhanced quote management - updated quote acceptance route from '/jobs/:jobId/quotes/:quoteId/accept' to '/jobs/:jobId/quotes/:quoteId/:status' where status can be 'accept' or 'reject'. Added ability to reject quotes with proper notifications. Previous v1.5.0: Fixed invitation routes and service population - invitation endpoints now working correctly, recommendations endpoint returns full service objects instead of IDs, fixed seed script deprecation warnings. Enhanced service population in craftsman recommendations with manual population for better data integrity. Previous v1.4.0: Standardized API response format - ALL endpoints now consistently include 'success' field (true/false) for uniform error handling and status checking across the entire application. Previous v1.3.3: Robust coordinate parsing for form-data - handles all formats including '31.2,30.1', '[31.2,30.1]', '[ \"31.2,30.1\" ]' with enhanced error handling and validation.",
+    "version": "1.8.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -2142,6 +2142,426 @@
             }
           },
           "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobId\": \"507f1f77bcf86cd799439012\",\n  \"rating\": 5,\n  \"comment\": \"Excellent work! Very professional and completed on time.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/reviews",
+              "host": ["{{base_url}}"],
+              "path": ["reviews"]
+            }
+          },
+          "response": [
+            {
+              "name": "Successful Review Creation",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"jobId\": \"507f1f77bcf86cd799439012\",\n  \"rating\": 5,\n  \"comment\": \"Excellent work! Very professional and completed on time.\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/reviews",
+                  "host": ["{{base_url}}"],
+                  "path": ["reviews"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"507f1f77bcf86cd799439013\",\n    \"job\": \"507f1f77bcf86cd799439012\",\n    \"reviewer\": {\n      \"id\": \"507f1f77bcf86cd799439014\",\n      \"fullName\": \"John Client\",\n      \"profilePicture\": \"https://res.cloudinary.com/craftworks/image/upload/v1691234567/profile-images/john.webp\",\n      \"role\": \"client\"\n    },\n    \"reviewee\": {\n      \"id\": \"507f1f77bcf86cd799439015\",\n      \"fullName\": \"Ahmed Craftsman\",\n      \"profilePicture\": \"https://res.cloudinary.com/craftworks/image/upload/v1691234567/profile-images/ahmed.webp\",\n      \"role\": \"craftsman\"\n    },\n    \"rating\": 5,\n    \"comment\": \"Excellent work! Very professional and completed on time.\",\n    \"createdAt\": \"2025-08-07T10:30:00.000Z\"\n  },\n  \"message\": \"Review created successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get User Reviews",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reviews/user/507f1f77bcf86cd799439015?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["reviews", "user", "507f1f77bcf86cd799439015"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of reviews per page (default: 10, max: 50)"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Job Reviews",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reviews/job/507f1f77bcf86cd799439012",
+              "host": ["{{base_url}}"],
+              "path": ["reviews", "job", "507f1f77bcf86cd799439012"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Check Review Eligibility",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reviews/job/507f1f77bcf86cd799439012/can-review",
+              "host": ["{{base_url}}"],
+              "path": [
+                "reviews",
+                "job",
+                "507f1f77bcf86cd799439012",
+                "can-review"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Disputes",
+      "item": [
+        {
+          "name": "Create Dispute",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "jobId",
+                  "value": "507f1f77bcf86cd799439012",
+                  "type": "text"
+                },
+                {
+                  "key": "reason",
+                  "value": "poor_quality",
+                  "description": "Dispute reason: poor_quality, no_show, payment_issue, behavior_issue, other",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "The work was not completed as agreed. Several issues remain unfixed and the quality is below standard.",
+                  "type": "text"
+                },
+                {
+                  "key": "evidence",
+                  "value": "{\"text\": \"Additional details about the poor quality work and specific issues found\"}",
+                  "description": "JSON string with additional text evidence",
+                  "type": "text"
+                },
+                {
+                  "key": "evidence[]",
+                  "description": "Upload evidence files (images/documents, max 5 files, 10MB each)",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/disputes",
+              "host": ["{{base_url}}"],
+              "path": ["disputes"]
+            }
+          },
+          "response": [
+            {
+              "name": "Successful Dispute Creation",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "jobId",
+                      "value": "507f1f77bcf86cd799439012",
+                      "type": "text"
+                    },
+                    {
+                      "key": "reason",
+                      "value": "poor_quality",
+                      "type": "text"
+                    },
+                    {
+                      "key": "description",
+                      "value": "The work was not completed as agreed.",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/disputes",
+                  "host": ["{{base_url}}"],
+                  "path": ["disputes"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"507f1f77bcf86cd799439016\",\n    \"job\": {\n      \"id\": \"507f1f77bcf86cd799439012\",\n      \"title\": \"Fix Kitchen Sink\",\n      \"status\": \"Disputed\"\n    },\n    \"initiator\": {\n      \"id\": \"507f1f77bcf86cd799439014\",\n      \"fullName\": \"John Client\",\n      \"role\": \"client\"\n    },\n    \"respondent\": {\n      \"id\": \"507f1f77bcf86cd799439015\",\n      \"fullName\": \"Ahmed Craftsman\",\n      \"role\": \"craftsman\"\n    },\n    \"reason\": \"poor_quality\",\n    \"description\": \"The work was not completed as agreed.\",\n    \"status\": \"open\",\n    \"priority\": \"medium\",\n    \"evidence\": [\n      {\n        \"text\": \"Additional details\",\n        \"images\": [\"https://res.cloudinary.com/craftworks/image/upload/v1691234567/dispute-evidence/evidence1.jpg\"],\n        \"attachments\": []\n      }\n    ],\n    \"createdAt\": \"2025-08-07T11:00:00.000Z\"\n  },\n  \"message\": \"Dispute created successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Dispute Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/disputes/507f1f77bcf86cd799439016",
+              "host": ["{{base_url}}"],
+              "path": ["disputes", "507f1f77bcf86cd799439016"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Evidence to Dispute",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "text",
+                  "value": "Here is additional evidence showing the poor quality of work.",
+                  "description": "Text evidence (optional, max 1000 characters)",
+                  "type": "text"
+                },
+                {
+                  "key": "evidence[]",
+                  "description": "Upload evidence files (images/documents, max 5 files, 10MB each)",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/disputes/507f1f77bcf86cd799439016/evidence",
+              "host": ["{{base_url}}"],
+              "path": ["disputes", "507f1f77bcf86cd799439016", "evidence"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User's Disputes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/disputes?page=1&limit=10&status=open",
+              "host": ["{{base_url}}"],
+              "path": ["disputes"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of disputes per page (default: 10, max: 50)"
+                },
+                {
+                  "key": "status",
+                  "value": "open",
+                  "description": "Filter by status: open, under_review, resolved, closed"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Disputes (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/disputes/admin/all?page=1&limit=20&status=open&priority=high",
+              "host": ["{{base_url}}"],
+              "path": ["disputes", "admin", "all"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of disputes per page (default: 20, max: 100)"
+                },
+                {
+                  "key": "status",
+                  "value": "open",
+                  "description": "Filter by status: open, under_review, resolved, closed"
+                },
+                {
+                  "key": "priority",
+                  "value": "high",
+                  "description": "Filter by priority: low, medium, high"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Resolve Dispute (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"After reviewing the evidence, the craftsman will redo the work at no extra cost within 5 business days.\",\n  \"refundAmount\": 0,\n  \"penaltyToUser\": \"507f1f77bcf86cd799439015\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/disputes/507f1f77bcf86cd799439016/resolve",
+              "host": ["{{base_url}}"],
+              "path": ["disputes", "507f1f77bcf86cd799439016", "resolve"]
+            }
+          },
+          "response": [
+            {
+              "name": "Successful Dispute Resolution",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"decision\": \"After reviewing the evidence, the craftsman will redo the work at no extra cost.\",\n  \"refundAmount\": 0,\n  \"penaltyToUser\": \"507f1f77bcf86cd799439015\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/disputes/507f1f77bcf86cd799439016/resolve",
+                  "host": ["{{base_url}}"],
+                  "path": ["disputes", "507f1f77bcf86cd799439016", "resolve"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"507f1f77bcf86cd799439016\",\n    \"status\": \"resolved\",\n    \"resolution\": {\n      \"decision\": \"After reviewing the evidence, the craftsman will redo the work at no extra cost.\",\n      \"refundAmount\": 0,\n      \"resolvedAt\": \"2025-08-07T12:00:00.000Z\",\n      \"resolvedBy\": {\n        \"id\": \"507f1f77bcf86cd799439020\",\n        \"fullName\": \"Admin User\",\n        \"role\": \"admin\"\n      }\n    }\n  },\n  \"message\": \"Dispute resolved successfully\"\n}"
+            }
+          ]
         }
       ]
     },
