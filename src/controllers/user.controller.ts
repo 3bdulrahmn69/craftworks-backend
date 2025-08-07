@@ -42,7 +42,7 @@ export class UserController {
    */
   static updateCurrentUser = asyncHandler(
     async (
-      req: IAuthenticatedRequest & { files?: any },
+      req: IAuthenticatedRequest & { file?: Express.Multer.File },
       res: Response
     ): Promise<Response | void> => {
       try {
@@ -53,13 +53,10 @@ export class UserController {
         }
 
         const updateData = req.body;
-        const files = req.files as {
-          [fieldname: string]: Express.Multer.File[];
-        };
+        const profileFile = req.file;
 
         // Handle profile picture upload
-        if (files?.profilePicture && files.profilePicture[0]) {
-          const profileFile = files.profilePicture[0];
+        if (profileFile) {
           // Import streamifier only if needed
           const streamifier = await import('streamifier');
           // Wrap upload_stream in a Promise
@@ -97,29 +94,6 @@ export class UserController {
           } catch (err) {
             ApiResponse.internalError(res, 'Failed to upload profile image');
             return;
-          }
-        }
-
-        // Handle portfolio images for craftsmen
-        if (files?.portfolioImages && req.user?.role === 'craftsman') {
-          updateData.portfolioImageFiles = files.portfolioImages;
-        }
-
-        // Parse portfolioAction if provided
-        if (updateData.portfolioAction) {
-          updateData.portfolioAction = updateData.portfolioAction;
-        } else {
-          updateData.portfolioAction = 'add'; // Default action
-        }
-
-        // Parse existingPortfolioImages if provided
-        if (updateData.existingPortfolioImages) {
-          try {
-            updateData.existingPortfolioImages = JSON.parse(
-              updateData.existingPortfolioImages
-            );
-          } catch (error) {
-            updateData.existingPortfolioImages = [];
           }
         }
 
@@ -182,9 +156,9 @@ export class UserController {
   );
 
   /**
-   * Update portfolio images for craftsmen
+   * Add portfolio images for craftsmen
    */
-  static updatePortfolioImages = asyncHandler(
+  static addPortfolioImages = asyncHandler(
     async (
       req: IAuthenticatedRequest,
       res: Response
@@ -196,29 +170,20 @@ export class UserController {
           return;
         }
 
-        const { action, existingImages } = req.body;
         const uploadedFiles = (req as any).files; // Cast to handle multer files
 
-        // Parse existing images if provided
-        let existingImageUrls: string[] = [];
-        if (existingImages) {
-          try {
-            existingImageUrls = JSON.parse(existingImages);
-          } catch (error) {
-            ApiResponse.badRequest(res, 'Invalid existing images format');
-            return;
-          }
+        if (!uploadedFiles || uploadedFiles.length === 0) {
+          ApiResponse.badRequest(res, 'No portfolio images provided');
+          return;
         }
 
-        const user = await UserService.updatePortfolioImages(
+        const user = await UserService.addPortfolioImages(
           userId,
-          action,
-          existingImageUrls,
           uploadedFiles,
           req.ip
         );
 
-        ApiResponse.success(res, user, 'Portfolio images updated successfully');
+        ApiResponse.success(res, user, 'Portfolio images added successfully');
       } catch (error) {
         if (error instanceof UserServiceError)
           if (error.statusCode === 404)
@@ -226,8 +191,7 @@ export class UserController {
           else if (error.statusCode === 403)
             ApiResponse.forbidden(res, error.message);
           else ApiResponse.badRequest(res, error.message);
-        else
-          ApiResponse.internalError(res, 'Failed to update portfolio images');
+        else ApiResponse.internalError(res, 'Failed to add portfolio images');
       }
     }
   );
@@ -247,12 +211,16 @@ export class UserController {
           return;
         }
 
-        const { imageUrl } = req.params;
-        const decodedImageUrl = decodeURIComponent(imageUrl);
+        const { imageUrl } = req.body;
+
+        if (!imageUrl) {
+          ApiResponse.badRequest(res, 'Image URL is required');
+          return;
+        }
 
         const user = await UserService.deletePortfolioImage(
           userId,
-          decodedImageUrl,
+          imageUrl,
           req.ip
         );
 

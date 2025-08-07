@@ -551,25 +551,6 @@ Form Data:
 - fullName: "Jane Smith"
 ```
 
-**Request Example (Portfolio Images for Craftsmen):**
-
-```
-Form Data:
-- portfolioImages: <image_file_1>
-- portfolioImages: <image_file_2>
-- portfolioImages: <image_file_3>
-- portfolioAction: "add" | "replace" | "remove"
-- existingPortfolioImages: ["url1", "url2", "url3"] (JSON string)
-- fullName: "Ahmed Craftsman"
-- bio: "Updated bio text"
-```
-
-**Portfolio Actions:**
-
-- `add`: Add new images to existing portfolio (default)
-- `replace`: Replace all portfolio images with new ones
-- `remove`: Keep only existing images (remove others)
-
 **Supported Fields:**
 
 - `fullName`: User's full name
@@ -579,9 +560,8 @@ Form Data:
 - `address`: Address object with country, state, city, street
 - `serviceId`: Service ID (craftsmen only) - updates the craftsman's primary service
 - `craftsmanInfo`: Craftsman information object (craftsmen only)
-- `portfolioImages`: Portfolio image files (craftsmen only, up to 10 images)
-- `portfolioAction`: Action for portfolio images (craftsmen only)
-- `existingPortfolioImages`: Array of existing portfolio image URLs to keep (craftsmen only)
+
+**Note:** For portfolio image management, use the dedicated portfolio endpoints described in the Portfolio Image Management section.
 
 **Response Example:**
 
@@ -634,7 +614,7 @@ Authorization: Bearer <token>
 
 ### Portfolio Image Management (Craftsmen Only)
 
-#### Update Portfolio Images
+#### Add Portfolio Images
 
 `PUT /api/users/me/portfolio`
 
@@ -652,15 +632,13 @@ Form Data:
 - portfolioImages: <image_file_1>
 - portfolioImages: <image_file_2>
 - portfolioImages: <image_file_3>
-- action: "add" | "replace" | "remove"
-- existingImages: ["url1", "url2"] (JSON string)
 ```
 
-**Portfolio Actions:**
+**Notes:**
 
-- `add`: Add new images to existing portfolio (max 10 total)
-- `replace`: Replace all images with new ones
-- `remove`: Keep only existing images, remove others
+- Maximum 10 total portfolio images allowed
+- Images will be automatically optimized and converted to WebP format
+- Existing images will be preserved, new images will be added
 
 **Response Example:**
 
@@ -676,23 +654,28 @@ Form Data:
       "https://res.cloudinary.com/demo/image/upload/portfolio3.webp"
     ]
   },
-  "message": "Portfolio images updated successfully"
+  "message": "Portfolio images added successfully"
 }
 ```
 
 #### Delete Single Portfolio Image
 
-`DELETE /api/users/me/portfolio/:imageUrl`
+`DELETE /api/users/me/portfolio`
 
 **Headers:**
 
 ```
 Authorization: Bearer <token>
+Content-Type: application/json
 ```
 
-**Parameters:**
+**Request Body:**
 
-- `imageUrl`: URL-encoded image URL to delete
+```json
+{
+  "imageUrl": "https://res.cloudinary.com/demo/image/upload/portfolio1.webp"
+}
+```
 
 **Response Example:**
 
@@ -702,7 +685,7 @@ Authorization: Bearer <token>
   "data": {
     "id": "507f1f77bcf86cd799439012",
     "portfolioImageUrls": [
-      "https://res.cloudinary.com/demo/image/upload/portfolio1.webp"
+      "https://res.cloudinary.com/demo/image/upload/portfolio2.webp"
     ]
   },
   "message": "Portfolio image deleted successfully"

@@ -31,13 +31,10 @@ router.use(authenticateJWT);
 // Get current user profile
 router.get('/me', UserController.getCurrentUser);
 
-// Update current user profile (with optional profile image and portfolio images upload)
+// Update current user profile (with optional profile image upload)
 router.put(
   '/me',
-  upload.fields([
-    { name: 'profilePicture', maxCount: 1 },
-    { name: 'portfolioImages', maxCount: 10 },
-  ]),
+  upload.single('profilePicture'),
   UserController.updateCurrentUser
 );
 
@@ -49,11 +46,11 @@ router.put(
   '/me/portfolio',
   authorizeRoles('craftsman'),
   upload.array('portfolioImages', 10), // Allow up to 10 images
-  UserController.updatePortfolioImages
+  UserController.addPortfolioImages
 );
 
 router.delete(
-  '/me/portfolio/:imageUrl',
+  '/me/portfolio',
   authorizeRoles('craftsman'),
   UserController.deletePortfolioImage
 );

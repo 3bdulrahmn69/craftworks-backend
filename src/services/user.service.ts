@@ -65,32 +65,7 @@ export class UserService {
         throw new UserServiceError('Phone number already exists', 409);
     }
 
-    // Handle portfolio images for craftsmen
-    if (
-      user.role === 'craftsman' &&
-      (updateData.portfolioImageFiles || updateData.existingPortfolioImages)
-    ) {
-      const action = updateData.portfolioAction || 'add';
-      const existingImages = updateData.existingPortfolioImages || [];
-      const uploadedFiles = updateData.portfolioImageFiles || [];
-
-      // Update portfolio images using existing method
-      await this.updatePortfolioImages(
-        userId,
-        action,
-        existingImages,
-        uploadedFiles,
-        userIP
-      );
-
-      // Refresh user data after portfolio update
-      const updatedUser = await User.findById(userId);
-      if (updatedUser) {
-        Object.assign(user, updatedUser.toObject());
-      }
-    }
-
-    // Update allowed fields (excluding portfolio-related fields)
+    // Update allowed fields
     const allowedFields = [
       'fullName',
       'email',
@@ -331,6 +306,17 @@ export class UserService {
     loggerHelpers.logUserAction('profile_picture_deleted', userId, {});
 
     return await this.sanitizeUserData(user);
+  }
+
+  /**
+   * Add portfolio images for craftsmen (simplified version)
+   */
+  static async addPortfolioImages(
+    userId: string,
+    uploadedFiles: any[],
+    userIP?: string
+  ): Promise<IUserPublic> {
+    return this.updatePortfolioImages(userId, 'add', [], uploadedFiles, userIP);
   }
 
   /**
