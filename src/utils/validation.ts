@@ -161,12 +161,6 @@ export class ValidationHelper {
         errors.push('Craftsman info must be an object');
       else {
         if (
-          data.craftsmanInfo.skills &&
-          !Array.isArray(data.craftsmanInfo.skills)
-        )
-          errors.push('Skills must be an array');
-
-        if (
           data.craftsmanInfo.bio !== undefined &&
           typeof data.craftsmanInfo.bio !== 'string'
         )

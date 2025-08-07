@@ -68,8 +68,6 @@ export class AuthService {
       craftsmanInfo:
         role?.toLowerCase() === 'craftsman'
           ? {
-              skills: [],
-              services: [],
               bio: '',
               portfolioImageUrls: [],
               verificationStatus: 'pending',

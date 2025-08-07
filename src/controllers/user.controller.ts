@@ -42,7 +42,7 @@ export class UserController {
    */
   static updateCurrentUser = asyncHandler(
     async (
-      req: IAuthenticatedRequest & { file?: any },
+      req: IAuthenticatedRequest & { files?: any },
       res: Response
     ): Promise<Response | void> => {
       try {
@@ -53,8 +53,13 @@ export class UserController {
         }
 
         const updateData = req.body;
-        // If a file is uploaded, handle Cloudinary upload
-        if (req.file) {
+        const files = req.files as {
+          [fieldname: string]: Express.Multer.File[];
+        };
+
+        // Handle profile picture upload
+        if (files?.profilePicture && files.profilePicture[0]) {
+          const profileFile = files.profilePicture[0];
           // Import streamifier only if needed
           const streamifier = await import('streamifier');
           // Wrap upload_stream in a Promise
@@ -87,11 +92,34 @@ export class UserController {
             });
 
           try {
-            const result = await uploadToCloudinary(req.file.buffer);
+            const result = await uploadToCloudinary(profileFile.buffer);
             updateData.profilePicture = result.secure_url;
           } catch (err) {
-            ApiResponse.internalError(res, 'Failed to upload image');
+            ApiResponse.internalError(res, 'Failed to upload profile image');
             return;
+          }
+        }
+
+        // Handle portfolio images for craftsmen
+        if (files?.portfolioImages && req.user?.role === 'craftsman') {
+          updateData.portfolioImageFiles = files.portfolioImages;
+        }
+
+        // Parse portfolioAction if provided
+        if (updateData.portfolioAction) {
+          updateData.portfolioAction = updateData.portfolioAction;
+        } else {
+          updateData.portfolioAction = 'add'; // Default action
+        }
+
+        // Parse existingPortfolioImages if provided
+        if (updateData.existingPortfolioImages) {
+          try {
+            updateData.existingPortfolioImages = JSON.parse(
+              updateData.existingPortfolioImages
+            );
+          } catch (error) {
+            updateData.existingPortfolioImages = [];
           }
         }
 
@@ -149,6 +177,94 @@ export class UserController {
             ApiResponse.forbidden(res, error.message);
           else ApiResponse.badRequest(res, error.message);
         else ApiResponse.internalError(res, 'Failed to delete profile picture');
+      }
+    }
+  );
+
+  /**
+   * Update portfolio images for craftsmen
+   */
+  static updatePortfolioImages = asyncHandler(
+    async (
+      req: IAuthenticatedRequest,
+      res: Response
+    ): Promise<Response | void> => {
+      try {
+        const userId = req.user?.userId;
+        if (!userId) {
+          ApiResponse.unauthorized(res, 'Authentication required');
+          return;
+        }
+
+        const { action, existingImages } = req.body;
+        const uploadedFiles = (req as any).files; // Cast to handle multer files
+
+        // Parse existing images if provided
+        let existingImageUrls: string[] = [];
+        if (existingImages) {
+          try {
+            existingImageUrls = JSON.parse(existingImages);
+          } catch (error) {
+            ApiResponse.badRequest(res, 'Invalid existing images format');
+            return;
+          }
+        }
+
+        const user = await UserService.updatePortfolioImages(
+          userId,
+          action,
+          existingImageUrls,
+          uploadedFiles,
+          req.ip
+        );
+
+        ApiResponse.success(res, user, 'Portfolio images updated successfully');
+      } catch (error) {
+        if (error instanceof UserServiceError)
+          if (error.statusCode === 404)
+            ApiResponse.notFound(res, error.message);
+          else if (error.statusCode === 403)
+            ApiResponse.forbidden(res, error.message);
+          else ApiResponse.badRequest(res, error.message);
+        else
+          ApiResponse.internalError(res, 'Failed to update portfolio images');
+      }
+    }
+  );
+
+  /**
+   * Delete a specific portfolio image for craftsmen
+   */
+  static deletePortfolioImage = asyncHandler(
+    async (
+      req: IAuthenticatedRequest,
+      res: Response
+    ): Promise<Response | void> => {
+      try {
+        const userId = req.user?.userId;
+        if (!userId) {
+          ApiResponse.unauthorized(res, 'Authentication required');
+          return;
+        }
+
+        const { imageUrl } = req.params;
+        const decodedImageUrl = decodeURIComponent(imageUrl);
+
+        const user = await UserService.deletePortfolioImage(
+          userId,
+          decodedImageUrl,
+          req.ip
+        );
+
+        ApiResponse.success(res, user, 'Portfolio image deleted successfully');
+      } catch (error) {
+        if (error instanceof UserServiceError)
+          if (error.statusCode === 404)
+            ApiResponse.notFound(res, error.message);
+          else if (error.statusCode === 403)
+            ApiResponse.forbidden(res, error.message);
+          else ApiResponse.badRequest(res, error.message);
+        else ApiResponse.internalError(res, 'Failed to delete portfolio image');
       }
     }
   );

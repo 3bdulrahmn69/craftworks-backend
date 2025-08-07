@@ -460,10 +460,23 @@ Authorization: Bearer <token>
     },
     "service": {
       "_id": "6887b2a874c72b166a1cde0b",
-      "name": "Plumbing",
-      "icon": "faucet-icon",
-      "description": "Water systems and pipe work"
+      "name": {
+        "en": "Plumbing",
+        "ar": "السباكة"
+      },
+      "description": {
+        "en": "Professional plumbing services",
+        "ar": "خدمات سباكة احترافية"
+      },
+      "image": "https://res.cloudinary.com/demo/image/upload/plumbing.webp"
     },
+    "bio": "Experienced plumber with 10+ years in residential and commercial plumbing. Specialized in emergency repairs and installations.",
+    "portfolioImageUrls": [
+      "https://res.cloudinary.com/demo/image/upload/portfolio/plumbing1.webp",
+      "https://res.cloudinary.com/demo/image/upload/portfolio/plumbing2.webp",
+      "https://res.cloudinary.com/demo/image/upload/portfolio/plumbing3.webp"
+    ],
+    "verificationStatus": "verified",
     "rating": 4.8,
     "ratingCount": 142,
     "createdAt": "2025-07-23T10:30:00.000Z"
@@ -538,6 +551,25 @@ Form Data:
 - fullName: "Jane Smith"
 ```
 
+**Request Example (Portfolio Images for Craftsmen):**
+
+```
+Form Data:
+- portfolioImages: <image_file_1>
+- portfolioImages: <image_file_2>
+- portfolioImages: <image_file_3>
+- portfolioAction: "add" | "replace" | "remove"
+- existingPortfolioImages: ["url1", "url2", "url3"] (JSON string)
+- fullName: "Ahmed Craftsman"
+- bio: "Updated bio text"
+```
+
+**Portfolio Actions:**
+
+- `add`: Add new images to existing portfolio (default)
+- `replace`: Replace all portfolio images with new ones
+- `remove`: Keep only existing images (remove others)
+
 **Supported Fields:**
 
 - `fullName`: User's full name
@@ -547,6 +579,9 @@ Form Data:
 - `address`: Address object with country, state, city, street
 - `serviceId`: Service ID (craftsmen only) - updates the craftsman's primary service
 - `craftsmanInfo`: Craftsman information object (craftsmen only)
+- `portfolioImages`: Portfolio image files (craftsmen only, up to 10 images)
+- `portfolioAction`: Action for portfolio images (craftsmen only)
+- `existingPortfolioImages`: Array of existing portfolio image URLs to keep (craftsmen only)
 
 **Response Example:**
 
@@ -594,6 +629,83 @@ Authorization: Bearer <token>
     "profilePicture": null
   },
   "message": "Profile picture deleted successfully"
+}
+```
+
+### Portfolio Image Management (Craftsmen Only)
+
+#### Update Portfolio Images
+
+`PUT /api/users/me/portfolio`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+```
+
+**Request Example:**
+
+```
+Form Data:
+- portfolioImages: <image_file_1>
+- portfolioImages: <image_file_2>
+- portfolioImages: <image_file_3>
+- action: "add" | "replace" | "remove"
+- existingImages: ["url1", "url2"] (JSON string)
+```
+
+**Portfolio Actions:**
+
+- `add`: Add new images to existing portfolio (max 10 total)
+- `replace`: Replace all images with new ones
+- `remove`: Keep only existing images, remove others
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "507f1f77bcf86cd799439012",
+    "role": "craftsman",
+    "portfolioImageUrls": [
+      "https://res.cloudinary.com/demo/image/upload/portfolio1.webp",
+      "https://res.cloudinary.com/demo/image/upload/portfolio2.webp",
+      "https://res.cloudinary.com/demo/image/upload/portfolio3.webp"
+    ]
+  },
+  "message": "Portfolio images updated successfully"
+}
+```
+
+#### Delete Single Portfolio Image
+
+`DELETE /api/users/me/portfolio/:imageUrl`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Parameters:**
+
+- `imageUrl`: URL-encoded image URL to delete
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "507f1f77bcf86cd799439012",
+    "portfolioImageUrls": [
+      "https://res.cloudinary.com/demo/image/upload/portfolio1.webp"
+    ]
+  },
+  "message": "Portfolio image deleted successfully"
 }
 ```
 

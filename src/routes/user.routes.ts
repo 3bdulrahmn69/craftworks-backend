@@ -31,15 +31,32 @@ router.use(authenticateJWT);
 // Get current user profile
 router.get('/me', UserController.getCurrentUser);
 
-// Update current user profile (with optional profile image upload)
+// Update current user profile (with optional profile image and portfolio images upload)
 router.put(
   '/me',
-  upload.single('profilePicture'),
+  upload.fields([
+    { name: 'profilePicture', maxCount: 1 },
+    { name: 'portfolioImages', maxCount: 10 },
+  ]),
   UserController.updateCurrentUser
 );
 
 // Delete current user's profile picture
 router.delete('/me/profile-picture', UserController.deleteProfilePicture);
+
+// Portfolio image management for craftsmen
+router.put(
+  '/me/portfolio',
+  authorizeRoles('craftsman'),
+  upload.array('portfolioImages', 10), // Allow up to 10 images
+  UserController.updatePortfolioImages
+);
+
+router.delete(
+  '/me/portfolio/:imageUrl',
+  authorizeRoles('craftsman'),
+  UserController.deletePortfolioImage
+);
 
 // Get recommended craftsmen for a job (Client only)
 router.get(

@@ -11,10 +11,6 @@ import { ValidationHelper } from '../utils/validation.js';
 
 const craftsmanInfoSchema = new Schema<ICraftsmanInfo>(
   {
-    skills: {
-      type: [String],
-      default: [],
-    },
     service: {
       type: String,
       validate: {
@@ -243,7 +239,6 @@ userSchema.pre('save', function (next) {
   // Initialize craftsman info if missing for craftsmen
   if (this.role === 'craftsman' && !this.craftsmanInfo)
     this.craftsmanInfo = {
-      skills: [],
       service: undefined,
       bio: '',
       portfolioImageUrls: [],

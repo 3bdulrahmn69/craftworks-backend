@@ -715,6 +715,139 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Update Portfolio Images (Craftsmen)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "portfolioImages",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "portfolioImages",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "action",
+                  "value": "add",
+                  "type": "text",
+                  "description": "add | replace | remove"
+                },
+                {
+                  "key": "existingImages",
+                  "value": "[\"https://example.com/image1.jpg\", \"https://example.com/image2.jpg\"]",
+                  "type": "text",
+                  "description": "JSON array of existing image URLs to keep"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/users/me/portfolio",
+              "host": ["{{base_url}}"],
+              "path": ["users", "me", "portfolio"]
+            },
+            "description": "Update portfolio images for craftsmen. Actions: add (default), replace, remove. Max 10 images total."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Portfolio Image (Craftsmen)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/me/portfolio/:imageUrl",
+              "host": ["{{base_url}}"],
+              "path": ["users", "me", "portfolio", ":imageUrl"],
+              "variable": [
+                {
+                  "key": "imageUrl",
+                  "value": "https%3A%2F%2Fres.cloudinary.com%2Fdemo%2Fimage%2Fupload%2Fportfolio1.webp",
+                  "description": "URL-encoded image URL to delete"
+                }
+              ]
+            },
+            "description": "Delete a specific portfolio image by URL. Image URL must be URL-encoded."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile with Portfolio Images",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "profilePicture",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "portfolioImages",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "portfolioImages",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "portfolioAction",
+                  "value": "add",
+                  "type": "text",
+                  "description": "add | replace | remove"
+                },
+                {
+                  "key": "existingPortfolioImages",
+                  "value": "[\"https://example.com/existing1.jpg\"]",
+                  "type": "text",
+                  "description": "JSON array of existing portfolio URLs"
+                },
+                {
+                  "key": "fullName",
+                  "value": "Updated Craftsman Name",
+                  "type": "text"
+                },
+                {
+                  "key": "bio",
+                  "value": "Updated bio description",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": ["{{base_url}}"],
+              "path": ["users", "me"]
+            },
+            "description": "Update user profile including portfolio images for craftsmen. Supports both profile picture and portfolio images in single request."
+          },
+          "response": []
         }
       ]
     },

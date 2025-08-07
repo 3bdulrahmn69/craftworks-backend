@@ -33,7 +33,12 @@ export class UserService {
    */
   static async updateCurrentUser(
     userId: string,
-    updateData: Partial<IUser> & { serviceId?: string },
+    updateData: Partial<IUser> & {
+      serviceId?: string;
+      portfolioImageFiles?: Express.Multer.File[];
+      portfolioAction?: 'add' | 'replace' | 'remove';
+      existingPortfolioImages?: string[];
+    },
     userIP?: string
   ): Promise<IUserPublic> {
     const user = await User.findById(userId);
@@ -60,7 +65,32 @@ export class UserService {
         throw new UserServiceError('Phone number already exists', 409);
     }
 
-    // Update allowed fields
+    // Handle portfolio images for craftsmen
+    if (
+      user.role === 'craftsman' &&
+      (updateData.portfolioImageFiles || updateData.existingPortfolioImages)
+    ) {
+      const action = updateData.portfolioAction || 'add';
+      const existingImages = updateData.existingPortfolioImages || [];
+      const uploadedFiles = updateData.portfolioImageFiles || [];
+
+      // Update portfolio images using existing method
+      await this.updatePortfolioImages(
+        userId,
+        action,
+        existingImages,
+        uploadedFiles,
+        userIP
+      );
+
+      // Refresh user data after portfolio update
+      const updatedUser = await User.findById(userId);
+      if (updatedUser) {
+        Object.assign(user, updatedUser.toObject());
+      }
+    }
+
+    // Update allowed fields (excluding portfolio-related fields)
     const allowedFields = [
       'fullName',
       'email',
@@ -86,7 +116,6 @@ export class UserService {
       // Update service in craftsmanInfo
       if (!user.craftsmanInfo)
         user.craftsmanInfo = {
-          skills: [],
           service: updateData.serviceId,
           bio: '',
           portfolioImageUrls: [],
@@ -107,14 +136,28 @@ export class UserService {
       action: 'profile_updated',
       category: 'user_management',
       details: {
-        updatedFields: Object.keys(updateData),
+        updatedFields: Object.keys(updateData).filter(
+          (key) =>
+            ![
+              'portfolioImageFiles',
+              'portfolioAction',
+              'existingPortfolioImages',
+            ].includes(key)
+        ),
       },
       ipAddress: userIP,
       success: true,
     });
 
     loggerHelpers.logUserAction('profile_updated', userId, {
-      updatedFields: Object.keys(updateData),
+      updatedFields: Object.keys(updateData).filter(
+        (key) =>
+          ![
+            'portfolioImageFiles',
+            'portfolioAction',
+            'existingPortfolioImages',
+          ].includes(key)
+      ),
     });
 
     return await this.sanitizeUserData(user);
@@ -166,10 +209,9 @@ export class UserService {
         400
       );
 
-    // Update craftsman info - preserve existing skills and bio
+    // Update craftsman info - preserve existing bio
     const existingCraftsmanInfo = user.craftsmanInfo;
     user.craftsmanInfo = {
-      skills: existingCraftsmanInfo?.skills || [], // Preserve existing skills
       service: verificationData.service || existingCraftsmanInfo?.service || '',
       bio: existingCraftsmanInfo?.bio || '', // Preserve existing bio
       portfolioImageUrls: verificationData.portfolioImageUrls || [],
@@ -224,7 +266,6 @@ export class UserService {
     // Update service
     if (!user.craftsmanInfo)
       user.craftsmanInfo = {
-        skills: [],
         service: serviceId,
         bio: '',
         portfolioImageUrls: [],
@@ -292,6 +333,196 @@ export class UserService {
     return await this.sanitizeUserData(user);
   }
 
+  /**
+   * Update portfolio images for craftsmen
+   */
+  static async updatePortfolioImages(
+    userId: string,
+    action: 'add' | 'replace' | 'remove',
+    existingImages: string[] = [],
+    uploadedFiles?: any[],
+    userIP?: string
+  ): Promise<IUserPublic> {
+    const user = await User.findById(userId);
+    if (!user) throw new UserServiceError('User not found', 404);
+
+    if (user.isBanned) throw new UserServiceError('Account is banned', 403);
+
+    if (user.role !== 'craftsman')
+      throw new UserServiceError(
+        'Only craftsmen can manage portfolio images',
+        403
+      );
+
+    // Initialize craftsman info if missing
+    if (!user.craftsmanInfo) {
+      user.craftsmanInfo = {
+        service: undefined,
+        bio: '',
+        portfolioImageUrls: [],
+        verificationStatus: 'none',
+        verificationDocs: [],
+      };
+    }
+
+    let newImageUrls: string[] = [];
+
+    // Upload new images to Cloudinary if provided
+    if (uploadedFiles && uploadedFiles.length > 0) {
+      const cloudinary = (await import('../utils/cloudinary.js')).default;
+      const streamifier = await import('streamifier');
+
+      const uploadPromises = uploadedFiles.map(
+        (file) =>
+          new Promise<string>((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+              {
+                folder: 'portfolio-images',
+                resource_type: 'image',
+                format: 'webp',
+                transformation: [
+                  { width: 800, height: 600, crop: 'fill' },
+                  { quality: 'auto:good' },
+                ],
+              },
+              (error, result) => {
+                if (error || !result) {
+                  return reject(
+                    error || new Error('No result from Cloudinary')
+                  );
+                }
+                resolve(result.secure_url);
+              }
+            );
+            streamifier.default.createReadStream(file.buffer).pipe(stream);
+          })
+      );
+
+      try {
+        newImageUrls = await Promise.all(uploadPromises);
+      } catch (error) {
+        throw new UserServiceError(
+          'Failed to upload images to Cloudinary',
+          500
+        );
+      }
+    }
+
+    // Update portfolio images based on action
+    switch (action) {
+      case 'add':
+        // Add new images to existing ones (max 10 images)
+        const combinedImages = [
+          ...user.craftsmanInfo.portfolioImageUrls,
+          ...newImageUrls,
+        ];
+        if (combinedImages.length > 10) {
+          throw new UserServiceError(
+            'Maximum 10 portfolio images allowed',
+            400
+          );
+        }
+        user.craftsmanInfo.portfolioImageUrls = combinedImages;
+        break;
+
+      case 'replace':
+        // Replace all images with new ones (if provided) or with existing images
+        user.craftsmanInfo.portfolioImageUrls =
+          newImageUrls.length > 0 ? newImageUrls : existingImages;
+        break;
+
+      case 'remove':
+        // Keep only the existing images (remove others)
+        user.craftsmanInfo.portfolioImageUrls = existingImages;
+        break;
+
+      default:
+        throw new UserServiceError(
+          'Invalid action. Use: add, replace, or remove',
+          400
+        );
+    }
+
+    // Update user logs
+    if (userIP) user.userLogs.lastIP = userIP;
+
+    await user.save();
+
+    // Log the portfolio update
+    await ActionLogService.logAction({
+      userId,
+      action: 'portfolio_updated',
+      category: 'content',
+      details: {
+        action,
+        imageCount: user.craftsmanInfo.portfolioImageUrls.length,
+      },
+      ipAddress: userIP,
+      success: true,
+    });
+
+    loggerHelpers.logUserAction('portfolio_updated', userId, {
+      action,
+      imageCount: user.craftsmanInfo.portfolioImageUrls.length,
+    });
+
+    return await this.sanitizeUserData(user);
+  }
+
+  /**
+   * Delete a specific portfolio image
+   */
+  static async deletePortfolioImage(
+    userId: string,
+    imageUrl: string,
+    userIP?: string
+  ): Promise<IUserPublic> {
+    const user = await User.findById(userId);
+    if (!user) throw new UserServiceError('User not found', 404);
+
+    if (user.isBanned) throw new UserServiceError('Account is banned', 403);
+
+    if (user.role !== 'craftsman')
+      throw new UserServiceError(
+        'Only craftsmen can manage portfolio images',
+        403
+      );
+
+    if (!user.craftsmanInfo || !user.craftsmanInfo.portfolioImageUrls) {
+      throw new UserServiceError('No portfolio images found', 404);
+    }
+
+    // Find and remove the specific image
+    const initialLength = user.craftsmanInfo.portfolioImageUrls.length;
+    user.craftsmanInfo.portfolioImageUrls =
+      user.craftsmanInfo.portfolioImageUrls.filter((url) => url !== imageUrl);
+
+    if (user.craftsmanInfo.portfolioImageUrls.length === initialLength) {
+      throw new UserServiceError('Portfolio image not found', 404);
+    }
+
+    // Update user logs
+    if (userIP) user.userLogs.lastIP = userIP;
+
+    await user.save();
+
+    // Log the portfolio image deletion
+    await ActionLogService.logAction({
+      userId,
+      action: 'portfolio_image_deleted',
+      category: 'content',
+      details: { deletedImage: imageUrl },
+      ipAddress: userIP,
+      success: true,
+    });
+
+    loggerHelpers.logUserAction('portfolio_image_deleted', userId, {
+      deletedImage: imageUrl,
+    });
+
+    return await this.sanitizeUserData(user);
+  }
+
   static async getRecommendedCraftsmen(
     jobId: string
   ): Promise<ICraftsmanRecommendation[]> {
@@ -311,16 +542,16 @@ export class UserService {
       .lean();
     if (!job) throw new Error('Job not found');
 
-    // Extract the English service name for skills matching
-    const serviceName = (job.service as any)?.name?.en;
-    if (!serviceName) throw new Error('Service name not found');
+    // Extract the service ID from the job
+    const serviceId = (job.service as any)?._id || job.service;
+    if (!serviceId) throw new Error('Service not found for this job');
 
-    // Find craftsmen with matching skills/service
+    // Find craftsmen with matching service
     const craftsmen = await (
       await import('../models/user.model.js')
     ).User.find({
       role: 'craftsman',
-      'craftsmanInfo.skills': serviceName,
+      'craftsmanInfo.service': serviceId.toString(),
       'craftsmanInfo.verificationStatus': 'verified',
       isBanned: false,
     })

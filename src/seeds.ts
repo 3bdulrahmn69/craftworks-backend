@@ -265,7 +265,6 @@ async function seed() {
           coordinates: [31.2357, 30.0444],
         },
         craftsmanInfo: {
-          skills: ['Plumbing', 'HVAC'],
           service: plumbingService!,
           bio: 'Experienced plumber with 10+ years in residential and commercial plumbing. Specialized in emergency repairs and installations.',
           portfolioImageUrls: [
@@ -301,7 +300,6 @@ async function seed() {
           coordinates: [31.2357, 30.0444],
         },
         craftsmanInfo: {
-          skills: ['Electrical'],
           service: electricalService!,
           bio: 'Licensed electrician specializing in home wiring, electrical repairs, and smart home installations.',
           portfolioImageUrls: [
@@ -336,7 +334,6 @@ async function seed() {
           coordinates: [31.2083, 29.9792],
         },
         craftsmanInfo: {
-          skills: ['Painting'],
           service: paintingService!,
           bio: 'Professional painter with expertise in interior and exterior painting, wallpaper installation.',
           portfolioImageUrls: [
@@ -372,7 +369,6 @@ async function seed() {
           coordinates: [29.9187, 31.2001],
         },
         craftsmanInfo: {
-          skills: ['Carpentry', 'Masonry'],
           service: carpentryService!,
           bio: 'Master carpenter and mason with 15+ years experience. Custom furniture, kitchen cabinets, and stone work.',
           portfolioImageUrls: [
@@ -407,7 +403,6 @@ async function seed() {
           coordinates: [31.2357, 30.0444],
         },
         craftsmanInfo: {
-          skills: ['Cleaning', 'Landscaping'],
           service: cleaningService!,
           bio: 'Professional cleaning and landscaping services with eco-friendly products and techniques.',
           portfolioImageUrls: [

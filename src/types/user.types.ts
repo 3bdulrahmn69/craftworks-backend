@@ -15,7 +15,6 @@ export interface IVerificationDoc {
 }
 
 export interface ICraftsmanInfo {
-  skills: string[];
   service?: string;
   bio?: string;
   portfolioImageUrls: string[];
@@ -70,6 +69,8 @@ export interface IUserPublic {
   ratingCount?: number; // Only for craftsmen
   wallet?: IWallet; // Only for craftsmen
   service?: string | IService; // Only for craftsmen - service ID or full service object
+  bio?: string; // Only for craftsmen
+  portfolioImageUrls?: string[]; // Only for craftsmen
   verificationStatus?: 'pending' | 'verified' | 'rejected' | 'none'; // Only for craftsmen
   createdAt?: Date;
 }

@@ -47,6 +47,8 @@ export class UserTransformHelper {
     // Add verification status for craftsmen
     if (user.role === 'craftsman' && user.craftsmanInfo) {
       publicUser.verificationStatus = user.craftsmanInfo.verificationStatus;
+      publicUser.bio = user.craftsmanInfo.bio;
+      publicUser.portfolioImageUrls = user.craftsmanInfo.portfolioImageUrls;
     }
 
     return publicUser;
