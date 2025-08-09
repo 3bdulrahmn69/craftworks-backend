@@ -28,6 +28,9 @@ pids/
 *.seed
 *.pid.lock
 
+# Seed files
+seed*
+
 # Coverage directory used by tools like istanbul
 coverage/
 *.lcov

@@ -16,7 +16,7 @@
     "prepare": "npm run build",
     "check": "npm run typecheck && npm run lint",
     "init-logs": "node --import ./register-ts-node.mjs scripts/init-logging.ts",
-    "seed": "node --import ./register-ts-node.mjs src/seeds.ts"
+    "seed": "node --import ./register-ts-node.mjs seeds.ts"
   },
   "author": "",
   "license": "MIT",
