@@ -357,7 +357,6 @@ export class UserController {
                             width: 1200,
                             height: 1200,
                             crop: 'limit',
-                            gravity: 'auto',
                           },
                           { quality: 'auto' },
                         ]

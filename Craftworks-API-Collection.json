@@ -2088,9 +2088,9 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/admin/verifications/pending",
+              "raw": "{{base_url}}/admin/verifications",
               "host": ["{{base_url}}"],
-              "path": ["admin", "verifications", "pending"]
+              "path": ["admin", "verifications"]
             }
           },
           "response": []
