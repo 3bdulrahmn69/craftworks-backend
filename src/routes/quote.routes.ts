@@ -13,11 +13,15 @@ router.use(authenticateJWT);
 // POST /api/jobs/:jobId/quotes (Craftsman only)
 router.post('/', authorizeRoles('craftsman'), QuoteController.submitQuote);
 
-// GET /api/jobs/:jobId/quotes (Client only)
-router.get('/', authorizeRoles('client'), QuoteController.getQuotesForJob);
+// GET /api/jobs/:jobId/quotes
+router.get(
+  '/',
+  authorizeRoles('client', 'admin'),
+  QuoteController.getQuotesForJob
+);
 
-// POST /api/jobs/:jobId/quotes/:quoteId/:status (Client only)
-router.post(
+// PUT /api/jobs/:jobId/quotes/:quoteId/:status (Client only)
+router.put(
   '/:quoteId/:status',
   authorizeRoles('client'),
   QuoteController.updateQuoteStatus

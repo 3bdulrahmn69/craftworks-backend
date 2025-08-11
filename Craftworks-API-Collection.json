@@ -1268,7 +1268,7 @@
         {
           "name": "Accept Quote (Client Only)",
           "request": {
-            "method": "POST",
+            "method": "PUT",
             "header": [
               {
                 "key": "Authorization",
@@ -1296,7 +1296,7 @@
         {
           "name": "Reject Quote (Client Only)",
           "request": {
-            "method": "POST",
+            "method": "PUT",
             "header": [
               {
                 "key": "Authorization",
