@@ -499,12 +499,12 @@ export class UserController {
         if (statusInput) {
           const validStatuses: JobStatus[] = [
             'Posted',
-            'Quoted',
             'Hired',
             'On The Way',
             'Completed',
             'Disputed',
             'Cancelled',
+            'Rescheduled',
           ];
 
           // Case-insensitive matching

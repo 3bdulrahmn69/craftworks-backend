@@ -735,6 +735,7 @@ Content-Type: application/json
 - Job must be completed
 - User must be either the client or craftsman of the job
 - User can only review once per job
+- **Reviews are optional** - both client and craftsman can choose to review or not
 
 **Request Example:**
 
@@ -1577,11 +1578,39 @@ Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
-**Request Example:**
+**Enhanced Job Status Management Rules:**
+
+**Available Job Statuses:**
+
+- `Posted` - Initial status when job is created
+- `Hired` - When a craftsman is assigned to the job
+- `On The Way` - Craftsman is en route to the job location
+- `Completed` - Job has been finished
+- `Disputed` - Job has issues that need admin resolution
+- `Cancelled` - Job has been cancelled
+- `Rescheduled` - Job date has been changed by craftsman
+
+**Status Transition Rules:**
+
+- **"On The Way"**: Only the assigned craftsman can change status to this
+- **"Completed"**: Only the client can change status to this
+- **"Cancelled"**: Both client and craftsman can cancel, but NOT if status is "Completed" or "On The Way"
+- **"Rescheduled"**: Only craftsman can change to this, and only from "On The Way" status
+
+**Request Example (Regular Status Update):**
 
 ```json
 {
-  "status": "Completed"
+  "status": "On The Way"
+}
+```
+
+**Request Example (Reschedule with New Date):**
+
+```json
+{
+  "status": "Rescheduled",
+  "newJobDate": "2025-08-15T14:00:00Z"
 }
 ```
 
@@ -1591,10 +1620,68 @@ Content-Type: application/json
 {
   "success": true,
   "data": {
-    "_id": "...",
-    "status": "Completed"
+    "_id": "507f1f77bcf86cd799439011",
+    "title": "Fix kitchen sink",
+    "status": "On The Way",
+    "jobDate": "2025-08-12T10:00:00Z",
+    "client": {
+      "_id": "507f1f77bcf86cd799439012",
+      "fullName": "John Client"
+    },
+    "craftsman": {
+      "_id": "507f1f77bcf86cd799439013",
+      "fullName": "Ahmed Craftsman"
+    }
   },
-  "message": "Job status updated."
+  "message": "Job status updated successfully"
+}
+```
+
+### Update Job Date (Client Only)
+
+`PATCH /api/jobs/:jobId/date`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Rules:**
+
+- Only the client can change the job date
+- Cannot change date if craftsman status is "On The Way"
+- Cannot change date for completed, cancelled, or disputed jobs
+
+**Request Example:**
+
+```json
+{
+  "jobDate": "2025-08-15T14:00:00Z"
+}
+```
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "507f1f77bcf86cd799439011",
+    "title": "Fix kitchen sink",
+    "jobDate": "2025-08-15T14:00:00Z",
+    "status": "Hired",
+    "client": {
+      "_id": "507f1f77bcf86cd799439012",
+      "fullName": "John Client"
+    },
+    "craftsman": {
+      "_id": "507f1f77bcf86cd799439013",
+      "fullName": "Ahmed Craftsman"
+    }
+  },
+  "message": "Job date updated successfully"
 }
 ```
 

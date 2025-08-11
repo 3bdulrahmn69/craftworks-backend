@@ -55,6 +55,13 @@ router.delete('/:jobId', authorizeRoles('client'), JobController.deleteJob);
 // PATCH /api/jobs/:jobId/status (All authenticated users)
 router.patch('/:jobId/status', JobController.updateJobStatus);
 
+// PATCH /api/jobs/:jobId/date (Client only)
+router.patch(
+  '/:jobId/date',
+  authorizeRoles('client'),
+  JobController.updateJobDate
+);
+
 // Mount quote routes
 router.use('/:jobId/quotes', quoteRoutes);
 // Mount invitation routes

@@ -3,12 +3,12 @@ import { IAddress } from './user.types.js';
 
 export type JobStatus =
   | 'Posted'
-  | 'Quoted'
   | 'Hired'
   | 'On The Way'
   | 'Completed'
   | 'Disputed'
-  | 'Cancelled';
+  | 'Cancelled'
+  | 'Rescheduled';
 
 export interface IJob extends Document {
   client: Types.ObjectId;

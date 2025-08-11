@@ -34,7 +34,7 @@ export class DisputeService {
     }
 
     // Check if job is hired (craftsman assigned)
-    if (!job.craftsman || job.status === 'Posted' || job.status === 'Quoted') {
+    if (!job.craftsman || job.status === 'Posted') {
       throw new DisputeServiceError('Can only dispute hired jobs', 400);
     }
 

@@ -37,18 +37,18 @@ const jobSchema = new Schema<IJob>(
       type: String,
       enum: [
         'Posted',
-        'Quoted',
         'Hired',
         'On The Way',
         'Completed',
         'Disputed',
         'Cancelled',
+        'Rescheduled',
       ],
       default: 'Posted',
     },
     paymentType: {
       type: String,
-      enum: ['cash', 'visa'], // Updated payment methods
+      enum: ['cash', 'visa'],
       required: true,
     },
     jobPrice: { type: Number, default: 0 }, // Set by craftsman via quotes

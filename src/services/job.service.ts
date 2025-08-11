@@ -181,15 +181,83 @@ export class JobService {
     return job;
   }
 
-  static async updateJobStatus(jobId: string, status: IJob['status']) {
-    const job = await Job.findByIdAndUpdate(
-      jobId,
-      {
-        status,
-        ...(status === 'Completed' && { completedAt: new Date() }),
-      },
-      { new: true }
-    ).populate('craftsman', '_id role wallet');
+  static async updateJobStatus(
+    jobId: string,
+    status: IJob['status'],
+    userId: string,
+    userRole: string,
+    newJobDate?: Date
+  ) {
+    // Get the job first to check current status and permissions
+    const existingJob = await Job.findById(jobId)
+      .populate('client', '_id role')
+      .populate('craftsman', '_id role wallet');
+
+    if (!existingJob) {
+      throw new Error('Job not found');
+    }
+
+    // Validate status transitions and permissions
+    await this.validateStatusTransition(existingJob, status, userId, userRole);
+
+    // Prepare update data
+    const updateData: any = { status };
+
+    // Handle specific status transitions
+    switch (status) {
+      case 'On The Way':
+        // Only craftsman can change to "On The Way"
+        if (
+          userRole !== 'craftsman' ||
+          existingJob.craftsman?._id.toString() !== userId
+        ) {
+          throw new Error(
+            'Only the assigned craftsman can change status to "On The Way"'
+          );
+        }
+        break;
+
+      case 'Completed':
+        // Only client can change to "Completed"
+        if (
+          userRole !== 'client' ||
+          existingJob.client._id.toString() !== userId
+        ) {
+          throw new Error('Only the client can change status to "Completed"');
+        }
+        updateData.completedAt = new Date();
+        break;
+
+      case 'Cancelled':
+        // Both can cancel, but not if completed or on the way
+        if (['Completed', 'On The Way'].includes(existingJob.status)) {
+          throw new Error('Cannot cancel job that is completed or on the way');
+        }
+        break;
+
+      case 'Rescheduled':
+        // Only craftsman can reschedule and only if "On The Way"
+        if (
+          userRole !== 'craftsman' ||
+          existingJob.craftsman?._id.toString() !== userId
+        ) {
+          throw new Error('Only the assigned craftsman can reschedule the job');
+        }
+        if (existingJob.status !== 'On The Way') {
+          throw new Error(
+            'Job can only be rescheduled when status is "On The Way"'
+          );
+        }
+        if (!newJobDate) {
+          throw new Error('New job date is required for rescheduling');
+        }
+        updateData.jobDate = newJobDate;
+        break;
+    }
+
+    const job = await Job.findByIdAndUpdate(jobId, updateData, { new: true })
+      .populate('craftsman', '_id role wallet')
+      .populate('client', '_id role');
 
     if (job) {
       // Handle payment when job is completed and payment type is visa
@@ -209,30 +277,132 @@ export class JobService {
         } catch (paymentError) {
           console.error('Failed to process payment:', paymentError);
           // Continue with status update even if payment fails
-          // This ensures job completion is recorded
         }
       }
 
-      // Notify client
+      // Send notifications
+      await this.sendStatusNotifications(job, status, newJobDate);
+    }
+
+    return job;
+  }
+
+  static async validateStatusTransition(
+    job: any,
+    newStatus: IJob['status'],
+    userId: string,
+    userRole: string
+  ) {
+    const currentStatus = job.status;
+    const isClient =
+      userRole === 'client' && job.client._id.toString() === userId;
+    const isCraftsman =
+      userRole === 'craftsman' && job.craftsman?._id.toString() === userId;
+    const isJobParticipant = isClient || isCraftsman;
+
+    if (!isJobParticipant) {
+      throw new Error('You are not authorized to update this job');
+    }
+
+    // Validate specific transitions
+    const validTransitions: { [key: string]: string[] } = {
+      Posted: ['Hired', 'Cancelled'],
+      Hired: ['On The Way', 'Cancelled', 'Disputed'],
+      'On The Way': ['Completed', 'Rescheduled', 'Disputed'],
+      Rescheduled: ['On The Way', 'Cancelled', 'Disputed'],
+      Completed: ['Disputed'], // Only disputes allowed after completion
+      Disputed: [], // No transitions from disputed (handled by admin)
+      Cancelled: [], // No transitions from cancelled
+    };
+
+    if (!validTransitions[currentStatus]?.includes(newStatus)) {
+      throw new Error(
+        `Invalid status transition from ${currentStatus} to ${newStatus}`
+      );
+    }
+  }
+
+  static async sendStatusNotifications(
+    job: any,
+    status: IJob['status'],
+    newJobDate?: Date
+  ) {
+    let message = `The status of job '${job.title}' has changed to ${status}.`;
+
+    if (status === 'Rescheduled' && newJobDate) {
+      message += ` New date: ${newJobDate.toLocaleDateString()}.`;
+    }
+
+    // Notify client
+    await NotificationService.sendNotification({
+      user: job.client._id,
+      type: 'status',
+      title: 'Job Status Updated',
+      message,
+      data: { jobId: job._id, status, newJobDate },
+    });
+
+    // Notify craftsman if assigned
+    if (job.craftsman) {
       await NotificationService.sendNotification({
-        user: job.client,
+        user: job.craftsman._id,
         type: 'status',
         title: 'Job Status Updated',
-        message: `The status of job '${job.title}' has changed to ${status}.`,
-        data: { jobId, status },
+        message,
+        data: { jobId: job._id, status, newJobDate },
       });
-
-      // Notify craftsman if assigned
-      if (job.craftsman)
-        await NotificationService.sendNotification({
-          user: job.craftsman._id,
-          type: 'status',
-          title: 'Job Status Updated',
-          message: `The status of job '${job.title}' has changed to ${status}.`,
-          data: { jobId, status },
-        });
     }
-    return job;
+  }
+
+  static async updateJobDate(
+    jobId: string,
+    newJobDate: Date,
+    userId: string,
+    userRole: string
+  ) {
+    const job = await Job.findById(jobId).populate('client craftsman');
+
+    if (!job) {
+      throw new Error('Job not found');
+    }
+
+    // Only client can change job date and only until craftsman is "On The Way"
+    if (userRole !== 'client' || job.client._id.toString() !== userId) {
+      throw new Error('Only the client can change the job date');
+    }
+
+    if (job.status === 'On The Way') {
+      throw new Error('Cannot change job date when craftsman is on the way');
+    }
+
+    if (['Completed', 'Cancelled', 'Disputed'].includes(job.status)) {
+      throw new Error(
+        'Cannot change job date for completed, cancelled, or disputed jobs'
+      );
+    }
+
+    const updatedJob = await Job.findByIdAndUpdate(
+      jobId,
+      { jobDate: newJobDate },
+      { new: true }
+    ).populate('client craftsman service');
+
+    if (updatedJob) {
+      // Notify craftsman if assigned
+      if (updatedJob.craftsman) {
+        await NotificationService.sendNotification({
+          user: updatedJob.craftsman._id,
+          type: 'job_update',
+          title: 'Job Date Changed',
+          message: `The date for job '${
+            updatedJob.title
+          }' has been changed to ${newJobDate.toLocaleDateString()}.`,
+          data: { jobId, newJobDate },
+        });
+      }
+    }
+
+    return updatedJob;
   }
 
   static async getJobsByClient(

@@ -344,13 +344,51 @@ export class JobController {
   static async updateJobStatus(req: IAuthenticatedRequest, res: Response) {
     try {
       const { jobId } = req.params;
-      const { status } = req.body;
-      const job = await JobService.updateJobStatus(jobId, status);
+      const { status, newJobDate } = req.body;
+      const userId = req.user!.userId;
+      const userRole = req.user!.role;
+
+      const job = await JobService.updateJobStatus(
+        jobId,
+        status,
+        userId,
+        userRole,
+        newJobDate ? new Date(newJobDate) : undefined
+      );
+
       if (!job) return ApiResponse.notFound(res, 'Job not found');
       return ApiResponse.success(res, job, 'Job status updated successfully');
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Failed to update job status';
+      return ApiResponse.badRequest(res, message);
+    }
+  }
+
+  // PATCH /api/jobs/:jobId/date
+  static async updateJobDate(req: IAuthenticatedRequest, res: Response) {
+    try {
+      const { jobId } = req.params;
+      const { jobDate } = req.body;
+      const userId = req.user!.userId;
+      const userRole = req.user!.role;
+
+      if (!jobDate) {
+        return ApiResponse.badRequest(res, 'Job date is required');
+      }
+
+      const job = await JobService.updateJobDate(
+        jobId,
+        new Date(jobDate),
+        userId,
+        userRole
+      );
+
+      if (!job) return ApiResponse.notFound(res, 'Job not found');
+      return ApiResponse.success(res, job, 'Job date updated successfully');
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to update job date';
       return ApiResponse.badRequest(res, message);
     }
   }

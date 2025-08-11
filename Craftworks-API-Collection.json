@@ -1,8 +1,8 @@
 {
   "info": {
     "name": "Craftworks Backend API",
-    "description": "Complete API collection for Craftworks backend with all endpoints including authentication, users, jobs (with enhanced search and filtering), quotes, invitations, notifications, services, real-time messaging, reviews & disputes, and admin functions. v1.8.0 Updates: Added comprehensive Reviews & Disputes system - clients and craftsmen can review each other after job completion (double-blind system), create disputes with evidence uploads for job-related issues, and admins can resolve disputes with proper workflow management. Previous v1.7.0: Enhanced verification system with file upload support - craftsmen can now upload verification documents directly with custom names and types, automatic Cloudinary integration, and user profiles now include verification status. Previous v1.6.0: Added comprehensive real-time messaging system with Socket.IO integration - clients and craftsmen can now communicate in real-time with text and image messages, typing indicators, read receipts, and admin moderation capabilities. Previous v1.5.1: Enhanced quote management - updated quote acceptance route from '/jobs/:jobId/quotes/:quoteId/accept' to '/jobs/:jobId/quotes/:quoteId/:status' where status can be 'accept' or 'reject'. Added ability to reject quotes with proper notifications. Previous v1.5.0: Fixed invitation routes and service population - invitation endpoints now working correctly, recommendations endpoint returns full service objects instead of IDs, fixed seed script deprecation warnings. Enhanced service population in craftsman recommendations with manual population for better data integrity. Previous v1.4.0: Standardized API response format - ALL endpoints now consistently include 'success' field (true/false) for uniform error handling and status checking across the entire application. Previous v1.3.3: Robust coordinate parsing for form-data - handles all formats including '31.2,30.1', '[31.2,30.1]', '[ \"31.2,30.1\" ]' with enhanced error handling and validation.",
-    "version": "1.8.0",
+    "description": "Complete API collection for Craftworks backend with all endpoints including authentication, users, jobs (with enhanced search and filtering), quotes, invitations, notifications, services, real-time messaging, reviews & disputes, and admin functions. v1.9.0 Updates: Enhanced job management with improved status control - removed 'Quoted' status, added 'Rescheduled' status, implemented role-based status transitions (craftsman can change to 'On The Way', client can change to 'Completed'), enhanced cancellation rules (cannot cancel if completed or on the way), added job date update functionality for clients (until craftsman is on the way), reviews are now optional for both parties. Previous v1.8.0: Added comprehensive Reviews & Disputes system - clients and craftsmen can review each other after job completion (double-blind system), create disputes with evidence uploads for job-related issues, and admins can resolve disputes with proper workflow management. Previous v1.7.0: Enhanced verification system with file upload support - craftsmen can now upload verification documents directly with custom names and types, automatic Cloudinary integration, and user profiles now include verification status. Previous v1.6.0: Added comprehensive real-time messaging system with Socket.IO integration - clients and craftsmen can now communicate in real-time with text and image messages, typing indicators, read receipts, and admin moderation capabilities. Previous v1.5.1: Enhanced quote management - updated quote acceptance route from '/jobs/:jobId/quotes/:quoteId/accept' to '/jobs/:jobId/quotes/:quoteId/:status' where status can be 'accept' or 'reject'. Added ability to reject quotes with proper notifications. Previous v1.5.0: Fixed invitation routes and service population - invitation endpoints now working correctly, recommendations endpoint returns full service objects instead of IDs, fixed seed script deprecation warnings. Enhanced service population in craftsman recommendations with manual population for better data integrity. Previous v1.4.0: Standardized API response format - ALL endpoints now consistently include 'success' field (true/false) for uniform error handling and status checking across the entire application. Previous v1.3.3: Robust coordinate parsing for form-data - handles all formats including '31.2,30.1', '[31.2,30.1]', '[ \"31.2,30.1\" ]' with enhanced error handling and validation.",
+    "version": "1.9.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -1173,7 +1173,7 @@
           "response": []
         },
         {
-          "name": "Update Job Status",
+          "name": "Update Job Status (Enhanced)",
           "request": {
             "method": "PATCH",
             "header": [
@@ -1188,7 +1188,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"Completed\"\n}"
+              "raw": "{\n  \"status\": \"On The Way\",\n  \"note\": \"Regular status update - craftsman changing to On The Way\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/jobs/:jobId/status",
@@ -1197,12 +1197,140 @@
               "variable": [
                 {
                   "key": "jobId",
-                  "value": "JOB_ID_HERE"
+                  "value": "507f1f77bcf86cd799439011"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Successful Status Update",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"On The Way\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/jobs/507f1f77bcf86cd799439011/status",
+                  "host": ["{{base_url}}"],
+                  "path": ["jobs", "507f1f77bcf86cd799439011", "status"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"_id\": \"507f1f77bcf86cd799439011\",\n    \"title\": \"Fix kitchen sink\",\n    \"status\": \"On The Way\",\n    \"jobDate\": \"2025-08-12T10:00:00Z\",\n    \"client\": {\n      \"_id\": \"507f1f77bcf86cd799439012\",\n      \"fullName\": \"John Client\"\n    },\n    \"craftsman\": {\n      \"_id\": \"507f1f77bcf86cd799439013\",\n      \"fullName\": \"Ahmed Craftsman\"\n    }\n  },\n  \"message\": \"Job status updated successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reschedule Job (Craftsman Only)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Rescheduled\",\n  \"newJobDate\": \"2025-08-15T14:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/jobs/:jobId/status",
+              "host": ["{{base_url}}"],
+              "path": ["jobs", ":jobId", "status"],
+              "variable": [
+                {
+                  "key": "jobId",
+                  "value": "507f1f77bcf86cd799439011"
                 }
               ]
             }
           },
           "response": []
+        },
+        {
+          "name": "Update Job Date (Client Only)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobDate\": \"2025-08-15T14:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/jobs/:jobId/date",
+              "host": ["{{base_url}}"],
+              "path": ["jobs", ":jobId", "date"],
+              "variable": [
+                {
+                  "key": "jobId",
+                  "value": "507f1f77bcf86cd799439011"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Successful Date Update",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"jobDate\": \"2025-08-15T14:00:00Z\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/jobs/507f1f77bcf86cd799439011/date",
+                  "host": ["{{base_url}}"],
+                  "path": ["jobs", "507f1f77bcf86cd799439011", "date"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"_id\": \"507f1f77bcf86cd799439011\",\n    \"title\": \"Fix kitchen sink\",\n    \"jobDate\": \"2025-08-15T14:00:00Z\",\n    \"status\": \"Hired\",\n    \"client\": {\n      \"_id\": \"507f1f77bcf86cd799439012\",\n      \"fullName\": \"John Client\"\n    },\n    \"craftsman\": {\n      \"_id\": \"507f1f77bcf86cd799439013\",\n      \"fullName\": \"Ahmed Craftsman\"\n    }\n  },\n  \"message\": \"Job date updated successfully\"\n}"
+            }
+          ]
         }
       ]
     },
