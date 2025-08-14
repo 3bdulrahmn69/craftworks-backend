@@ -70,7 +70,7 @@ export class AuthService {
           ? {
               bio: '',
               portfolioImageUrls: [],
-              verificationStatus: 'pending',
+              verificationStatus: 'none',
               verificationDocs: [],
             }
           : undefined,

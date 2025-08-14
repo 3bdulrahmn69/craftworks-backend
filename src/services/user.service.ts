@@ -94,7 +94,7 @@ export class UserService {
           service: updateData.serviceId,
           bio: '',
           portfolioImageUrls: [],
-          verificationStatus: 'pending',
+          verificationStatus: 'none',
           verificationDocs: [],
         };
       else user.craftsmanInfo.service = updateData.serviceId;
@@ -244,7 +244,7 @@ export class UserService {
         service: serviceId,
         bio: '',
         portfolioImageUrls: [],
-        verificationStatus: 'pending',
+        verificationStatus: 'none',
         verificationDocs: [],
       };
     else user.craftsmanInfo.service = serviceId;
