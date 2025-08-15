@@ -1,9 +1,76 @@
 import { User } from '../models/user.model.js';
-import { PaginationHelper } from '../utils/paginationHelper.js';
+import { Service } from '../models/service.model.js';
 
 export class AdminService {
   static async getAllUsers(page: number, limit: number) {
-    return PaginationHelper.paginate(User, {}, page, limit, { createdAt: -1 });
+    console.log(
+      '🔍 AdminService.getAllUsers called with page:',
+      page,
+      'limit:',
+      limit
+    );
+
+    // Use custom pagination logic to handle manual population
+    const skip = (page - 1) * limit;
+    const totalItems = await User.countDocuments({});
+    const totalPages = Math.ceil(totalItems / limit);
+
+    console.log('📊 Found', totalItems, 'total users');
+
+    const users = await User.find({})
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    console.log('👥 Retrieved', users.length, 'users from database');
+
+    // Manually populate service for craftsmen
+    let populatedCount = 0;
+    for (const user of users) {
+      if (user.role === 'craftsman' && user.craftsmanInfo?.service) {
+        try {
+          console.log(
+            `🔍 Populating service ${user.craftsmanInfo.service} for user ${user.fullName}`
+          );
+          const service = await Service.findById(
+            user.craftsmanInfo.service
+          ).lean();
+          if (service) {
+            // Type assertion to allow assigning service object
+            (user.craftsmanInfo as any).service = service;
+            populatedCount++;
+            console.log(
+              `✅ Service populated: ${service.name?.en || 'Unknown'}`
+            );
+          } else {
+            console.log(
+              `❌ Service not found with ID: ${user.craftsmanInfo.service}`
+            );
+          }
+        } catch (error) {
+          // Keep original service ID if population fails
+          console.warn(
+            `Failed to populate service for user ${user._id}:`,
+            error
+          );
+        }
+      }
+    }
+
+    console.log(`🎯 Successfully populated ${populatedCount} services`);
+
+    return {
+      data: users,
+      pagination: {
+        page,
+        limit,
+        totalPages,
+        totalItems,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    };
   }
 
   static async createAdmin({
