@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import { Review } from '../models/review.model.js';
 import { Job } from '../models/job.model.js';
 import { User } from '../models/user.model.js';
+import { ValidationHelper } from '../utils/validation.js';
 import { IReviewCreate, IReviewPublic } from '../types/review.types.js';
 import { ActionLogService } from './actionLog.service.js';
 import { NotificationService } from './notification.service.js';
@@ -128,7 +129,9 @@ export class ReviewService {
       },
     });
 
-    return this.transformReviewToPublic(review, job.client, job.craftsman);
+    const reviewerUser = isClient ? job.client : job.craftsman!;
+    const revieweeUser = isClient ? job.craftsman! : job.client;
+    return this.transformReviewToPublic(review, reviewerUser, revieweeUser);
   }
 
   /**
@@ -147,13 +150,23 @@ export class ReviewService {
       totalItems: number;
     };
   }> {
+    // Validate userId format
+    if (!ValidationHelper.isValidObjectId(userId)) {
+      throw new ReviewServiceError('Invalid user ID', 400);
+    }
+
+    // Ensure user exists
+    const userExists = await User.exists({ _id: userId });
+    if (!userExists) {
+      throw new ReviewServiceError('User not found', 404);
+    }
+
     const skip = (page - 1) * limit;
 
-    // Only get visible reviews
+    // Get all reviews for the user (including not yet visible)
     const [reviews, totalItems] = await Promise.all([
       Review.find({
         reviewee: userId,
-        isVisible: true,
       })
         .populate('job', 'title')
         .populate('reviewer', 'fullName profilePicture role')
@@ -163,7 +176,6 @@ export class ReviewService {
         .limit(limit),
       Review.countDocuments({
         reviewee: userId,
-        isVisible: true,
       }),
     ]);
 
