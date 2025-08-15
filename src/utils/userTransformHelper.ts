@@ -28,21 +28,25 @@ export class UserTransformHelper {
       publicUser.ratingCount = user.ratingCount;
     }
 
-    if (user.role === 'craftsman' && user.craftsmanInfo?.service)
+    if (user.role === 'craftsman' && user.craftsmanInfo?.service) {
       // Populate service data if craftsman has a service
       try {
         const service = await Service.findById(user.craftsmanInfo.service);
-        if (service)
+        if (service) {
           publicUser.service = {
             _id: service._id.toString(),
             name: service.name,
             image: service.image,
             description: service.description,
           } as any;
-        else publicUser.service = user.craftsmanInfo.service; // Fallback to ID if service not found
+        } else {
+          publicUser.service = user.craftsmanInfo.service; // Fallback to ID if service not found
+        }
       } catch (error) {
+        console.warn(`Failed to populate service for user ${user._id}:`, error);
         publicUser.service = user.craftsmanInfo.service; // Fallback to ID on error
       }
+    }
 
     // Add verification status for craftsmen
     if (user.role === 'craftsman' && user.craftsmanInfo) {
