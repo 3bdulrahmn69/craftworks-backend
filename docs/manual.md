@@ -504,7 +504,7 @@ Authorization: Bearer <token>
 
 ### Update Current User Profile
 
-`PUT /api/users/me`
+`PATCH /api/users/me`
 
 **Headers:**
 
@@ -513,12 +513,32 @@ Authorization: Bearer <token>
 Content-Type: multipart/form-data or application/json
 ```
 
-**Request Example (JSON):**
+**Important Notes:**
+
+- Only **one field** can be updated per request
+- **Verified craftsmen cannot update their name** for security and verification integrity
+- Profile picture updates don't count as a field update (can be combined with one other field)
+
+**Request Example (Single Field - Name):**
 
 ```json
 {
-  "fullName": "Jane Smith",
-  "phone": "+201234567890",
+  "fullName": "Jane Smith"
+}
+```
+
+**Request Example (Single Field - Phone):**
+
+```json
+{
+  "phone": "+201234567890"
+}
+```
+
+**Request Example (Single Field - Address):**
+
+```json
+{
   "address": {
     "country": "Egypt",
     "state": "Cairo",
@@ -528,22 +548,23 @@ Content-Type: multipart/form-data or application/json
 }
 ```
 
-**Request Example (Craftsman with Service Update):**
+**Request Example (Craftsman Service Update):**
 
 ```json
 {
-  "fullName": "Ahmed Craftsman",
-  "serviceId": "507f1f77bcf86cd799439020",
-  "address": {
-    "country": "Egypt",
-    "state": "Cairo",
-    "city": "Cairo",
-    "street": "321 Workshop Street"
-  }
+  "serviceId": "507f1f77bcf86cd799439020"
 }
 ```
 
-**Request Example (File Upload for Profile Picture):**
+**Request Example (Craftsman Bio Update):**
+
+```json
+{
+  "bio": "Professional craftsman with 10+ years experience in plumbing and electrical work."
+}
+```
+
+**Request Example (Profile Picture + One Field):**
 
 ```
 Form Data:
@@ -551,19 +572,19 @@ Form Data:
 - fullName: "Jane Smith"
 ```
 
-**Supported Fields:**
+**Supported Fields (one at a time):**
 
-- `fullName`: User's full name
+- `fullName`: User's full name (⚠️ **Not allowed for verified craftsmen**)
 - `email`: Email address (must be unique)
 - `phone`: Phone number (must be unique)
 - `profilePicture`: Profile image file (when using multipart/form-data)
 - `address`: Address object with country, state, city, street
 - `serviceId`: Service ID (craftsmen only) - updates the craftsman's primary service
-- `craftsmanInfo`: Craftsman information object (craftsmen only)
+- `bio`: Biography text (craftsmen only, max 1000 characters)
 
 **Note:** For portfolio image management, use the dedicated portfolio endpoints described in the Portfolio Image Management section.
 
-**Response Example:**
+**Success Response Example:**
 
 ```json
 {
@@ -583,6 +604,29 @@ Form Data:
     }
   },
   "message": "Profile updated successfully"
+}
+```
+
+**Error Response Examples:**
+
+```json
+{
+  "success": false,
+  "message": "Only one field can be updated at a time"
+}
+```
+
+```json
+{
+  "success": false,
+  "message": "Verified craftsmen cannot update their name"
+}
+```
+
+```json
+{
+  "success": false,
+  "message": "At least one field must be provided for update"
 }
 ```
 

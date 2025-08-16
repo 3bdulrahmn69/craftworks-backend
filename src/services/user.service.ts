@@ -35,6 +35,7 @@ export class UserService {
     userId: string,
     updateData: Partial<IUser> & {
       serviceId?: string;
+      bio?: string;
       portfolioImageFiles?: Express.Multer.File[];
       portfolioAction?: 'add' | 'replace' | 'remove';
       existingPortfolioImages?: string[];
@@ -45,6 +46,18 @@ export class UserService {
     if (!user) throw new UserServiceError('User not found', 404);
 
     if (user.isBanned) throw new UserServiceError('Account is banned', 403);
+
+    // Check if verified user is trying to update their name
+    if (
+      updateData.fullName &&
+      user.role === 'craftsman' &&
+      user.craftsmanInfo?.verificationStatus === 'verified'
+    ) {
+      throw new UserServiceError(
+        'Verified craftsmen cannot update their name',
+        403
+      );
+    }
 
     // Validate email if being updated
     if (updateData.email && updateData.email !== user.email) {
@@ -65,19 +78,33 @@ export class UserService {
         throw new UserServiceError('Phone number already exists', 409);
     }
 
-    // Update allowed fields
+    // Update allowed fields - only update fields that are provided
     const allowedFields = [
       'fullName',
       'email',
       'phone',
       'profilePicture',
       'address',
-      'craftsmanInfo',
     ];
 
     for (const field of allowedFields)
       if (updateData[field as keyof IUser] !== undefined)
         (user as any)[field] = updateData[field as keyof IUser];
+
+    // Handle bio update for craftsmen
+    if (updateData.bio !== undefined && user.role === 'craftsman') {
+      if (!user.craftsmanInfo) {
+        user.craftsmanInfo = {
+          service: undefined,
+          bio: updateData.bio,
+          portfolioImageUrls: [],
+          verificationStatus: 'none',
+          verificationDocs: [],
+        };
+      } else {
+        user.craftsmanInfo.bio = updateData.bio;
+      }
+    }
 
     // Handle service update for craftsmen
     if (updateData.serviceId && user.role === 'craftsman') {

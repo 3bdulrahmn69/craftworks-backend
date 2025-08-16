@@ -283,3 +283,156 @@ curl -X POST "http://localhost:5000/api/users/craftsman/verification" \
   "message": "At least one skill is required, All document names must be non-empty strings"
 }
 ```
+
+## 5. User Profile Updates with Single Field Constraint
+
+### Valid Single Field Updates
+
+#### Update Name Only
+
+```http
+PATCH /api/users/me
+Authorization: Bearer your-jwt-token
+Content-Type: application/json
+
+{
+  "fullName": "Ahmed Hassan"
+}
+```
+
+#### Update Phone Only
+
+```http
+PATCH /api/users/me
+Authorization: Bearer your-jwt-token
+Content-Type: application/json
+
+{
+  "phone": "+201234567890"
+}
+```
+
+#### Update Address Only
+
+```http
+PATCH /api/users/me
+Authorization: Bearer your-jwt-token
+Content-Type: application/json
+
+{
+  "address": {
+    "country": "Egypt",
+    "state": "Cairo",
+    "city": "New Cairo",
+    "street": "123 New Street"
+  }
+}
+```
+
+#### Update Bio Only (Craftsmen)
+
+```http
+PATCH /api/users/me
+Authorization: Bearer your-jwt-token
+Content-Type: application/json
+
+{
+  "bio": "Professional craftsman with 15+ years experience in electrical work."
+}
+```
+
+### Error Cases
+
+#### Multiple Fields Error
+
+```http
+PATCH /api/users/me
+Authorization: Bearer your-jwt-token
+Content-Type: application/json
+
+{
+  "fullName": "Ahmed Hassan",
+  "phone": "+201234567890"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": false,
+  "message": "Only one field can be updated at a time"
+}
+```
+
+#### Verified Craftsman Name Update Error
+
+```http
+PATCH /api/users/me
+Authorization: Bearer verified-craftsman-jwt-token
+Content-Type: application/json
+
+{
+  "fullName": "Different Name"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": false,
+  "message": "Verified craftsmen cannot update their name"
+}
+```
+
+#### No Fields Provided Error
+
+```http
+PATCH /api/users/me
+Authorization: Bearer your-jwt-token
+Content-Type: application/json
+
+{}
+```
+
+**Response:**
+
+```json
+{
+  "success": false,
+  "message": "At least one field must be provided for update"
+}
+```
+
+### Profile Picture Exception
+
+Profile picture updates don't count towards the single-field limit and can be combined with one other field:
+
+```http
+PATCH /api/users/me
+Authorization: Bearer your-jwt-token
+Content-Type: multipart/form-data
+
+profilePicture: <image_file>
+fullName: "Updated Name"
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "64a7b8f5e1234567890abcde",
+    "email": "user@example.com",
+    "fullName": "Updated Name",
+    "role": "client",
+    "profilePicture": "https://res.cloudinary.com/craftworks/image/upload/v1691234567/profile-images/updated.webp",
+    "rating": 4.5,
+    "ratingCount": 10,
+    "createdAt": "2023-07-07T10:30:00.000Z"
+  },
+  "message": "Profile updated successfully"
+}
+```

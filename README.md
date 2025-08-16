@@ -22,7 +22,16 @@ A modern, scalable backend API for the Egyptian local craftsmen service marketpl
 - **Testing Ready**: Jest configuration for unit and integration tests
 - **ES6 Modules**: Modern import/export syntax throughout
 
-## 📊 Latest Updates (v1.9.0)
+## 📊 Latest Updates (v1.9.2)
+
+**Enhanced User Profile Updates**
+
+- **Single Field Updates**: `PATCH /users/me` now requires only one field to be updated at a time
+- **Verification Protection**: Verified craftsmen cannot update their name for security reasons
+- **Profile Picture Exception**: Profile picture updates don't count towards the single-field limit
+- **Improved Validation**: Better error messages and stricter update policies
+
+## 📊 Previous Updates (v1.9.0)
 
 **Enhanced Invitation System & Multilingual Services**
 

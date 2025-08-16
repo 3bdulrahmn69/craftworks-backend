@@ -104,6 +104,28 @@ export class UserController {
           return;
         }
 
+        // Ensure only one field is being updated at a time
+        const fieldsToUpdate = Object.keys(updateData).filter(
+          (key) =>
+            updateData[key] !== undefined && !['profilePicture'].includes(key)
+        );
+
+        if (fieldsToUpdate.length > 1) {
+          ApiResponse.badRequest(
+            res,
+            'Only one field can be updated at a time'
+          );
+          return;
+        }
+
+        if (fieldsToUpdate.length === 0 && !profileFile) {
+          ApiResponse.badRequest(
+            res,
+            'At least one field must be provided for update'
+          );
+          return;
+        }
+
         const user = await UserService.updateCurrentUser(
           userId,
           updateData,

@@ -123,7 +123,7 @@ export class ValidationHelper {
 
     // Validate phone if provided
     if (data.phone && !this.validatePhone(data.phone))
-      errors.push('Invalid phone format');
+      errors.push('Invalid phone number format');
 
     // Validate fullName if provided
     if (data.fullName !== undefined)
@@ -140,6 +140,15 @@ export class ValidationHelper {
     // Validate serviceId if provided (for craftsmen)
     if (data.serviceId && !/^[0-9a-fA-F]{24}$/.test(data.serviceId))
       errors.push('Invalid service ID format');
+
+    // Validate bio if provided (for craftsmen)
+    if (data.bio !== undefined) {
+      if (typeof data.bio !== 'string') {
+        errors.push('Bio must be a string');
+      } else if (data.bio.trim().length > 1000) {
+        errors.push('Bio cannot exceed 1000 characters');
+      }
+    }
 
     // Validate address if provided
     if (data.address)

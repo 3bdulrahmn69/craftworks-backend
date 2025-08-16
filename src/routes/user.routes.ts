@@ -32,7 +32,7 @@ router.use(authenticateJWT);
 router.get('/me', UserController.getCurrentUser);
 
 // Update current user profile (with optional profile image upload)
-router.put(
+router.patch(
   '/me',
   upload.single('profilePicture'),
   UserController.updateCurrentUser
